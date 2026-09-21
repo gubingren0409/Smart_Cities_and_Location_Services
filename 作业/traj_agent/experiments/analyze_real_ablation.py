@@ -439,7 +439,7 @@ def summarize(experiment_dir: Path) -> Dict[str, Any]:
                 d["stats"] for d in state.get("memory_diagnostics", {}).values()]
             comparison = {
                 "available": True,
-                "parent_experiment": str(parent_dir),
+                "parent_experiment": str(parent_ref),
                 "parent_head": config.get("parent_experiment_head"),
                 "mode_changes": mode_changes,
                 "memory": {

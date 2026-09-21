@@ -188,7 +188,10 @@ def main() -> int:
         summary["figures"]["ablation"] = p
 
     section("6. 记忆状态")
-    mem.rebuild_procedural(min_samples=1)
+    mem.rebuild_procedural(
+        param_names=params_mod.ACTIVE_EXECUTION_PARAMS,
+        min_samples=3,
+    )
     print(json.dumps(mem.stats(), ensure_ascii=False, indent=1))
     regions = [r.to_dict() for r in mem.query_regions()]
     print("\nL2 参数区间：")
