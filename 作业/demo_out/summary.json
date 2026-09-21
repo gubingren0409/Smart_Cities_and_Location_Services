@@ -1,0 +1,474 @@
+{
+ "dataset": {
+  "n_vehicles": 11386,
+  "sample": 200,
+  "n_cards": 200,
+  "regimes": {
+   "stationary": 147,
+   "mixed": 31,
+   "moving": 22
+  },
+  "timelines": {
+   "ok": 190,
+   "degraded": 10
+  }
+ },
+ "single_case": {
+  "vehicle_id": "246",
+  "seg_id": "246#0",
+  "ok": true,
+  "error": "",
+  "mode": "llm+memory+search",
+  "provider": "mock",
+  "regime": "moving",
+  "timeline_quality": "ok",
+  "proposal_source": "llm",
+  "proposal_params": {
+   "dist_threshold": 400.0,
+   "dp_tolerance": 15.25,
+   "dt_threshold": 30.0,
+   "max_speed_mps": 38.0
+  },
+  "proposal_objective": {
+   "n_points": 19,
+   "n_points_ref": 106,
+   "tolerance_m": 15.25,
+   "max_deviation_m": 11.91,
+   "length_ratio": 0.9972,
+   "hausdorff_m": 0.0,
+   "frechet_m": 0.0,
+   "road_match_rate": null,
+   "runtime_ms": 0.372,
+   "compression": 0.8208,
+   "fidelity": 0.603,
+   "road_term": 0.0,
+   "runtime_term": 0.9926,
+   "score": 0.6008,
+   "feasible": true,
+   "violations": [],
+   "applicable": true,
+   "inapplicable_reason": ""
+  },
+  "baseline_objective": {
+   "n_points": 35,
+   "n_points_ref": 106,
+   "tolerance_m": 5.0,
+   "max_deviation_m": 4.768,
+   "length_ratio": 0.9987,
+   "hausdorff_m": 0.0,
+   "frechet_m": 0.0,
+   "road_match_rate": null,
+   "runtime_ms": 0.471,
+   "compression": 0.6698,
+   "fidelity": 0.8411,
+   "road_term": 0.0,
+   "runtime_term": 0.9906,
+   "score": 0.633,
+   "feasible": true,
+   "violations": [],
+   "applicable": true,
+   "inapplicable_reason": ""
+  },
+  "best_objective": {
+   "n_points": 33,
+   "n_points_ref": 103,
+   "tolerance_m": 5.312,
+   "max_deviation_m": 4.768,
+   "length_ratio": 0.9986,
+   "hausdorff_m": 0.0,
+   "frechet_m": 0.0,
+   "road_match_rate": null,
+   "runtime_ms": 0.468,
+   "compression": 0.6796,
+   "fidelity": 0.8411,
+   "road_term": 0.0,
+   "runtime_term": 0.9907,
+   "score": 0.6366,
+   "feasible": true,
+   "violations": [],
+   "applicable": true,
+   "inapplicable_reason": ""
+  },
+  "measured": {
+   "n_points_before": 106,
+   "n_points_after": 19,
+   "compression_ratio": 0.8208,
+   "max_deviation_m": 11.9098,
+   "length_before_m": 11322.087,
+   "length_after_m": 11290.639,
+   "hausdorff_m": 11.91,
+   "frechet_m": 943.345,
+   "runtime_ms": 0.3716,
+   "clean_report": {
+    "n_before": 108,
+    "n_after": 106,
+    "dropped": 2,
+    "drop_ratio": 0.0185,
+    "actions": {
+     "drop_jump_artifact": 1,
+     "drop_nonpositive_dt": 1,
+     "fix_dt_artifact": 9
+    },
+    "dropped_reasons": {
+     "nonpositive_dt": 1,
+     "space_jump": 1,
+     "speed_over_limit": 1
+    },
+    "dropped_with_reason": 2,
+    "preserved_behavior": {
+     "speed_over_limit": 2,
+     "u_turn": 1
+    },
+    "n_iterations": 3
+   }
+  },
+  "verification": {
+   "constraint_ok": true,
+   "clamped_params": [],
+   "feasible": true,
+   "violations": [],
+   "proposal_score": 0.600843,
+   "baseline_score": 0.632963,
+   "best_score": 0.636621,
+   "regret": 0.035778,
+   "regret_basis": "absolute(small_headroom)",
+   "applicable": true,
+   "inapplicable_reason": "",
+   "direction_checks": [
+    {
+     "param": "quality",
+     "predicted": "down",
+     "observed": "down",
+     "agree": true
+    },
+    {
+     "param": "compression",
+     "predicted": "up",
+     "observed": "up",
+     "agree": true
+    },
+    {
+     "param": "dp_tolerance",
+     "predicted": "up",
+     "observed": "up",
+     "agree": true
+    }
+   ],
+   "direction_accuracy": 1.0,
+   "n_evaluations": 55,
+   "evals_to_95pct": 1,
+   "admitted": false,
+   "admit_reason": "regret 0.0358（absolute(small_headroom)）超过阈值 0.01"
+  },
+  "search": {
+   "method": "coordinate_descent",
+   "n_evaluations": 55,
+   "best_score": 0.636621,
+   "best_params": {
+    "dist_threshold": 400.0,
+    "dp_tolerance": 5.3125,
+    "dt_threshold": 107.0,
+    "max_accel_mps2": 6.0,
+    "max_speed_mps": 18.0,
+    "max_turn_deg": 150.0,
+    "min_seg_length_m": 65.0,
+    "min_seg_points": 5.0,
+    "smooth_window": 5.0
+   },
+   "clamped_params": [],
+   "baseline_score": 0.63296
+  },
+  "memory_prior_available": false,
+  "memory_written": true,
+  "episodic_id": 1,
+  "tool_calls": 5,
+  "llm_tool_calls": 4,
+  "llm_turns": 5,
+  "token_usage": {
+   "prompt": 0,
+   "completion": 0
+  },
+  "total_elapsed_ms": 4907.5
+ },
+ "figures": {
+  "overlay": "figures/report_clean_overlay.png",
+  "anomaly": "figures/report_anomaly_scatter.png",
+  "heatmap": "figures/report_heatmap.png",
+  "curve": "figures/report_quality_compression.png",
+  "sensitivity": "figures/report_sensitivity.png",
+  "ablation": "figures/report_ablation.png"
+ },
+ "knee": {
+  "index": 2,
+  "tolerance_m": 0.0,
+  "n_points": 26,
+  "compression": 0.7547,
+  "fidelity": 0.7223,
+  "method": "curvature",
+  "value": 8.9286,
+  "max_deviation_m": 8.331,
+  "deviation_scale_m": 30.0,
+  "max_score_alternative": {
+   "value": 4.7143,
+   "compression": 0.6604,
+   "fidelity": 0.8522
+  }
+ },
+ "curve": [
+  {
+   "value": 0.5,
+   "n_points": 83,
+   "compression_ratio": 0.217,
+   "max_deviation_m": 0.338,
+   "hausdorff_m": 0.338,
+   "length_ratio": 1.0
+  },
+  {
+   "value": 4.714285714285714,
+   "n_points": 36,
+   "compression_ratio": 0.6604,
+   "max_deviation_m": 4.435,
+   "hausdorff_m": 4.435,
+   "length_ratio": 0.9988
+  },
+  {
+   "value": 8.928571428571429,
+   "n_points": 26,
+   "compression_ratio": 0.7547,
+   "max_deviation_m": 8.331,
+   "hausdorff_m": 8.331,
+   "length_ratio": 0.9976
+  },
+  {
+   "value": 13.142857142857142,
+   "n_points": 19,
+   "compression_ratio": 0.8208,
+   "max_deviation_m": 11.91,
+   "hausdorff_m": 11.91,
+   "length_ratio": 0.9972
+  },
+  {
+   "value": 17.357142857142858,
+   "n_points": 18,
+   "compression_ratio": 0.8302,
+   "max_deviation_m": 15.313,
+   "hausdorff_m": 15.313,
+   "length_ratio": 0.9972
+  },
+  {
+   "value": 21.571428571428573,
+   "n_points": 18,
+   "compression_ratio": 0.8302,
+   "max_deviation_m": 15.313,
+   "hausdorff_m": 15.313,
+   "length_ratio": 0.9972
+  },
+  {
+   "value": 25.785714285714285,
+   "n_points": 18,
+   "compression_ratio": 0.8302,
+   "max_deviation_m": 15.313,
+   "hausdorff_m": 15.313,
+   "length_ratio": 0.9972
+  },
+  {
+   "value": 30.0,
+   "n_points": 16,
+   "compression_ratio": 0.8491,
+   "max_deviation_m": 29.201,
+   "hausdorff_m": 29.201,
+   "length_ratio": 0.9969
+  }
+ ],
+ "anomaly_histogram": {
+  "consecutive_dup": 11860,
+  "nonpositive_dt": 198,
+  "stationary_drift": 102,
+  "drift": 58,
+  "turn_angle": 44,
+  "space_jump": 43,
+  "accel_outlier": 29,
+  "dt_artifact": 24,
+  "time_gap": 21,
+  "speed_over_limit": 20,
+  "speed_spike": 1
+ },
+ "ablation": [
+  {
+   "mode": "llm+memory+search",
+   "n": 4,
+   "mean_regret": 0.02,
+   "mean_score": 0.5707,
+   "mean_evals": 4.0,
+   "mean_direction_accuracy": 1.0,
+   "admit_rate": 0.25
+  },
+  {
+   "mode": "llm+search",
+   "n": 4,
+   "mean_regret": 0.0201,
+   "mean_score": 0.5707,
+   "mean_evals": 4.0,
+   "mean_direction_accuracy": 1.0,
+   "admit_rate": 0.25
+  },
+  {
+   "mode": "llm-only",
+   "n": 4,
+   "mean_regret": 0.0155,
+   "mean_score": 0.5707,
+   "mean_evals": 4.0,
+   "mean_direction_accuracy": 1.0,
+   "admit_rate": 0.25
+  },
+  {
+   "mode": "search-only",
+   "n": 4,
+   "mean_regret": 0.0073,
+   "mean_score": 0.5835,
+   "mean_evals": 0.0,
+   "mean_direction_accuracy": null,
+   "admit_rate": 1.0
+  }
+ ],
+ "ablation_cases": [
+  {
+   "mode": "llm-only",
+   "regret": 0.032095,
+   "proposal_score": 0.600851,
+   "n_evaluations": 4,
+   "direction_accuracy": 1.0,
+   "admitted": false
+  },
+  {
+   "mode": "llm-only",
+   "regret": 0.014046,
+   "proposal_score": 0.557104,
+   "n_evaluations": 4,
+   "direction_accuracy": 1.0,
+   "admitted": false
+  },
+  {
+   "mode": "llm-only",
+   "regret": 0.002871,
+   "proposal_score": 0.524206,
+   "n_evaluations": 4,
+   "direction_accuracy": 1.0,
+   "admitted": true
+  },
+  {
+   "mode": "llm-only",
+   "regret": 0.013085,
+   "proposal_score": 0.600785,
+   "n_evaluations": 4,
+   "direction_accuracy": 1.0,
+   "admitted": false
+  },
+  {
+   "mode": "search-only",
+   "regret": 0.006003,
+   "proposal_score": 0.630615,
+   "n_evaluations": 0,
+   "direction_accuracy": null,
+   "admitted": true
+  },
+  {
+   "mode": "search-only",
+   "regret": 0.007882,
+   "proposal_score": 0.571137,
+   "n_evaluations": 0,
+   "direction_accuracy": null,
+   "admitted": true
+  },
+  {
+   "mode": "search-only",
+   "regret": 0.007937,
+   "proposal_score": 0.524381,
+   "n_evaluations": 0,
+   "direction_accuracy": null,
+   "admitted": true
+  },
+  {
+   "mode": "search-only",
+   "regret": 0.007416,
+   "proposal_score": 0.607731,
+   "n_evaluations": 0,
+   "direction_accuracy": null,
+   "admitted": true
+  },
+  {
+   "mode": "llm+search",
+   "regret": 0.035754,
+   "proposal_score": 0.600854,
+   "n_evaluations": 4,
+   "direction_accuracy": 1.0,
+   "admitted": false
+  },
+  {
+   "mode": "llm+search",
+   "regret": 0.021925,
+   "proposal_score": 0.557096,
+   "n_evaluations": 4,
+   "direction_accuracy": 1.0,
+   "admitted": false
+  },
+  {
+   "mode": "llm+search",
+   "regret": 0.008129,
+   "proposal_score": 0.524209,
+   "n_evaluations": 4,
+   "direction_accuracy": 1.0,
+   "admitted": true
+  },
+  {
+   "mode": "llm+search",
+   "regret": 0.014412,
+   "proposal_score": 0.600741,
+   "n_evaluations": 4,
+   "direction_accuracy": 1.0,
+   "admitted": false
+  },
+  {
+   "mode": "llm+memory+search",
+   "regret": 0.035757,
+   "proposal_score": 0.600853,
+   "n_evaluations": 4,
+   "direction_accuracy": 1.0,
+   "admitted": false
+  },
+  {
+   "mode": "llm+memory+search",
+   "regret": 0.021914,
+   "proposal_score": 0.557108,
+   "n_evaluations": 4,
+   "direction_accuracy": 1.0,
+   "admitted": false
+  },
+  {
+   "mode": "llm+memory+search",
+   "regret": 0.008099,
+   "proposal_score": 0.52422,
+   "n_evaluations": 4,
+   "direction_accuracy": 1.0,
+   "admitted": true
+  },
+  {
+   "mode": "llm+memory+search",
+   "regret": 0.014425,
+   "proposal_score": 0.600766,
+   "n_evaluations": 4,
+   "direction_accuracy": 1.0,
+   "admitted": false
+  }
+ ],
+ "memory": {
+  "n_episodic": 1,
+  "n_admitted": 0,
+  "admit_rate": 0.0,
+  "n_procedural": 0,
+  "by_regime": [],
+  "path": "demo_out/memory.sqlite"
+ },
+ "regions": [],
+ "elapsed_s": 65.4
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "path": "实验课1.pptx",
+    "size_bytes": 11442326,
+    "sha256": "cf5fdbdd0e116818f4bf195e8761dd55c4733443d7c360c986cf1cdfddfda075"
+  },
+  {
+    "path": "作业/作业1轨迹数据预处理.ipynb",
+    "size_bytes": 190048,
+    "sha256": "0bba21f1737652c875ab2ca7ea7cd95c7c00ff87e2e02615513c981216bee414"
+  },
+  {
+    "path": "作业/任务3_LLM辅助评估清洗.ipynb",
+    "size_bytes": 42213,
+    "sha256": "64132c18aaf1c0dfc2252814ca957ea1b49d7c3bd74f50a6e37ebb42167cc987"
+  },
+  {
+    "path": "作业/AI使用记录_实验一.md",
+    "size_bytes": 18374,
+    "sha256": "da7b4e4490e0bb44119d7e9b694a43df43004efabe8aa09632dd38b0b6286eb3"
+  },
+  {
+    "path": "作业/experiments/llm_assisted_20260920/实验报告.md",
+    "size_bytes": 7220,
+    "sha256": "7ef5f3a1c12f8c755d953ed767c383d847868781fc1765548d4157940fa6c91c"
+  },
+  {
+    "path": "作业/experiments/llm_assisted_20260920/output/summary.json",
+    "size_bytes": 25501,
+    "sha256": "9c72808cd52da73510e8acf9003951d71cf1217182e3e169adcd9d7250064041"
+  },
+  {
+    "path": "作业/experiments/llm_assisted_20260920/output/random_sample_200.json",
+    "size_bytes": 2987,
+    "sha256": "96397027f0cc55ceb0f2fab00452bd4b8bef04f672a4e0bb4e5552b7132e8b27"
+  },
+  {
+    "path": "作业/experiments/llm_assisted_20260920/figures/report_comparable_metrics.png",
+    "size_bytes": 155761,
+    "sha256": "7c7f68099843512036752e35389823449674ddce1c02b1ab9f067677b03307ec"
+  }
+]

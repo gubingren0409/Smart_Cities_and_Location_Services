@@ -1,0 +1,18 @@
+# 需要设置的环境变量（不要提交真实 key）
+#
+# 华东师范大学 ECNU 大模型
+#   令牌获取：https://developer.ecnu.edu.cn/vitepress/llm/authorization.html
+#   模型手册：https://developer.ecnu.edu.cn/vitepress/llm/model.html
+export DSH_TRAJ_LLM_API_KEY="你的令牌"
+export DSH_TRAJ_LLM_BASE_URL="https://chat.ecnu.edu.cn/open/api/v1"
+export DSH_TRAJ_LLM_MODEL="ecnu-plus"
+
+# 其它 OpenAI 兼容端点（任选）
+# export DSH_TRAJ_LLM_BASE_URL="https://api.deepseek.com/v1"
+# export DSH_TRAJ_LLM_MODEL="deepseek-chat"
+
+# Obsidian vault（不设置则回退到 ./vault_stub）
+# export DSH_TRAJ_VAULT_DIR="/path/to/YourVault"
+
+# matplotlib 缓存目录（必需，否则中文目录下不可写）
+export MPLCONFIGDIR=./.mplcache

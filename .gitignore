@@ -1,0 +1,34 @@
+# Python and notebook caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+.mplcache/
+
+# Local environments and secrets
+.env
+.env.*
+!.envrc.hint
+jupyterhub_cookie_secret
+
+# Local runtime databases
+jupyterhub.sqlite
+*.sqlite
+*.sqlite3
+
+# OS and editor metadata
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+~$*
+
+# Duplicate archives and generated presentation copies
+/作业.zip
+/作业/任务三_GPT_Work审阅包.zip
+/作业/utils/traj_dict.json
+/作业/build_ppt/out/
+/作业/build_ppt/node_modules
+/作业/build_ppt_agent/out/
+/作业/build_ppt_agent/out2/
+/作业/build_ppt_agent/node_modules
