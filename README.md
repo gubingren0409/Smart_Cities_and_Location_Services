@@ -6,6 +6,7 @@
 
 - `实验课1.pptx`：老师实验课材料。
 - `作业/作业1轨迹数据预处理.ipynb`：分段、去噪、Douglas–Peucker 简化、参数实验、真实轨迹可视化与 AI 建议反例。
+- `作业/轨迹数据预处理评估报告.docx`、`.pdf`：根据 Notebook 实际运行结果整理的正式实验报告；Markdown 源稿与可复现制图脚本一并保留。
 - `作业/AI使用记录_实验一.md`：真实 Human–AI 交互证据及修改前后位置说明。
 - `作业/traj_dict.json`：实验数据。
 - `作业/utils/`、`作业/douglas_peucker.py`：老师框架及基础工具。
