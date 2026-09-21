@@ -132,38 +132,38 @@ Obsidian vault 就是一堆 `.md`，Python 用标准库直接读写，
 离散顶点集 Hausdorff 在简化场景下给出 548m 而真实是 4.77m）
 全部记录在 `DECISIONS.md` 并配了回归测试。
 
-## 8. 消融实验
+## 8. 修复版工作流组件消融实验
 
-| 模式 | LLM | 记忆 | 搜索 | 说明 |
+| 模式 | LLM | Memory | Search 的作用 | 最终参数来源 |
 |---|---|---|---|---|
-| `llm-only` | 有 | 无 | 无 | 单靠 LLM，无实测依据 |
-| `search-only` | **无** | 无 | 有 | 纯确定性基线，`use_llm=False` |
-| `llm+search` | 有 | 无 | 有 | 加实测依据 |
-| `llm+memory+search` | 有 | 有 | 有 | 加历史经验 |
+| `llm-only` | 有 | 无 | 关闭 | LLM proposal |
+| `prior-only+search-verifier` | 无 | 无 | verifier/reference | 物理与数据先验 |
+| `det-search-output` | 无 | 无 | 直接输出 | 有界确定性搜索参考 |
+| `llm+search-verifier` | 有 | 无 | verifier/reference | LLM proposal |
+| `llm+memory+search-verifier` | 有 | 有 | verifier/reference | LLM proposal |
 
-`search-only` 必须真的不调用 LLM，否则与含 LLM 的模式不可比。
-
-**注意**：关闭搜索时 regret 是绝对口径（最优=基线），
-**不能**与含搜索模式的归一化 regret 直接比较。代码会在
-`result.search["caveat"]` 里标注这一点。
+带 `search-verifier` 的 LLM 模式不会使用搜索结果修改 proposal。主实验参数空间统一为 `dp_tolerance`、`dist_threshold` 和 `max_speed_mps`，原始、规范化与最终执行参数分别保存。
 
 ### 真实 ECNU 三轮结果
 
-固定使用 12 条 demo、12 条不重叠 holdout，四种模式各重复三轮。目标函数适用的样本每模式为 24 个；12 个静止短轨迹标为 `applicable=False`，不进入普通得分均值。
+固定 12 条 demo、12 条不重叠 holdout，重复 3 轮。CI 以 8 辆独立车辆为 cluster；每模式有 24 条适用观测。
 
-| 模式 | 相对固定基线平均变化 | 95% bootstrap CI | 超过基线比例 | LLM 调用 |
-|---|---:|---:|---:|---:|
-| `llm-only` | -0.000050 | [-0.006178, 0.005441] | 58.3% | 36 |
-| `search-only` | -0.000555 | [-0.001081, -0.000142] | 37.5% | **0** |
-| `llm+search` | +0.000429 | [-0.005874, 0.006810] | 54.2% | 39 |
-| `llm+memory+search` | +0.001645 | [-0.004523, 0.007489] | 58.3% | 48 |
+| 模式 | 相对默认参数平均变化 | vehicle-cluster 95% CI | LLM calls |
+|---|---:|---:|---:|
+| `llm-only` | -0.000702 | [-0.015137, 0.012893] | 40 |
+| `prior-only+search-verifier` | -0.000818 | [-0.001914, -0.000046] | 0 |
+| `det-search-output` | +0.131676 | [0.023094, 0.338599] | 0 |
+| `llm+search-verifier` | +0.001397 | [-0.013348, 0.015262] | 43 |
+| `llm+memory+search-verifier` | +0.001347 | [-0.013158, 0.014805] | 40 |
 
-Memory 与无 Memory 的配对差值均值为 +0.001236，95% CI 为 [-0.000851, 0.003498]，区间覆盖 0。三轮 L2 参数区域各自只有 1–2 个准入样本，其中 `moving/degraded` 三轮合计仅准入 1 条，因此当前实验尚未检出稳定的 Memory 增益，也不能据此判断 Memory 机制无效。
+Memory − no-memory 的车辆级平均差值为 -0.000049，95% CI 为 [-0.002513, 0.002879]。当前没有检测到稳定 Memory 质量增益；Memory 模式使用 108,196 prompt tokens，无 Memory 模式使用 103,871。三轮 admitted demo 为 3/3/4，`min_samples=3` 后均没有形成 L2 region。
+
+`det-search-output` 的内部得分不能直接解释为真实清洗质量。当前 objective 缺少对去噪删除正确性的独立人工或道路真值核验。
 
 运行入口：
 
 ```bash
-python experiments/llm_assisted_ecnu_20260921/run_real_ablation.py --run
+python experiments/llm_assisted_ecnu_20260921_v2/run_real_ablation.py --run
 ```
 
-脚本逐 case 写入 JSONL，可从中断处恢复；若 provider 回退为 Mock 会立即终止。完整调用、token、延迟、分层与置信区间均保存在该实验目录。
+脚本逐 case 写入 JSONL 并支持断点恢复。修复前实验完整保存在 `experiments/llm_assisted_ecnu_20260921/`，修复版产物在 `experiments/llm_assisted_ecnu_20260921_v2/`。
