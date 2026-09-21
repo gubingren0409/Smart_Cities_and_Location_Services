@@ -190,7 +190,7 @@ function code(s, lines, x, y, w, h) {
   const s = beginSlide();
   head(s, "核心机制一：regret 让建议可判分", "机制");
   bullets(s, [
-    { t: "regret = score（搜索最优）− score（LLM 提议）", bold: true, color: ACCENT, gap: 9 },
+    { t: "regret = score（有界搜索参考）− score（LLM 提议）", bold: true, color: ACCENT, gap: 9 },
     { t: "它需要统一内部参考；确定性搜索从默认参数独立运行。" },
     { t: "联动：任务二的敏感性实验产物，就是任务三目标函数的地形图。", color: GOLD, bold: true, gap: 9 },
     { t: "实测一条：提议 0.6008、基线 0.6330、最优 0.6366，得 regret 0.0358。" },

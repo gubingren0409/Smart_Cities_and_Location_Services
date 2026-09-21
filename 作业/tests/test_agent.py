@@ -253,11 +253,12 @@ def test_agent_writes_memory_even_when_rejected(agent):
     assert agent.memory.count() >= 1
 
 
-def test_agent_admits_stationary_by_constraint(agent):
+def test_agent_keeps_stationary_in_l1_only(agent):
     r = agent.run("0")
     assert r.ok
     assert r.verification["applicable"] is False
-    assert r.verification["admitted"] is True
+    assert r.verification["admitted"] is False
+    assert "仅保留L1" in r.verification["admit_reason"]
 
 
 def test_agent_result_is_json_serializable(agent):
@@ -369,9 +370,9 @@ def test_memory_accumulates_and_is_retrievable(real_raw):
 
 
 def test_ablation_modes_are_structurally_distinct(real_raw):
-    """消融实验：四种模式必须结构性不同，而不是换了个标签。
+    """消融实验：不同工作流组件模式必须结构性不同。
 
-    特别注意 search-only 必须**真的不含 LLM 调用**，
+    特别注意两个无 LLM 模式必须**真的不含 LLM 调用**，
     否则它与含 LLM 的模式不可比。
     """
     from traj_agent.verifier.verify import ablation_summary
@@ -379,19 +380,22 @@ def test_ablation_modes_are_structurally_distinct(real_raw):
     specs = [
         # mode,                use_llm, use_memory, use_search, threshold
         ("llm-only",           True,  False, False, 1.0),
-        ("search-only",        False, False, True,  0.05),
-        ("llm+search",         True,  False, True,  0.05),
-        ("llm+memory+search",  True,  True,  True,  1.0),
+        ("prior-only+search-verifier", False, False, True, 0.05),
+        ("det-search-output",  False, False, True,  0.05),
+        ("llm+search-verifier", True, False, True,  0.05),
+        ("llm+memory+search-verifier", True, True, True, 1.0),
     ]
     cases = []
     for mode, use_llm, use_mem, use_search, thr in specs:
         mem = MemoryStore(":memory:") if use_mem else None
         reg = ToolRegistry()
         attach_dataset(reg.ctx, real_raw)
+        policy = ("deterministic-search" if mode == "det-search-output"
+                  else "proposal")
         ag = TrajCleaningAgent(registry=reg, llm=prov.MockProvider(), memory=mem,
                                use_llm=use_llm, use_memory=use_mem,
                                use_search=use_search, regret_threshold=thr,
-                               mode=mode)
+                               mode=mode, proposal_policy=policy)
         for vid in ("246", "306"):
             r = ag.run(vid)
             assert r.ok, f"{mode} 在 {vid} 上失败: {r.error}"
@@ -403,10 +407,10 @@ def test_ablation_modes_are_structurally_distinct(real_raw):
                           "direction_accuracy": v["direction_accuracy"],
                           "admitted": v["admitted"], "_llm_turns": d["llm_turns"]})
 
-    # search-only 必须真的不调用 LLM
+    # 两个无 LLM 模式必须真的不调用 LLM
     for c in cases:
-        if c["mode"] == "search-only":
-            assert c["_llm_turns"] == 0, "search-only 不应产生 LLM 轮次"
+        if c["mode"] in {"prior-only+search-verifier", "det-search-output"}:
+            assert c["_llm_turns"] == 0, f"{c['mode']} 不应产生 LLM 轮次"
         else:
             assert c["_llm_turns"] > 0, f"{c['mode']} 应当调用 LLM"
 
@@ -433,7 +437,7 @@ def test_prior_only_proposal_does_not_use_llm(real_raw):
     reg = ToolRegistry()
     attach_dataset(reg.ctx, real_raw)
     ag = TrajCleaningAgent(registry=reg, llm=prov.MockProvider(), memory=None,
-                           use_llm=False, mode="search-only")
+                           use_llm=False, mode="prior-only+search-verifier")
     r = ag.run("246")
     assert r.ok
     assert r.proposal_source == "prior-only"

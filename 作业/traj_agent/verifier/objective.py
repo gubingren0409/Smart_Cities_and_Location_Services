@@ -9,7 +9,7 @@
    不做隐式加权。
 2. **knee point 优先于加权和**。加权和的权重本身会变成新的玄学参数；
    knee point 从实测曲线上取，无需人为定权。
-3. **归一化可复现**。所有归一化基准由 ground-truth 扫描确定，
+3. **归一化可复现**。所有归一化基准由有界确定性搜索参考确定，
    不依赖提议本身，否则 regret 不可比。
 """
 from __future__ import annotations
@@ -26,7 +26,8 @@ class ObjectiveWeights:
     quality: float = 1.0          # 保真度（越小偏差越好，取 1 - 归一化偏差）
     compression: float = 1.0      # 压缩率（越大越好）
     road: float = 0.5             # 路网匹配率（越大越好）
-    runtime: float = 0.2          # 运行时间（越小越好，取负贡献）
+    # 主质量分不混入亚毫秒级墙钟波动；运行时间仍作为独立工程指标保存。
+    runtime: float = 0.0
 
 
 @dataclass
@@ -165,14 +166,20 @@ def compute_objective(n_after: int,
         r.violations.append(
             f"最大偏差 {max_deviation_m:.2f}m 超出容差 {tolerance_m:.2f}m 的 1.5 倍")
 
-    total_w = w.quality + w.compression + w.road + w.runtime
+    # 不可用分量从分子和分母同时移除。缺少 road 数据表示“未知”，
+    # 不是 road 得 0 分。runtime 默认权重为 0，只单独报告。
+    total_w = w.quality + w.compression
+    numerator = w.quality * r.fidelity + w.compression * r.compression
+    if road_match_rate is not None and w.road > 0:
+        total_w += w.road
+        numerator += w.road * r.road_term
+    if w.runtime > 0:
+        total_w += w.runtime
+        numerator += w.runtime * r.runtime_term
     if total_w <= 0:
         r.score = 0.0
     else:
-        r.score = (w.quality * r.fidelity
-                   + w.compression * r.compression
-                   + w.road * r.road_term
-                   + w.runtime * r.runtime_term) / total_w
+        r.score = numerator / total_w
     if not r.feasible:
         r.score -= 1.0     # 不可行解一律排在可行解之后
     return r

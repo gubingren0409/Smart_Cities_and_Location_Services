@@ -81,7 +81,7 @@ class AgentResult:
     seg_id: str
     ok: bool = False
     error: str = ""
-    mode: str = "llm+memory+search"
+    mode: str = "llm+memory+search-verifier"
 
     # 诊断
     diagnosis: Dict[str, Any] = field(default_factory=dict)
@@ -90,6 +90,12 @@ class AgentResult:
     proposal_params: Dict[str, float] = field(default_factory=dict)
     proposal_raw: Dict[str, Any] = field(default_factory=dict)
     proposal_source: str = ""      # llm | fallback
+    raw_proposal_params: Dict[str, Any] = field(default_factory=dict)
+    normalized_proposal_params: Dict[str, float] = field(default_factory=dict)
+    execution_params: Dict[str, float] = field(default_factory=dict)
+    rounded_params: List[str] = field(default_factory=list)
+    out_of_bounds_params: List[str] = field(default_factory=list)
+    invalid_params: List[str] = field(default_factory=list)
 
     # 执行与指标
     proposal_objective: Dict[str, Any] = field(default_factory=dict)
@@ -128,6 +134,18 @@ class AgentResult:
             "regime": self.diagnosis.get("regime"),
             "timeline_quality": (self.diagnosis.get("timeline") or {}).get("quality"),
             "proposal_source": self.proposal_source,
+            "raw_proposal_params": dict(self.raw_proposal_params),
+            "normalized_proposal_params": {
+                k: round(float(v), 4)
+                for k, v in sorted(self.normalized_proposal_params.items())
+            },
+            "execution_params": {
+                k: round(float(v), 4)
+                for k, v in sorted(self.execution_params.items())
+            },
+            "rounded_params": list(self.rounded_params),
+            "out_of_bounds_params": list(self.out_of_bounds_params),
+            "invalid_params": list(self.invalid_params),
             "proposal_params": {k: round(float(v), 4)
                                 for k, v in sorted(self.proposal_params.items())},
             "proposal_objective": self.proposal_objective,
@@ -167,7 +185,8 @@ class TrajCleaningAgent:
                  read_only: bool = False,
                  tool_subset: Optional[Sequence[str]] = None,
                  direct_first: bool = True,
-                 mode: str = "llm+memory+search") -> None:
+                 mode: str = "llm+memory+search-verifier",
+                 proposal_policy: str = "proposal") -> None:
         self.registry = registry or ToolRegistry()
         if vault_dir is not None:
             self.registry.ctx.vault_dir = vault_dir
@@ -196,6 +215,7 @@ class TrajCleaningAgent:
         # 只有直答失败时才升级到带工具的路径。
         self.direct_first = bool(direct_first)
         self.mode = mode
+        self.proposal_policy = str(proposal_policy)
 
     # ---- 工具 -----------------------------------------------------------
     def attach_dataset(self, raw: Dict[str, Any]) -> "TrajCleaningAgent":
@@ -239,12 +259,20 @@ class TrajCleaningAgent:
                     "n_neighbors": prior_dict.get("n_neighbors", 0),
                     "n_regions": len(prior_dict.get("suggested_regions", []))})
 
-        # [3] 提议。use_llm=False 时跳过一切 LLM 调用，直接用数据驱动先验，
-        # 这是消融实验里「search-only」基线成立的前提：
-        # 它必须真的不含 LLM 成分，否则与含 LLM 的模式不可比。
+        # [3] 提议。无 LLM 模式分别输出数据先验或纯确定性搜索结果。
+        precomputed_search: Optional[search_mod.SearchTrace] = None
         if self.use_llm:
             proposal, source, n_tools = self._elicit_proposal(
                 res, handle, card, prior_dict)
+        elif self.proposal_policy == "deterministic-search":
+            precomputed_search = self._run_search(handle)
+            proposal = {
+                "params": dict(precomputed_search.best_params),
+                "expected_effect": {},
+                "rationale": "deterministic-search-output：直接输出有界搜索参考参数",
+            }
+            source, n_tools = "deterministic-search-output", 0
+            self._step(res, "llm", "skipped", {"reason": "deterministic search output"})
         else:
             proposal = self._prior_only_proposal(handle, prior_dict)
             source, n_tools = "prior-only", 0
@@ -257,16 +285,24 @@ class TrajCleaningAgent:
             res.tool_calls = sum(1 for s_ in res.trace if s_.kind == "tool")
             res.total_elapsed_ms = (time.perf_counter() - t_start) * 1000.0
             return res
-        params, clamped = params_mod.clamp_params(
-            {k: float(v) for k, v in proposal["params"].items()
-             if isinstance(v, (int, float))})
+        raw_params = dict(proposal["params"])
+        audit = params_mod.normalize_params(
+            raw_params, only=params_mod.ACTIVE_EXECUTION_PARAMS)
+        params = dict(audit.execution_params)
+        res.raw_proposal_params = raw_params
+        res.normalized_proposal_params = dict(audit.normalized_params)
+        res.execution_params = params
+        res.rounded_params = list(audit.rounded_params)
+        res.out_of_bounds_params = list(audit.out_of_bounds_params)
+        res.invalid_params = list(audit.invalid_params)
         res.proposal_params = params
-        if clamped:
-            self._step(res, "verify", "clamp", {"clamped": clamped})
+        if audit.rounded_params or audit.out_of_bounds_params or audit.invalid_params:
+            self._step(res, "verify", "normalize_params", audit.to_dict())
 
         # [4]-[7] 执行、搜索、核验
         ver = self._evaluate_and_verify(res, handle, params, proposal,
-                                        input_clamped_params=clamped)
+                                        param_audit=audit,
+                                        precomputed_search=precomputed_search)
         res.verification = ver.to_dict()
 
         # [8] 记忆准入（read_only 模式下跳过写入）
@@ -318,7 +354,7 @@ class TrajCleaningAgent:
         """
         ctx = self.registry.ctx
         card_obj = diagnosis.diagnose(ctx.store.get(handle))
-        specs = params_mod.param_bounds_table()
+        specs = params_mod.param_bounds_table(params_mod.ACTIVE_EXECUTION_PARAMS)
         playbook = playbook_digest(self.registry.ctx.vault_dir)
 
         text_protocol = not hasattr(self.llm, "chat") or isinstance(
@@ -428,7 +464,7 @@ class TrajCleaningAgent:
 
         # 兜底：用物理先验默认值，并明确标注来源
         self._step(res, "llm", "fallback", {"reason": "未取得结构化提议"})
-        return ({"params": params_mod.default_params(),
+        return ({"params": params_mod.active_default_params(),
                  "expected_effect": {}, "rationale": "兜底：使用物理先验默认值"},
                 "fallback", n_tools)
 
@@ -441,7 +477,7 @@ class TrajCleaningAgent:
           2) 数据驱动建议起点
           3) 物理先验默认值
         """
-        p = params_mod.default_params()
+        p = params_mod.active_default_params()
         for region in prior.get("suggested_regions", []) or []:
             name = region.get("param")
             if name in p and isinstance(region.get("median"), (int, float)):
@@ -457,7 +493,8 @@ class TrajCleaningAgent:
             if k in p and not any(r.get("param") == k
                                   for r in prior.get("suggested_regions", []) or []):
                 p[k] = float(v)
-        p, _ = params_mod.clamp_params(p)
+        p, _ = params_mod.clamp_params(
+            p, only=params_mod.ACTIVE_EXECUTION_PARAMS)
         return {"params": p, "expected_effect": {},
                 "rationale": "prior-only 基线：物理先验 + 记忆区间，未调用 LLM"}
 
@@ -502,7 +539,8 @@ class TrajCleaningAgent:
     def _evaluate_and_verify(self, res: AgentResult, handle: str,
                              params: Dict[str, float],
                              proposal: Dict[str, Any],
-                             input_clamped_params: Optional[Sequence[str]] = None
+                             param_audit: Optional[params_mod.ParamNormalization] = None,
+                             precomputed_search: Optional[search_mod.SearchTrace] = None,
                              ) -> verify_mod.VerificationResult:
         # [5] 执行提议
         t0 = time.perf_counter()
@@ -517,7 +555,7 @@ class TrajCleaningAgent:
                    (time.perf_counter() - t0) * 1000.0)
 
         # 基线：物理先验默认值
-        base_params = params_mod.default_params()
+        base_params = params_mod.active_default_params()
         base_measured, _ = self._execute(handle, base_params)
         base_obj = self._objective_of(base_measured, base_params)
         res.baseline_objective = base_obj.to_dict()
@@ -525,8 +563,23 @@ class TrajCleaningAgent:
         # [6] 确定性搜索（独立内部参考，不是道路真值）
         if self.use_search:
             t1 = time.perf_counter()
-            trace = self._run_search(handle, params)
-            res.search = trace.to_dict()
+            trace = precomputed_search or self._run_search(handle)
+            search_payload = trace.to_dict()
+            search_payload.update({
+                "deterministic_search_best_score": round(trace.best_score, 6),
+                "deterministic_search_best_params": {
+                    k: round(float(v), 4)
+                    for k, v in sorted(trace.best_params.items())
+                },
+                "proposal_score": round(obj.score, 6),
+                "proposal_minus_search_score": round(obj.score - trace.best_score, 6),
+                "search_minus_proposal_score": round(trace.best_score - obj.score, 6),
+                "best_observed_score": round(max(obj.score, trace.best_score), 6),
+                "best_observed_source": (
+                    "proposal" if obj.score > trace.best_score else "deterministic-search"
+                ),
+            })
+            res.search = search_payload
             self._step(res, "verify", "coordinate_descent",
                        {"n_evaluations": trace.n_evaluations,
                         "best_score": round(trace.best_score, 6),
@@ -552,8 +605,9 @@ class TrajCleaningAgent:
                 "search 已关闭：最优 = 基线，regret 为绝对口径，"
                 "不可与含搜索模式的归一化 regret 直接比较")
 
-        best_measured, _ = self._execute(handle, trace.best_params or base_params)
-        best_obj = self._objective_of(best_measured, trace.best_params or base_params)
+        best_params = params if obj.score > trace.best_score else (trace.best_params or base_params)
+        best_measured, _ = self._execute(handle, best_params)
+        best_obj = self._objective_of(best_measured, best_params)
         res.best_objective = best_obj.to_dict()
 
         # [7] 核验
@@ -578,12 +632,14 @@ class TrajCleaningAgent:
             predicted_effects={str(k): str(v) for k, v in predicted.items()},
             baseline_metrics=baseline_metrics,
             observed_metrics=observed,
-            input_clamped_params=input_clamped_params,
+            input_rounded_params=(param_audit.rounded_params if param_audit else None),
+            input_out_of_bounds_params=(
+                param_audit.out_of_bounds_params if param_audit else None),
+            input_invalid_params=(param_audit.invalid_params if param_audit else None),
             regret_threshold=self.regret_threshold,
         )
 
-    def _run_search(self, handle: str,
-                    seed: Dict[str, float]) -> search_mod.SearchTrace:
+    def _run_search(self, handle: str) -> search_mod.SearchTrace:
         """从默认参数开始坐标下降，得到同一内部目标下的参考最优分。"""
         cache: Dict[str, float] = {}
 
@@ -599,9 +655,8 @@ class TrajCleaningAgent:
             cache[key] = s
             return s
 
-        names = [n for n in ("dp_tolerance", "dt_threshold", "max_speed_mps")
-                 if n in params_mod.PARAM_SPECS]
-        default_params = params_mod.default_params()
+        names = list(params_mod.ACTIVE_EXECUTION_PARAMS)
+        default_params = params_mod.active_default_params()
         # 固定参照系：物理先验默认参数的分数。归一化 regret 的分母用它，
         # 保证「可提升空间」不随提议而变化，regret 才能跨轨迹比较。
         trace = search_mod.coordinate_descent(
@@ -610,12 +665,6 @@ class TrajCleaningAgent:
         trace.baseline_score = evaluator(default_params)
         trace.baseline_params = dict(default_params)
 
-        # 起点：把提议值也纳入评估，保证「最优」不会比提议还差（公平比较）
-        start = params_mod.clamp_params({**default_params, **seed})[0]
-        prop_score = evaluator(start)
-        if prop_score > trace.best_score:
-            trace.best_score = prop_score
-            trace.best_params = dict(start)
         return trace
 
     # ---- 辅助 -----------------------------------------------------------

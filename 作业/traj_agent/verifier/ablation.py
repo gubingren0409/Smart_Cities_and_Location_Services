@@ -24,17 +24,24 @@ from ..memory.store import MemoryStore
 from ..tools.registry import ToolRegistry, attach_dataset
 from . import verify as verify_mod
 
-# 四种模式的配置。regret_threshold 用于 phase 1 的准入，
+# 工作流组件消融配置。Search 在 LLM 模式中只作为 verifier/reference，
+# 不会修改 LLM proposal；det-search-output 才把搜索结果作为最终输出。
 # 设得合理（而非 1.0）才能让 access 门控真正起作用。
 MODE_SPECS: Dict[str, Dict[str, Any]] = {
     "llm-only": dict(use_llm=True, use_memory=False, use_search=False,
-                     regret_threshold=0.05),
-    "search-only": dict(use_llm=False, use_memory=False, use_search=True,
-                        regret_threshold=0.05),
-    "llm+search": dict(use_llm=True, use_memory=False, use_search=True,
-                       regret_threshold=0.05),
-    "llm+memory+search": dict(use_llm=True, use_memory=True, use_search=True,
-                              regret_threshold=0.05),
+                     regret_threshold=0.05, proposal_policy="proposal"),
+    "prior-only+search-verifier": dict(
+        use_llm=False, use_memory=False, use_search=True,
+        regret_threshold=0.05, proposal_policy="prior"),
+    "det-search-output": dict(
+        use_llm=False, use_memory=False, use_search=True,
+        regret_threshold=0.05, proposal_policy="deterministic-search"),
+    "llm+search-verifier": dict(
+        use_llm=True, use_memory=False, use_search=True,
+        regret_threshold=0.05, proposal_policy="proposal"),
+    "llm+memory+search-verifier": dict(
+        use_llm=True, use_memory=True, use_search=True,
+        regret_threshold=0.05, proposal_policy="proposal"),
 }
 
 
@@ -81,17 +88,19 @@ def run_ablation(raw: Dict[str, Any],
                       holdout_vehicles=list(holdout_vehicles))
 
     # ---------- phase 1：在 demo 集上积累记忆 ----------
-    # 只有 llm+memory+search 模式写入记忆；其余模式不写，
+    # 只有 llm+memory+search-verifier 模式写入记忆；其余模式不写，
     # 否则「无记忆」模式会因为别人写的记忆而受益，混淆归因。
     mem = MemoryStore(memory_path)
     writer = TrajCleaningAgent(llm=llm, memory=mem,
                                vault_dir=vault_dir,
-                               mode="llm+memory+search",
-                               **MODE_SPECS["llm+memory+search"])
+                               mode="llm+memory+search-verifier",
+                               **MODE_SPECS["llm+memory+search-verifier"])
     writer.attach_dataset(raw)
     for vid in demo_vehicles:
         writer.run(vid)
-    mem.rebuild_procedural(min_samples=1)
+    from ..core import params as params_mod
+    mem.rebuild_procedural(
+        param_names=params_mod.ACTIVE_EXECUTION_PARAMS, min_samples=3)
     out.memory_stats = mem.stats()
 
     # ---------- phase 2：在 holdout 集上评测（不再写入） ----------
@@ -141,7 +150,9 @@ def run_ablation(raw: Dict[str, Any],
         "**regret 口径随模式变化**：关闭搜索时为绝对口径（该模式可达上限即基线），",
         "不可与含搜索模式的归一化 regret 直接比较。跨模式结论请用",
         "mean_gap_to_baseline 与 baseline_beaten_rate —— 这两列是绝对口径，恒可比。",
-        "search-only 不含任何 LLM 调用（use_llm=False），是纯确定性基线。",
+        "prior-only+search-verifier 不调用 LLM，proposal 来自物理/数据先验；search 仅作参考。",
+        "det-search-output 不调用 LLM，并把确定性搜索参考参数作为最终输出。",
+        "含 search-verifier 的 LLM 模式不会用搜索修改 proposal。",
     ]
     if mem.path != ":memory:":
         mem.close()

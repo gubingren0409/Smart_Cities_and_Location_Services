@@ -162,6 +162,21 @@ def test_search_records_baseline_fields():
     assert tr.to_dict()["baseline_score"] == 0.42
 
 
+def test_proposal_better_than_search_does_not_overwrite_pure_search():
+    trace = search_mod.SearchTrace(method="bounded-search-reference")
+    trace.baseline_score = 0.5
+    trace.record({"dp_tolerance": 5.0}, 0.7)
+    prop = _obj(score=0.8, feasible=True)
+    base = _obj(score=0.5, feasible=True)
+    result = verify_mod.verify_proposal(
+        {"dp_tolerance": 8.0}, prop, base, trace)
+    assert trace.best_score == pytest.approx(0.7)
+    assert result.deterministic_search_best_score == pytest.approx(0.7)
+    assert result.proposal_minus_search_score == pytest.approx(0.1)
+    assert result.best_score == pytest.approx(0.8)
+    assert result.best_observed_source == "proposal"
+
+
 def test_linspace_integer_dedupes():
     vals = search_mod.linspace(15, 16, 5, integer=True)
     assert vals == [15.0, 16.0]
@@ -238,17 +253,17 @@ def test_admission_gate_accepts_good_proposal():
     assert res.regret < 0.05
 
 
-def test_admission_gate_accepts_inapplicable_by_constraint_only():
-    """目标函数不适用时（静止轨迹）按约束合规性准入，不要求 regret。"""
+def test_admission_gate_keeps_inapplicable_out_of_retrievable_memory():
+    """缺少静止语义核验时，只保留 L1，不进入可检索 Memory/L2。"""
     prop = _obj(score=0.0, feasible=False, applicable=False)
     base = _obj(score=0.0, feasible=False, applicable=False)
     tr = search_mod.SearchTrace(method="t")
     tr.baseline_score = 0.0
     tr.record({"dp_tolerance": 0.5}, 0.0)
     res = verify_mod.verify_proposal({"dp_tolerance": 0.5}, prop, base, tr)
-    assert res.admitted
+    assert not res.admitted
     assert res.regret_basis == "not_applicable"
-    assert "不适用" in res.admit_reason
+    assert "仅保留L1" in res.admit_reason
 
 
 def test_admission_gate_rejects_out_of_range_params():

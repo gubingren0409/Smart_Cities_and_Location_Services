@@ -18,7 +18,7 @@ class ExplodingProvider:
     name = "must-not-be-called"
 
     def chat(self, messages, tools=None):
-        raise AssertionError("search-only 不应调用 LLM")
+        raise AssertionError("无 LLM 模式不应调用 LLM")
 
 
 def test_checkpoint_roundtrip(tmp_path):
@@ -26,12 +26,12 @@ def test_checkpoint_roundtrip(tmp_path):
     row = {
         "phase": "holdout",
         "repetition": 1,
-        "mode": "search-only",
+        "mode": "prior-only+search-verifier",
         "vehicle_id": "2",
     }
     append_jsonl(path, row)
     assert read_jsonl(path) == [row]
-    assert case_key(row) == ("holdout", 1, "search-only", "2")
+    assert case_key(row) == ("holdout", 1, "prior-only+search-verifier", "2")
 
 
 def test_candidate_manifest_is_nested_and_disjoint(real_raw):
@@ -47,11 +47,11 @@ def test_candidate_manifest_is_nested_and_disjoint(real_raw):
     assert len(ids48) == len(set(ids48)) == 48
 
 
-def test_runner_search_only_has_zero_llm_calls(real_raw):
+def test_runner_prior_only_has_zero_llm_calls(real_raw):
     row, _ = run_case(
         real_raw,
         "153",
-        "search-only",
+        "prior-only+search-verifier",
         repetition=1,
         phase="holdout",
         base_provider=ExplodingProvider(),
@@ -71,7 +71,7 @@ def test_runner_holdout_does_not_write_memory(real_raw):
     row, _ = run_case(
         real_raw,
         "153",
-        "llm+memory+search",
+        "llm+memory+search-verifier",
         repetition=1,
         phase="holdout",
         base_provider=prov.MockProvider(),

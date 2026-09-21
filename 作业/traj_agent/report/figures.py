@@ -394,7 +394,7 @@ def plot_ablation(rows: Sequence[Dict[str, Any]],
     ax1.set_xticklabels([f"{m}\n(n={c})" for m, c in zip(modes, n)],
                         rotation=20, fontsize=8)
     ax1.set_ylabel(lab("平均 regret", "mean regret"))
-    ax1.set_title(lab("各方案相对确定性搜索最优的差距（越小越好）",
+    ax1.set_title(lab("各方案相对有界确定性搜索参考的差距（越小越好）",
                       "Regret vs deterministic optimum (lower is better)"))
     ax1.grid(alpha=0.3, axis="y")
 

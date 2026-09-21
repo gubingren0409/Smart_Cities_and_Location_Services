@@ -8,7 +8,7 @@
 1. 约束满足  —— 提议是否落在物理先验区间内（越界即夹紧并记录）
 2. 可行性    —— 是否违反长度/偏差硬约束
 3. 方向一致  —— LLM 预测的升降方向与实测符号是否一致
-4. regret    —— 相对确定性搜索最优解的差距（关键判据）
+4. regret    —— 相对本次已观测最佳结果的差距（关键判据）
 5. 样本效率  —— 达到最优 95% 所需的评估次数
 """
 from __future__ import annotations
@@ -84,6 +84,9 @@ class VerificationResult:
 
     # 约束
     clamped_params: List[str] = field(default_factory=list)
+    rounded_params: List[str] = field(default_factory=list)
+    out_of_bounds_params: List[str] = field(default_factory=list)
+    invalid_params: List[str] = field(default_factory=list)
     constraint_ok: bool = True
 
     # 可行性
@@ -94,6 +97,9 @@ class VerificationResult:
     proposal_score: float = 0.0
     baseline_score: float = 0.0
     best_score: float = 0.0
+    best_observed_source: str = ""
+    deterministic_search_best_score: float = 0.0
+    proposal_minus_search_score: float = 0.0
     regret: float = 0.0                 # best - proposal（>=0 表示不如最优）
 
     # 方向
@@ -119,11 +125,19 @@ class VerificationResult:
         return {
             "constraint_ok": self.constraint_ok,
             "clamped_params": list(self.clamped_params),
+            "rounded_params": list(self.rounded_params),
+            "out_of_bounds_params": list(self.out_of_bounds_params),
+            "invalid_params": list(self.invalid_params),
             "feasible": self.feasible,
             "violations": list(self.violations),
             "proposal_score": round(self.proposal_score, 6),
             "baseline_score": round(self.baseline_score, 6),
             "best_score": round(self.best_score, 6),
+            "best_observed_source": self.best_observed_source,
+            "deterministic_search_best_score": round(
+                self.deterministic_search_best_score, 6),
+            "proposal_minus_search_score": round(
+                self.proposal_minus_search_score, 6),
             "regret": round(self.regret, 6),
             "regret_basis": self.regret_basis,
             "applicable": self.applicable,
@@ -197,6 +211,9 @@ def verify_proposal(proposal_params: Dict[str, float],
                     baseline_metrics: Optional[Dict[str, float]] = None,
                     observed_metrics: Optional[Dict[str, float]] = None,
                     input_clamped_params: Optional[Sequence[str]] = None,
+                    input_rounded_params: Optional[Sequence[str]] = None,
+                    input_out_of_bounds_params: Optional[Sequence[str]] = None,
+                    input_invalid_params: Optional[Sequence[str]] = None,
                     regret_threshold: float = 0.05) -> VerificationResult:
     """核验一条建议，并判定是否准予写入记忆。
 
@@ -213,15 +230,30 @@ def verify_proposal(proposal_params: Dict[str, float],
     res = VerificationResult()
     res.proposal_score = float(proposal_objective.score)
     res.baseline_score = float(baseline_objective.score)
-    res.best_score = float(search_trace.best_score)
+    res.deterministic_search_best_score = float(search_trace.best_score)
+    res.proposal_minus_search_score = (
+        res.proposal_score - res.deterministic_search_best_score)
+    if res.proposal_score > res.deterministic_search_best_score:
+        res.best_score = res.proposal_score
+        res.best_observed_source = "proposal"
+    else:
+        res.best_score = res.deterministic_search_best_score
+        res.best_observed_source = (
+            "baseline" if search_trace.method == "disabled"
+            else "deterministic-search")
 
     # 1) 约束满足：提议参数是否越界
-    _, clamped = params_mod.clamp_params(proposal_params)
-    # proposal_params 在 agent 执行前已经夹紧，如果只在这里重新
-    # 检查，就会丢失 LLM 原始输出越界的事实。调用方因此显式传入
-    # 执行前夹紧的参数名，用于约束违规率和记忆准入判定。
-    res.clamped_params = sorted(set(clamped) | set(input_clamped_params or ()))
-    res.constraint_ok = len(res.clamped_params) == 0
+    _, post_execution_oob = params_mod.clamp_params(proposal_params)
+    # ``input_clamped_params`` 仅为旧调用方兼容别名；新代码分别记录取整、
+    # 真越界和非法值。合法整数取整不影响 constraint_ok。
+    res.rounded_params = sorted(set(input_rounded_params or ()))
+    res.out_of_bounds_params = sorted(
+        set(post_execution_oob)
+        | set(input_clamped_params or ())
+        | set(input_out_of_bounds_params or ()))
+    res.invalid_params = sorted(set(input_invalid_params or ()))
+    res.clamped_params = list(res.out_of_bounds_params)
+    res.constraint_ok = not res.out_of_bounds_params and not res.invalid_params
 
     # 2) 可行性
     res.feasible = bool(proposal_objective.feasible)
@@ -257,22 +289,21 @@ def verify_proposal(proposal_params: Dict[str, float],
     # 6) 记忆准入闸门：三条同时满足才准入
     reasons: List[str] = []
     if not res.applicable:
-        # 目标函数不适用：改按「参数是否落在物理先验内 + 未违规」判定，
-        # 不再要求 regret —— 对静止轨迹要求 regret 是没有意义的。
-        if res.constraint_ok:
-            res.admitted = True
-            res.admit_reason = (
-                f"目标函数不适用（{res.inapplicable_reason}）；"
-                "参数合规且无硬约束违规，按 regime 正确性准入")
-        else:
-            res.admitted = False
-            res.admit_reason = (
-                f"目标函数不适用且参数越界: {', '.join(res.clamped_params)}")
+        # 尚无独立 stationary validator。这类案例保留在 L1 审计账本，
+        # 但不准入可检索案例，也不参与 L2 参数区间蒸馏。
+        res.admitted = False
+        detail = (", ".join(res.out_of_bounds_params + res.invalid_params)
+                  if not res.constraint_ok else "参数虽合规但缺少独立静止语义核验")
+        res.admit_reason = (
+            f"目标函数不适用（{res.inapplicable_reason}）；仅保留L1，"
+            f"不进入可检索Memory/L2：{detail}")
         return res
     if not res.feasible:
         reasons.append("提议不可行（违反长度或偏差约束）")
     if not res.constraint_ok:
-        reasons.append(f"参数越界被夹紧: {', '.join(res.clamped_params)}")
+        reasons.append(
+            "参数越界或非法: "
+            + ", ".join(res.out_of_bounds_params + res.invalid_params))
     # 口径不同则阈值不同：绝对口径下要求提议与最优的分数差小于绝对容差
     effective_threshold = (regret_threshold if res.regret_basis == "normalized"
                            else ABSOLUTE_REGRET_TOL)
@@ -291,7 +322,7 @@ def verify_proposal(proposal_params: Dict[str, float],
 
 
 def ablation_summary(cases: Sequence[Dict[str, object]]) -> List[Dict[str, object]]:
-    """消融表：对比 LLM-only / search-only / LLM+search / LLM+memory+search。
+    """按模式聚合工作流组件消融结果。
 
     **关于跨模式可比性（重要）**
 

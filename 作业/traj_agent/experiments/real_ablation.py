@@ -1,4 +1,4 @@
-"""真实 OpenAI 兼容模型的四模式消融实验。
+"""真实 OpenAI 兼容模型的工作流组件消融实验。
 
 Notebook 只运行 Mock 演示；本模块顺序调用真实模型。每个 case 完成后
 立即追加 JSONL 并 fsync。恢复时按 phase/repetition/mode/vehicle_id
@@ -32,7 +32,13 @@ STAGE1_DEMO = ["0", "1", "3", "7", "18", "62", "68", "129",
                "101", "149", "170", "187"]
 STAGE1_HOLDOUT = ["2", "4", "10", "22", "111", "137", "153", "154",
                   "165", "194", "201", "208"]
-MODES = ["llm-only", "search-only", "llm+search", "llm+memory+search"]
+MODES = [
+    "llm-only",
+    "prior-only+search-verifier",
+    "det-search-output",
+    "llm+search-verifier",
+    "llm+memory+search-verifier",
+]
 STRATA = [(r, t) for r in ("stationary", "mixed", "moving")
           for t in ("ok", "degraded")]
 DEFAULT_SEED = 20260921
@@ -160,7 +166,13 @@ def result_row(result: Any, totals: Mapping[str, Any], *, phase: str,
         "provider": "OpenAICompatProvider",
         "model": model,
         "proposal_source": source,
+        "raw_proposal_params": d.get("raw_proposal_params") or {},
+        "normalized_proposal_params": d.get("normalized_proposal_params") or {},
+        "execution_params": d.get("execution_params") or {},
         "proposal_params": d.get("proposal_params") or {},
+        "rounded_params": verification.get("rounded_params") or [],
+        "out_of_bounds_params": verification.get("out_of_bounds_params") or [],
+        "invalid_params": verification.get("invalid_params") or [],
         "expected_effect": raw_proposal.get("expected_effect") or {},
         "rationale": str(raw_proposal.get("rationale") or ""),
         "constraint_ok": verification.get("constraint_ok"),
@@ -170,6 +182,11 @@ def result_row(result: Any, totals: Mapping[str, Any], *, phase: str,
         "proposal_score": verification.get("proposal_score"),
         "baseline_score": verification.get("baseline_score"),
         "best_score": verification.get("best_score"),
+        "best_observed_source": verification.get("best_observed_source"),
+        "deterministic_search_best_score": verification.get(
+            "deterministic_search_best_score"),
+        "proposal_minus_search_score": verification.get(
+            "proposal_minus_search_score"),
         "regret": verification.get("regret"),
         "regret_basis": verification.get("regret_basis"),
         "direction_accuracy": verification.get("direction_accuracy"),
@@ -356,6 +373,18 @@ def build_config(repo_dir: Path, provider: Any, repetitions: int,
                  seed: int) -> Dict[str, Any]:
     return {
         "git_commit_sha": git_sha(repo_dir),
+        "parent_experiment": "../llm_assisted_ecnu_20260921",
+        "parent_experiment_head": "e3b3a3bea8a9212f9406b46d531b1bf8d2ef61df",
+        "changed_semantics": [
+            "integer rounding separated from true bound violations",
+            "raw/normalized/execution proposal parameters retained",
+            "pure deterministic search separated from best-observed",
+            "active parameter space aligned across LLM/Search/Verifier/Memory",
+            "runtime removed from primary quality score and unavailable road weight removed",
+            "inapplicable stationary cases retained in L1 but excluded from retrievable Memory/L2",
+            "vehicle-cluster bootstrap and min_samples=3 procedural memory",
+            "search-verifier modes explicitly named; deterministic output mode added",
+        ],
         "date": date.today().isoformat(),
         "provider": "OpenAICompatProvider",
         "model": str(getattr(provider, "model", "")),
@@ -370,16 +399,18 @@ def build_config(repo_dir: Path, provider: Any, repetitions: int,
         "modes": {k: dict(MODE_SPECS[k]) for k in MODES},
         "tool_subset": list(ESSENTIAL_TOOLS),
         "direct_first": True,
+        "active_execution_params": list(params_mod.ACTIVE_EXECUTION_PARAMS),
         "search_budget": {
             "method": "coordinate_descent",
             "start": "default_params",
-            "dimensions": [
-                "dp_tolerance", "dt_threshold", "max_speed_mps"
-            ],
+            "dimensions": list(params_mod.ACTIVE_EXECUTION_PARAMS),
             "n_steps": 5,
             "rounds": 3,
             "max_evals": 60,
-            "note": "LLM候选独立执行；搜索从默认参数开始建立内部参考。",
+            "note": (
+                "LLM候选独立执行；搜索从默认参数开始建立内部参考，"
+                "不修改LLM proposal。仅det-search-output输出搜索参数。"
+            ),
         },
         "regret_threshold": 0.05,
         "objective": {
@@ -389,8 +420,10 @@ def build_config(repo_dir: Path, provider: Any, repetitions: int,
             "fidelity_scale_m": 30.0,
             "warning": "确定性搜索是内部目标参考，不是现实道路真值。",
         },
-        "parameter_defaults": params_mod.default_params(),
-        "parameter_bounds": params_mod.param_bounds_table(),
+        "parameter_defaults": params_mod.active_default_params(),
+        "parameter_bounds": params_mod.param_bounds_table(
+            params_mod.ACTIVE_EXECUTION_PARAMS),
+        "procedural_memory_min_samples": 3,
     }
 
 
@@ -415,7 +448,7 @@ def hydrate_memory(store: MemoryStore, raw: Dict[str, Any],
             verification=dict(row.get("verification") or {}),
             admitted=bool(row.get("admitted")),
             admit_reason=str(row.get("admit_reason") or ""),
-            mode="llm+memory+search",
+            mode="llm+memory+search-verifier",
             run_id=f"ecnu-r{repetition}-demo",
             score=row.get("proposal_score"),
             regret=row.get("regret"),
@@ -517,11 +550,11 @@ def run_experiment(
         hydrate_memory(memory, raw, rows, rep)
 
         for vid in STAGE1_DEMO:
-            key = ("demo", rep, "llm+memory+search", vid)
+            key = ("demo", rep, "llm+memory+search-verifier", vid)
             if key in completed:
                 continue
             row, _ = run_case(
-                raw, vid, "llm+memory+search", rep, "demo",
+                raw, vid, "llm+memory+search-verifier", rep, "demo",
                 base_provider, memory, max_retries, backoff_s,
             )
             if not row["error"] and row["agent_ok"]:
@@ -534,7 +567,7 @@ def run_experiment(
                     verification=row["verification"],
                     admitted=bool(row["admitted"]),
                     admit_reason=row["admit_reason"],
-                    mode="llm+memory+search",
+                    mode="llm+memory+search-verifier",
                     run_id=f"ecnu-r{rep}-demo",
                     score=row["proposal_score"],
                     regret=row["regret"],
@@ -548,7 +581,10 @@ def run_experiment(
                 flush=True,
             )
 
-        memory.rebuild_procedural(min_samples=1)
+        memory.rebuild_procedural(
+            param_names=params_mod.ACTIVE_EXECUTION_PARAMS,
+            min_samples=3,
+        )
         rows = read_jsonl(results_path)
         demo_rows = [
             r for r in rows

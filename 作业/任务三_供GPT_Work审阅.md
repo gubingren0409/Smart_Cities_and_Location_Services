@@ -51,7 +51,7 @@
 
 三种 LLM 模式的 JSON 成功率均为 100%。`llm-only` 与 Memory 模式各有 2 条记录的 `dt_threshold` 超界并在执行前截断，原始超界事实仍保存在核验记录中。
 
-以上表格的主比较量是 `proposal_score - baseline_score`。搜索开关会改变 regret 的参考口径，所以不能用四种模式的平均 regret 排名。`search-only` 行描述其数据驱动 proposal 相对固定默认值的表现；确定性搜索最优另由 verifier 用作内部参考。
+以上表格的主比较量是 `proposal_score - baseline_score`。搜索开关会改变 regret 的参考口径，所以不能用四种模式的平均 regret 排名。`search-only` 行描述其数据驱动 proposal 相对固定默认值的表现；有界确定性搜索结果另由 verifier 用作内部参考。
 
 ## 5. Memory 结果与证据覆盖
 

@@ -11,7 +11,8 @@
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+import math
 from typing import Dict, List, Optional, Sequence, Tuple
 
 from . import geo
@@ -125,6 +126,42 @@ PARAM_SPECS: Dict[str, ParamSpec] = {
     ),
 }
 
+# 主实验只开放这三个会进入当前 ``denoise -> simplify`` 执行链的参数。
+# 其余参数仍保留在通用参数表中，但在本轮 Agent / Search / Memory 比较中固定
+# 为默认值，避免出现“LLM 能提议、执行器却不读取”的假自由度。
+ACTIVE_EXECUTION_PARAMS: Tuple[str, ...] = (
+    "dp_tolerance",
+    "dist_threshold",
+    "max_speed_mps",
+)
+
+
+@dataclass(frozen=True)
+class ParamNormalization:
+    """参数从模型原始输出到执行值的可审计转换。"""
+
+    raw_params: Dict[str, object] = field(default_factory=dict)
+    normalized_params: Dict[str, float] = field(default_factory=dict)
+    execution_params: Dict[str, float] = field(default_factory=dict)
+    rounded_params: List[str] = field(default_factory=list)
+    out_of_bounds_params: List[str] = field(default_factory=list)
+    invalid_params: List[str] = field(default_factory=list)
+
+    @property
+    def constraint_ok(self) -> bool:
+        return not self.out_of_bounds_params and not self.invalid_params
+
+    def to_dict(self) -> Dict[str, object]:
+        return {
+            "raw_params": dict(self.raw_params),
+            "normalized_params": dict(self.normalized_params),
+            "execution_params": dict(self.execution_params),
+            "rounded_params": list(self.rounded_params),
+            "out_of_bounds_params": list(self.out_of_bounds_params),
+            "invalid_params": list(self.invalid_params),
+            "constraint_ok": self.constraint_ok,
+        }
+
 
 def get_spec(name: str) -> ParamSpec:
     if name not in PARAM_SPECS:
@@ -132,31 +169,79 @@ def get_spec(name: str) -> ParamSpec:
     return PARAM_SPECS[name]
 
 
-def default_params() -> Dict[str, float]:
-    return {k: v.default for k, v in PARAM_SPECS.items()}
+def default_params(only: Optional[Sequence[str]] = None) -> Dict[str, float]:
+    names = list(only) if only is not None else list(PARAM_SPECS)
+    return {k: PARAM_SPECS[k].default for k in names if k in PARAM_SPECS}
+
+
+def active_default_params() -> Dict[str, float]:
+    return default_params(ACTIVE_EXECUTION_PARAMS)
+
+
+def normalize_params(params: Dict[str, object],
+                     only: Optional[Sequence[str]] = None,
+                     fill_defaults: bool = True) -> ParamNormalization:
+    """区分类型规范化、整数取整、边界夹紧与最终执行值。
+
+    合法区间内的整数取整只进入 ``rounded_params``，不构成约束违规。
+    只有原始数值越界或无法转换为有限数值时才会令 ``constraint_ok`` 为假。
+    """
+    names = list(only) if only is not None else list(params)
+    raw = {name: params[name] for name in names if name in params}
+    normalized: Dict[str, float] = {}
+    execution: Dict[str, float] = {}
+    rounded: List[str] = []
+    out_of_bounds: List[str] = []
+    invalid: List[str] = []
+
+    for name in names:
+        spec = PARAM_SPECS.get(name)
+        if spec is None:
+            if name in params:
+                invalid.append(name)
+            continue
+        value = params.get(name, spec.default if fill_defaults else None)
+        if value is None:
+            continue
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError):
+            invalid.append(name)
+            numeric = float(spec.default)
+        if not math.isfinite(numeric):
+            invalid.append(name)
+            numeric = float(spec.default)
+
+        normalized_value = float(round(numeric)) if spec.integer else numeric
+        if spec.integer and abs(normalized_value - numeric) > 1e-12:
+            rounded.append(name)
+        normalized[name] = normalized_value
+
+        if numeric < spec.low or numeric > spec.high:
+            out_of_bounds.append(name)
+        execution[name] = max(spec.low, min(spec.high, normalized_value))
+
+    return ParamNormalization(
+        raw_params=raw,
+        normalized_params=normalized,
+        execution_params=execution,
+        rounded_params=sorted(set(rounded)),
+        out_of_bounds_params=sorted(set(out_of_bounds)),
+        invalid_params=sorted(set(invalid)),
+    )
 
 
 def clamp_params(params: Dict[str, float],
                  only: Optional[Sequence[str]] = None) -> Tuple[Dict[str, float], List[str]]:
-    """把参数夹到合法区间，返回 (结果, 被夹紧的参数名列表)。
+    """把参数转为执行值，返回 (结果, 真正越界的参数名列表)。
 
-    这是 verifier 的「约束满足率」判据来源，也是防止 LLM 给出
-    dp_tolerance=500 这类建议的第一道闸门。
+    合法的小数整数参数会取整，但不会被记为越界。
     """
-    out = dict(params)
-    clamped: List[str] = []
     names = list(only) if only is not None else list(params.keys())
-    for name in names:
-        if name not in params:
-            continue
-        spec = PARAM_SPECS.get(name)
-        if spec is None:
-            continue
-        val = spec.clamp(params[name])
-        if float(params[name]) != float(val):
-            clamped.append(name)
-        out[name] = val
-    return out, sorted(set(clamped))
+    audit = normalize_params(params, only=names, fill_defaults=False)
+    out = dict(params)
+    out.update(audit.execution_params)
+    return out, list(audit.out_of_bounds_params)
 
 
 def validate_params(params: Dict[str, float]) -> List[str]:
@@ -174,9 +259,10 @@ def validate_params(params: Dict[str, float]) -> List[str]:
     return problems
 
 
-def param_bounds_table() -> List[Dict[str, object]]:
+def param_bounds_table(only: Optional[Sequence[str]] = None) -> List[Dict[str, object]]:
     """给 LLM 看的参数区间表。"""
-    return [spec.to_dict() for spec in PARAM_SPECS.values()]
+    names = list(only) if only is not None else list(PARAM_SPECS)
+    return [PARAM_SPECS[name].to_dict() for name in names if name in PARAM_SPECS]
 
 
 def data_driven_priors(dt_values: Sequence[float],

@@ -6,7 +6,7 @@ import math
 import random
 import statistics
 from pathlib import Path
-from typing import Any, Dict, Mapping, Optional, Sequence
+from typing import Any, Callable, Dict, Mapping, Optional, Sequence
 
 from .real_ablation import (
     DEFAULT_SEED, MODES, STAGE1_HOLDOUT, STRATA, atomic_json, read_jsonl,
@@ -42,6 +42,62 @@ def stats(values: Sequence[float], seed: int = DEFAULT_SEED) -> Dict[str, Any]:
     }
 
 
+def cluster_bootstrap_ci(rows: Sequence[Mapping[str, Any]],
+                         value_fn: Callable[[Mapping[str, Any]], Optional[float]],
+                         seed: int = DEFAULT_SEED,
+                         n_boot: int = 4000) -> Optional[list[float]]:
+    """以 vehicle 为独立抽样单位，抽中车辆时纳入它的全部 repetition。"""
+    clusters: Dict[str, list[float]] = {}
+    for row in rows:
+        value = value_fn(row)
+        if value is None or not math.isfinite(float(value)):
+            continue
+        clusters.setdefault(str(row.get("vehicle_id")), []).append(float(value))
+    vehicle_ids = sorted(clusters)
+    if not vehicle_ids:
+        return None
+    if len(vehicle_ids) == 1:
+        mean = sum(clusters[vehicle_ids[0]]) / len(clusters[vehicle_ids[0]])
+        return [mean, mean]
+    rng = random.Random(seed)
+    means = []
+    for _ in range(n_boot):
+        sampled = [rng.choice(vehicle_ids) for _ in vehicle_ids]
+        values = [value for vid in sampled for value in clusters[vid]]
+        means.append(sum(values) / len(values))
+    means.sort()
+    return [
+        means[int(0.025 * (len(means) - 1))],
+        means[int(0.975 * (len(means) - 1))],
+    ]
+
+
+def cluster_stats(rows: Sequence[Mapping[str, Any]],
+                  value_fn: Callable[[Mapping[str, Any]], Optional[float]],
+                  seed: int = DEFAULT_SEED) -> Dict[str, Any]:
+    values = []
+    vehicle_ids = set()
+    repetitions = set()
+    for row in rows:
+        value = value_fn(row)
+        if value is None or not math.isfinite(float(value)):
+            continue
+        values.append(float(value))
+        vehicle_ids.add(str(row.get("vehicle_id")))
+        repetitions.add(int(row.get("repetition", 0)))
+    return {
+        "n": len(values),
+        "observation_n": len(values),
+        "unique_vehicle_n": len(vehicle_ids),
+        "repetitions": len(repetitions),
+        "mean": (sum(values) / len(values)) if values else None,
+        "median": statistics.median(values) if values else None,
+        "bootstrap_95_ci": cluster_bootstrap_ci(
+            rows, value_fn, seed=seed),
+        "bootstrap_unit": "vehicle_id",
+    }
+
+
 def summarize(experiment_dir: Path) -> Dict[str, Any]:
     config = json.loads(
         (experiment_dir / "config.json").read_text(encoding="utf-8")
@@ -58,15 +114,11 @@ def summarize(experiment_dir: Path) -> Dict[str, Any]:
         items = [r for r in holdout if r.get("mode") == mode]
         ok = [r for r in items if not r.get("error") and r.get("agent_ok")]
         applicable = [r for r in ok if r.get("applicable")]
-        deltas = [
-            float(r["proposal_score"]) - float(r["baseline_score"])
-            for r in applicable
-        ]
-        beaten = [1.0 if x > 1e-9 else 0.0 for x in deltas]
-        directions = [
-            r.get("direction_accuracy") for r in applicable
-            if r.get("direction_accuracy") is not None
-        ]
+        delta_fn = lambda r: (
+            float(r["proposal_score"]) - float(r["baseline_score"]))
+        beaten_fn = lambda r: 1.0 if delta_fn(r) > 1e-9 else 0.0
+        direction_rows = [
+            r for r in applicable if r.get("direction_accuracy") is not None]
         json_rows = [
             r for r in items if MODE_SPECS[mode].get("use_llm")
         ]
@@ -74,10 +126,13 @@ def summarize(experiment_dir: Path) -> Dict[str, Any]:
             "n_total": len(items),
             "n_success": len(ok),
             "n_applicable": len(applicable),
-            "score_delta": stats(deltas, DEFAULT_SEED + idx),
-            "baseline_beaten_rate": stats(
-                beaten, DEFAULT_SEED + 10 + idx
-            ),
+            "unique_vehicle_n": len({str(r["vehicle_id"]) for r in applicable}),
+            "observation_n": len(applicable),
+            "repetitions": len({int(r["repetition"]) for r in applicable}),
+            "score_delta": cluster_stats(
+                applicable, delta_fn, DEFAULT_SEED + idx),
+            "baseline_beaten_rate": cluster_stats(
+                applicable, beaten_fn, DEFAULT_SEED + 10 + idx),
             "constraint_violation_rate": (
                 sum(not bool(r.get("constraint_ok")) for r in ok) / len(ok)
                 if ok else None
@@ -90,9 +145,10 @@ def summarize(experiment_dir: Path) -> Dict[str, Any]:
                 sum(bool(r.get("json_success")) for r in json_rows)
                 / len(json_rows) if json_rows else None
             ),
-            "direction_accuracy": stats(
-                directions, DEFAULT_SEED + 20 + idx
-            ),
+            "direction_accuracy": cluster_stats(
+                direction_rows,
+                lambda r: float(r["direction_accuracy"]),
+                DEFAULT_SEED + 20 + idx),
             "llm_calls": sum(int(r.get("llm_calls") or 0) for r in items),
             "prompt_tokens": sum(
                 int(r.get("prompt_tokens") or 0) for r in items
@@ -100,10 +156,9 @@ def summarize(experiment_dir: Path) -> Dict[str, Any]:
             "completion_tokens": sum(
                 int(r.get("completion_tokens") or 0) for r in items
             ),
-            "latency_ms": stats(
-                [r.get("elapsed_ms") for r in items],
-                DEFAULT_SEED + 30 + idx,
-            ),
+            "latency_ms": cluster_stats(
+                items, lambda r: float(r.get("elapsed_ms") or 0.0),
+                DEFAULT_SEED + 30 + idx),
             "failure_rate": (
                 sum(bool(r.get("error")) for r in items) / len(items)
                 if items else None
@@ -128,11 +183,10 @@ def summarize(experiment_dir: Path) -> Dict[str, Any]:
                 and not r.get("error")
                 and r.get("applicable")
             ]
-            vals = [
-                float(r["proposal_score"]) - float(r["baseline_score"])
-                for r in items
-            ]
-            per_stratum[mode][f"{regime}/{timeline}"] = stats(vals)
+            per_stratum[mode][f"{regime}/{timeline}"] = cluster_stats(
+                items,
+                lambda r: float(r["proposal_score"]) - float(r["baseline_score"]),
+                DEFAULT_SEED + len(per_stratum[mode]))
 
     per_repetition: Dict[str, Any] = {}
     for rep in range(1, int(config["repetitions"]) + 1):
@@ -145,13 +199,10 @@ def summarize(experiment_dir: Path) -> Dict[str, Any]:
                 and not r.get("error")
                 and r.get("applicable")
             ]
-            vals = [
-                float(r["proposal_score"]) - float(r["baseline_score"])
-                for r in items
-            ]
-            per_repetition[str(rep)][mode] = stats(
-                vals, DEFAULT_SEED + rep
-            )
+            per_repetition[str(rep)][mode] = cluster_stats(
+                items,
+                lambda r: float(r["proposal_score"]) - float(r["baseline_score"]),
+                DEFAULT_SEED + rep)
 
     indexed = {
         (int(r["repetition"]), str(r["vehicle_id"]), str(r["mode"])): r
@@ -161,8 +212,8 @@ def summarize(experiment_dir: Path) -> Dict[str, Any]:
     paired_rows = []
     for rep in range(1, int(config["repetitions"]) + 1):
         for vid in STAGE1_HOLDOUT:
-            no_mem = indexed.get((rep, vid, "llm+search"))
-            mem = indexed.get((rep, vid, "llm+memory+search"))
+            no_mem = indexed.get((rep, vid, "llm+search-verifier"))
+            mem = indexed.get((rep, vid, "llm+memory+search-verifier"))
             if not no_mem or not mem:
                 continue
             diff = (
@@ -174,20 +225,34 @@ def summarize(experiment_dir: Path) -> Dict[str, Any]:
                 "vehicle_id": vid,
                 "score_difference_memory_minus_no_memory": diff,
             })
-    paired_vals = [
-        r["score_difference_memory_minus_no_memory"]
-        for r in paired_rows
+    by_vehicle: Dict[str, list[float]] = {}
+    for row in paired_rows:
+        by_vehicle.setdefault(str(row["vehicle_id"]), []).append(
+            float(row["score_difference_memory_minus_no_memory"]))
+    vehicle_means = [
+        {
+            "vehicle_id": vid,
+            "repetition_n": len(values),
+            "mean_score_difference": sum(values) / len(values),
+        }
+        for vid, values in sorted(by_vehicle.items())
     ]
+    paired_vals = [r["mean_score_difference"] for r in vehicle_means]
     paired = {
         "definition": (
-            "proposal_score(llm+memory+search) - "
-            "proposal_score(llm+search)"
+            "proposal_score(llm+memory+search-verifier) - "
+            "proposal_score(llm+search-verifier)"
         ),
         "stats": stats(paired_vals, DEFAULT_SEED + 99),
+        "bootstrap_unit": "vehicle_id after averaging repetitions",
+        "unique_vehicle_n": len(vehicle_means),
+        "observation_n": len(paired_rows),
+        "repetitions": int(config["repetitions"]),
         "wins": sum(x > 1e-9 for x in paired_vals),
         "ties": sum(abs(x) <= 1e-9 for x in paired_vals),
         "losses": sum(x < -1e-9 for x in paired_vals),
         "pairs": paired_rows,
+        "vehicle_means": vehicle_means,
     }
 
     calls = sum(int(r.get("llm_calls") or 0) for r in rows)
@@ -232,7 +297,7 @@ def summarize(experiment_dir: Path) -> Dict[str, Any]:
         }
 
     memory_rows = [
-        r for r in holdout if r.get("mode") == "llm+memory+search"
+        r for r in holdout if r.get("mode") == "llm+memory+search-verifier"
     ]
     neighbor_counts = [
         int(r.get("memory_neighbor_count") or 0) for r in memory_rows
@@ -276,6 +341,97 @@ def summarize(experiment_dir: Path) -> Dict[str, Any]:
         },
     }
 
+    proposal_vs_search: Dict[str, Any] = {}
+    for idx, mode in enumerate(MODES):
+        search_rows = [
+            r for r in holdout
+            if r.get("mode") == mode
+            and not r.get("error")
+            and r.get("applicable")
+            and r.get("proposal_minus_search_score") is not None
+            and MODE_SPECS[mode].get("use_search")
+        ]
+        proposal_vs_search[mode] = {
+            "signed_gap": cluster_stats(
+                search_rows,
+                lambda r: float(r["proposal_minus_search_score"]),
+                DEFAULT_SEED + 200 + idx),
+            "proposal_beats_search_rate": cluster_stats(
+                search_rows,
+                lambda r: 1.0 if float(r["proposal_minus_search_score"]) > 1e-9 else 0.0,
+                DEFAULT_SEED + 210 + idx),
+            "best_observed_source": {
+                source: sum(r.get("best_observed_source") == source for r in search_rows)
+                for source in ("proposal", "deterministic-search")
+            },
+        }
+
+    comparison: Dict[str, Any] = {
+        "available": False,
+        "note": "parent experiment summary unavailable",
+    }
+    parent_ref = config.get("parent_experiment")
+    if parent_ref:
+        parent_dir = (experiment_dir / str(parent_ref)).resolve()
+        parent_summary_path = parent_dir / "summary.json"
+        if parent_summary_path.exists():
+            parent = json.loads(parent_summary_path.read_text(encoding="utf-8"))
+            mode_map = {
+                "llm-only": "llm-only",
+                "search-only": "prior-only+search-verifier",
+                "llm+search": "llm+search-verifier",
+                "llm+memory+search": "llm+memory+search-verifier",
+            }
+            mode_changes = {}
+            for old_mode, new_mode in mode_map.items():
+                old = parent["mode_summary"][old_mode]
+                new = mode_summary[new_mode]
+                mode_changes[new_mode] = {
+                    "pre_fix_mode": old_mode,
+                    "pre_fix_score_delta_mean": old["score_delta"]["mean"],
+                    "post_fix_score_delta_mean": new["score_delta"]["mean"],
+                    "pre_fix_constraint_violation_rate": old[
+                        "constraint_violation_rate"],
+                    "post_fix_constraint_violation_rate": new[
+                        "constraint_violation_rate"],
+                    "pre_fix_prompt_tokens": old["prompt_tokens"],
+                    "post_fix_prompt_tokens": new["prompt_tokens"],
+                    "pre_fix_median_latency_ms": old["latency_ms"]["median"],
+                    "post_fix_median_latency_ms": new["latency_ms"]["median"],
+                }
+            old_mem_stats = [
+                d["stats"] for d in parent.get("memory_diagnostics", {}).values()]
+            new_mem_stats = [
+                d["stats"] for d in state.get("memory_diagnostics", {}).values()]
+            comparison = {
+                "available": True,
+                "parent_experiment": str(parent_dir),
+                "parent_head": config.get("parent_experiment_head"),
+                "mode_changes": mode_changes,
+                "memory": {
+                    "pre_fix_admitted_total": sum(
+                        int(x.get("n_admitted", 0)) for x in old_mem_stats),
+                    "post_fix_admitted_total": sum(
+                        int(x.get("n_admitted", 0)) for x in new_mem_stats),
+                    "pre_fix_regions_total": sum(
+                        int(x.get("n_procedural", 0)) for x in old_mem_stats),
+                    "post_fix_regions_total": sum(
+                        int(x.get("n_procedural", 0)) for x in new_mem_stats),
+                },
+                "paired_memory_effect": {
+                    "pre_fix_mean": parent["paired_memory_effect"]["stats"]["mean"],
+                    "pre_fix_ci_row_bootstrap": parent[
+                        "paired_memory_effect"]["stats"]["bootstrap_95_ci"],
+                    "post_fix_mean": paired["stats"]["mean"],
+                    "post_fix_ci_vehicle_cluster": paired[
+                        "stats"]["bootstrap_95_ci"],
+                },
+                "warning": (
+                    "修复前后目标函数、参数空间、模式语义和统计单位均已变化；"
+                    "数值仅用于追踪修复影响，不能解释为同一实验条件下的因果差异。"
+                ),
+            }
+
     return {
         "experiment": {
             "git_commit_sha": config["git_commit_sha"],
@@ -305,6 +461,8 @@ def summarize(experiment_dir: Path) -> Dict[str, Any]:
         },
         "mode_summary": mode_summary,
         "paired_memory_effect": paired,
+        "proposal_vs_deterministic_search": proposal_vs_search,
+        "pre_fix_comparison": comparison,
         "per_stratum": per_stratum,
         "per_repetition": per_repetition,
         "memory_diagnostics": state.get("memory_diagnostics", {}),
@@ -320,14 +478,15 @@ def summarize(experiment_dir: Path) -> Dict[str, Any]:
                 )
             }
             for r in holdout
-            if r.get("mode") == "llm+memory+search"
+            if r.get("mode") == "llm+memory+search-verifier"
         ],
         "expanded_demo_cost_estimates": estimates,
         "method_notes": [
             "跨模式不使用平均regret排名；主比较量为proposal_score-baseline_score。",
             "score统计只包含applicable=True且无运行错误的留出样本。",
-            "Bootstrap CI为样本级非参数区间，同时单独报告repetition波动。",
+            "Bootstrap CI以vehicle_id为cluster；同一车辆的repetition整组抽取。",
             "确定性搜索是与LLM候选分开的内部参考，不是现实道路真值。",
+            "不同LLM模式采用独立请求；模式差异同时包含组件差异与模型生成波动。",
         ],
     }
 
@@ -342,90 +501,124 @@ def write_report(experiment_dir: Path, summary: Mapping[str, Any]) -> None:
     exp = summary["experiment"]
     usage = summary["actual_usage"]
     lines = [
-        "# ECNU 真实模型轨迹清洗四模式消融实验",
+        "# ECNU 真实模型轨迹清洗工作流组件消融实验（修复版）",
         "",
-        "## 1. 实验设计",
+        "## 1. 实验设计与口径",
         "",
-        f"- Provider：{exp['provider']}，模型：{exp['model']}，Base URL：{exp['base_url']}。",
-        f"- 执行提交：{exp['git_commit_sha']}，重复 {exp['repetitions']} 轮。",
-        f"- 每轮 demo {exp['demo_n_per_repetition']} 条，holdout 每模式 {exp['holdout_n_per_mode_per_repetition']} 条，二者无重叠。",
-        "- 每轮使用新的记忆库；holdout 只读，不写回记忆。",
-        "- 搜索从物理默认参数开始，与 LLM 候选相互独立；Verifier 使用搜索结果作为内部参考。",
+        f"- Provider：{exp['provider']}，模型：{exp['model']}，执行提交：{exp['git_commit_sha']}。",
+        f"- 固定 12 条 demo、12 条 holdout、{exp['repetitions']} 次重复；demo 与 holdout 无重叠。",
+        "- 每轮重建记忆库，holdout 只读；L2 参数区间要求至少 3 条 admitted demo。",
+        "- 本实验比较工作流组件。带 `search-verifier` 的 LLM 模式中，Search 只提供内部参考，不修改 LLM proposal。",
+        "- `det-search-output` 才把有界确定性搜索结果作为最终输出；该参考不代表现实真值或绝对最优。",
+        "- 主质量分只含几何保真与压缩；runtime 单独报告，road 不可用时从分子和分母同时移除。",
         "",
         "## 2. 实际调用与可靠性",
         "",
-        (
-            f"共发起 {usage['llm_calls']} 次真实 LLM 请求，使用 "
-            f"{usage['prompt_tokens']} prompt tokens 和 "
-            f"{usage['completion_tokens']} completion tokens。所有 case "
-            f"累计墙钟时间 {usage['case_elapsed_s_sum']:.2f} s；失败 case "
-            f"{usage['failed_cases']} 个，case 级重试 {usage['retry_count']} 次，"
-            f"provider 错误 {usage['provider_error_count']} 次。"
-        ),
+        (f"共发起 {usage['llm_calls']} 次真实 LLM 请求，使用 {usage['prompt_tokens']} prompt tokens "
+         f"和 {usage['completion_tokens']} completion tokens。累计 case 墙钟时间 "
+         f"{usage['case_elapsed_s_sum']:.2f}s；失败 {usage['failed_cases']} 个，重试 "
+         f"{usage['retry_count']} 次，provider 错误 {usage['provider_error_count']} 次。"),
         "",
-        "## 3. 四模式主结果",
+        "## 3. 主结果",
         "",
-        "| 模式 | 适用 n | 相对基线平均得分变化 | 95% CI | 超过基线比例 | JSON成功率 | 约束违规率 | LLM调用 | 失败率 |",
+        "95% CI 使用 vehicle-cluster bootstrap：抽中一辆车时纳入该车全部 repetition。",
+        "",
+        "| 模式 | 独立车辆 | 观测行 | 重复 | 平均得分变化 | 95% CI | 超过默认参数比例 | 方向准确率 | LLM调用 |",
         "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for mode in MODES:
         item = summary["mode_summary"][mode]
-        ci = item["score_delta"]["bootstrap_95_ci"]
-        ci_text = (
-            "N/A" if ci is None
-            else f"[{fmt(ci[0])}, {fmt(ci[1])}]"
-        )
+        score = item["score_delta"]
+        ci = score["bootstrap_95_ci"]
+        ci_text = "N/A" if ci is None else f"[{fmt(ci[0])}, {fmt(ci[1])}]"
         lines.append(
-            f"| {mode} | {item['n_applicable']} | "
-            f"{fmt(item['score_delta']['mean'])} | {ci_text} | "
+            f"| {mode} | {score['unique_vehicle_n']} | {score['observation_n']} | "
+            f"{score['repetitions']} | {fmt(score['mean'])} | {ci_text} | "
             f"{fmt(item['baseline_beaten_rate']['mean'], 3)} | "
-            f"{fmt(item['json_success_rate'], 3)} | "
-            f"{fmt(item['constraint_violation_rate'], 3)} | "
-            f"{item['llm_calls']} | {fmt(item['failure_rate'], 3)} |"
-        )
+            f"{fmt(item['direction_accuracy']['mean'], 3)} | {item['llm_calls']} |")
+
+    lines += [
+        "",
+        "### LLM proposal 与纯确定性搜索参考",
+        "",
+        "| 模式 | 独立车辆 | proposal − search 平均值 | 95% CI | proposal 更高比例 |",
+        "|---|---:|---:|---:|---:|",
+    ]
+    for mode in MODES:
+        item = summary["proposal_vs_deterministic_search"].get(mode)
+        if not item or not item["signed_gap"]["observation_n"]:
+            continue
+        gap = item["signed_gap"]
+        ci = gap["bootstrap_95_ci"]
+        ci_text = "N/A" if ci is None else f"[{fmt(ci[0])}, {fmt(ci[1])}]"
+        lines.append(
+            f"| {mode} | {gap['unique_vehicle_n']} | {fmt(gap['mean'])} | "
+            f"{ci_text} | {fmt(item['proposal_beats_search_rate']['mean'], 3)} |")
 
     paired = summary["paired_memory_effect"]
     paired_ci = paired["stats"]["bootstrap_95_ci"]
-    paired_ci_text = (
-        "N/A" if paired_ci is None
-        else f"[{fmt(paired_ci[0])}, {fmt(paired_ci[1])}]"
-    )
+    paired_ci_text = "N/A" if paired_ci is None else f"[{fmt(paired_ci[0])}, {fmt(paired_ci[1])}]"
+    no_mem = summary["mode_summary"]["llm+search-verifier"]
+    mem = summary["mode_summary"]["llm+memory+search-verifier"]
     lines += [
         "",
-        "跨模式表不比较平均 regret，因为搜索开关会改变 regret 口径。",
+        "## 4. Memory 成本—收益联合评价",
         "",
-        "## 4. Memory 配对比较",
+        (f"按车辆先对三轮 paired difference 求平均，再以 {paired['unique_vehicle_n']} 辆独立车辆统计："
+         f"Memory − no-memory 平均 {fmt(paired['stats']['mean'])}，95% CI {paired_ci_text}；"
+         f"车辆级胜/平/负为 {paired['wins']}/{paired['ties']}/{paired['losses']}。"),
         "",
-        (
-            "llm+memory+search 减去 llm+search 的 proposal score "
-            f"平均差值为 {fmt(paired['stats']['mean'])}，中位数 "
-            f"{fmt(paired['stats']['median'])}，95% bootstrap CI "
-            f"{paired_ci_text}；胜/平/负为 "
-            f"{paired['wins']}/{paired['ties']}/{paired['losses']}。"
-        ),
+        "| 指标 | 无 Memory | 有 Memory |",
+        "|---|---:|---:|",
+        f"| LLM calls | {no_mem['llm_calls']} | {mem['llm_calls']} |",
+        f"| prompt tokens | {no_mem['prompt_tokens']} | {mem['prompt_tokens']} |",
+        f"| median case latency (s) | {fmt((no_mem['latency_ms']['median'] or 0)/1000, 2)} | {fmt((mem['latency_ms']['median'] or 0)/1000, 2)} |",
+        f"| direction accuracy | {fmt(no_mem['direction_accuracy']['mean'], 3)} | {fmt(mem['direction_accuracy']['mean'], 3)} |",
         "",
-        (
-            "Memory 结论还要同时检查 demo 的 moving 准入覆盖与 holdout "
-            "实际检索邻居数。覆盖不足时，只能说当前证据不足以检验 "
-            "Memory 贡献。"
-        ),
+        "当前结论需同时依据质量区间和成本变化；不同 LLM 模式采用独立请求，差异同时包含组件作用与模型生成波动。",
         "",
-        "### 三轮波动",
+        "### 每辆车三轮平均 paired difference",
         "",
-        "| repetition | llm-only | search-only | llm+search | llm+memory+search |",
-        "|---:|---:|---:|---:|---:|",
+        "| vehicle | repetitions | mean difference |",
+        "|---|---:|---:|",
     ]
-    for rep, values in summary["per_repetition"].items():
-        lines.append(
-            f"| {rep} | {fmt(values['llm-only']['mean'], 6)} | "
-            f"{fmt(values['search-only']['mean'], 6)} | "
-            f"{fmt(values['llm+search']['mean'], 6)} | "
-            f"{fmt(values['llm+memory+search']['mean'], 6)} |"
-        )
+    for row in paired["vehicle_means"]:
+        lines.append(f"| {row['vehicle_id']} | {row['repetition_n']} | {fmt(row['mean_score_difference'], 6)} |")
+
+    comparison = summary.get("pre_fix_comparison") or {}
+    if comparison.get("available"):
+        lines += [
+            "",
+            "## 5. 修复前后对比",
+            "",
+            comparison["warning"],
+            "",
+            "| 修复后模式 | 修复前模式 | score delta（前→后） | constraint violation（前→后） | prompt tokens（前→后） |",
+            "|---|---|---:|---:|---:|",
+        ]
+        for mode, row in comparison["mode_changes"].items():
+            lines.append(
+                f"| {mode} | {row['pre_fix_mode']} | "
+                f"{fmt(row['pre_fix_score_delta_mean'])} → {fmt(row['post_fix_score_delta_mean'])} | "
+                f"{fmt(row['pre_fix_constraint_violation_rate'], 3)} → {fmt(row['post_fix_constraint_violation_rate'], 3)} | "
+                f"{row['pre_fix_prompt_tokens']} → {row['post_fix_prompt_tokens']} |")
+        mem_cmp = comparison["memory"]
+        pair_cmp = comparison["paired_memory_effect"]
+        lines += [
+            "",
+            (f"Memory demo admitted 总数 {mem_cmp['pre_fix_admitted_total']} → "
+             f"{mem_cmp['post_fix_admitted_total']}；L2 regions "
+             f"{mem_cmp['pre_fix_regions_total']} → {mem_cmp['post_fix_regions_total']}。"),
+            "",
+            (f"Memory paired mean {fmt(pair_cmp['pre_fix_mean'])} → "
+             f"{fmt(pair_cmp['post_fix_mean'])}；修复前为行级 bootstrap，修复后为车辆级统计。"),
+        ]
 
     lines += [
         "",
-        "## 5. Memory 证据覆盖",
+        "## 6. Memory 准入与覆盖",
+        "",
+        "不可适用的静止短轨迹只进入 L1 审计账本，不进入可检索 Memory 或 L2。",
         "",
         "| repetition | L1案例 | admitted | L2 region | stationary/ok | stationary/degraded | mixed/ok | mixed/degraded | moving/ok | moving/degraded |",
         "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
@@ -434,72 +627,28 @@ def write_report(experiment_dir: Path, summary: Mapping[str, Any]) -> None:
         st = diag["stats"]
         a = diag["demo_admitted_by_stratum"]
         lines.append(
-            f"| {rep} | {st['n_episodic']} | {st['n_admitted']} | "
-            f"{st['n_procedural']} | {a['stationary/ok']} | "
-            f"{a['stationary/degraded']} | {a['mixed/ok']} | "
-            f"{a['mixed/degraded']} | {a['moving/ok']} | "
-            f"{a['moving/degraded']} |"
-        )
+            f"| {rep} | {st['n_episodic']} | {st['n_admitted']} | {st['n_procedural']} | "
+            f"{a['stationary/ok']} | {a['stationary/degraded']} | {a['mixed/ok']} | "
+            f"{a['mixed/degraded']} | {a['moving/ok']} | {a['moving/degraded']} |")
     coverage = summary["memory_coverage_summary"]
-    sim = coverage["neighbor_similarity"]
-    region_samples = coverage["procedural_region_n_samples"]
+    region = coverage["procedural_region_n_samples"]
     lines += [
         "",
-        (
-            f"Memory 模式的 {coverage['holdout_rows']} 条 holdout 记录中，"
-            f"{coverage['prior_available_rows']} 条取得记忆先验；邻居数分布为 "
-            f"{coverage['neighbor_count_distribution']}。邻居相似度均值 "
-            f"{fmt(sim['mean'], 3)}，范围可在 summary.json 的逐条记录中核对。"
-        ),
+        (f"Memory 模式共有 {coverage['holdout_rows']} 条 holdout 记录，其中 "
+         f"{coverage['prior_available_rows']} 条取得 episodic 先验；L2 region 共 "
+         f"{region['n_regions']} 个，样本支持范围 {region['min']}–{region['max']}。"),
         "",
-        (
-            f"三轮共生成 {region_samples['n_regions']} 个参数 region，"
-            f"每个 region 的 n_samples 仅为 {region_samples['min']} 到 "
-            f"{region_samples['max']}；精确到每个 region 的参数、分层和 "
-            "n_samples 均保存在 run_state.json 与 summary.json。"
-        ),
+        "## 7. 分层结果的解释边界",
         "",
-        (
-            "moving/degraded 三轮仅准入 1 条，moving 两类合计准入 6 条。"
-            "因此当前证据覆盖较薄，配对区间又覆盖 0，只能得出“尚未检出"
-            "稳定 Memory 增益”，不能据此判定 Memory 机制无效。"
-        ),
+        "每个分层同时记录 unique_vehicle_n、observation_n 与 repetitions。当前每层独立车辆很少，分层差异只作为探索性信号。",
         "",
-        "## 6. 分层 Demo 扩展成本估计",
+        "## 8. 产物与复现",
         "",
-        "| 每轮 demo 数 | 预计 LLM calls | prompt tokens | completion tokens | 预计时间（s） |",
-        "|---:|---:|---:|---:|---:|",
-    ]
-    for size, estimate in summary["expanded_demo_cost_estimates"].items():
-        lines.append(
-            f"| {size} | {estimate['estimated_llm_calls']} | "
-            f"{estimate['estimated_prompt_tokens']} | "
-            f"{estimate['estimated_completion_tokens']} | "
-            f"{estimate['estimated_elapsed_s']} |"
-        )
-    lines += [
-        "",
-        "以上估计只覆盖 demo 阶段的三轮调用，不含 holdout。100/200 条候选仅生成清单并估算成本，本轮未执行。",
-        "",
-        "## 7. 解释边界",
-        "",
-        "- 本实验评价 LLM 候选是否超过默认参数，以及是否接近同一内部目标下的确定性搜索参考。",
-        "- 确定性搜索参考不是现实道路真值；尚未接入独立 OSM 道路或人工漂移标注。",
-        "- 24/48/100/200 条 demo 候选已按固定种子分层生成；本轮没有自动执行高成本的 100/200 条扩展。",
-        "",
-        "## 8. 产物",
-        "",
-        (
-            "raw_results.jsonl 是 case 级原始证据，summary.json 是统计摘要，"
-            "sample_manifest.json 保存固定样本和扩展候选，figures 目录中的"
-            "图表全部从本次真实结果生成。"
-        ),
+        "`raw_results.jsonl` 保留每条 case 的 raw / normalized / execution 参数、纯搜索参考与 best-observed 来源；"
+        "`summary.json` 保存聚类统计；`run_state.json` 保存逐轮 Memory 诊断；`figures/` 全部由本次结果生成。",
         "",
     ]
-    (experiment_dir / "实验报告.md").write_text(
-        "\n".join(lines), encoding="utf-8"
-    )
-
+    (experiment_dir / "实验报告.md").write_text("\n".join(lines), encoding="utf-8")
 
 def make_figures(experiment_dir: Path,
                  summary: Mapping[str, Any]) -> None:
@@ -516,9 +665,10 @@ def make_figures(experiment_dir: Path,
     ]
     colors = {
         "llm-only": "#4C78A8",
-        "search-only": "#72B7B2",
-        "llm+search": "#F58518",
-        "llm+memory+search": "#B279A2",
+        "prior-only+search-verifier": "#72B7B2",
+        "det-search-output": "#54A24B",
+        "llm+search-verifier": "#F58518",
+        "llm+memory+search-verifier": "#B279A2",
     }
     plt.rcParams.update({
         "font.size": 10,
@@ -568,9 +718,9 @@ def make_figures(experiment_dir: Path,
     fig.savefig(out / "02_baseline_beaten_rate.png", dpi=220)
     plt.close(fig)
 
-    pairs = summary["paired_memory_effect"]["pairs"]
+    pairs = summary["paired_memory_effect"]["vehicle_means"]
     values = [
-        p["score_difference_memory_minus_no_memory"] for p in pairs
+        p["mean_score_difference"] for p in pairs
     ]
     fig, ax = plt.subplots(figsize=(7.5, 4.6))
     point_colors = [
@@ -582,9 +732,9 @@ def make_figures(experiment_dir: Path,
     ax.scatter(range(1, len(values) + 1), values,
                c=point_colors, s=28)
     ax.axhline(0, color="#555", lw=1)
-    ax.set_xlabel("Paired holdout case")
+    ax.set_xlabel("Vehicle (mean across repetitions)")
     ax.set_ylabel("Score difference")
-    ax.set_title("Memory effect: paired score difference")
+    ax.set_title("Memory effect: vehicle-cluster paired difference")
     fig.tight_layout()
     fig.savefig(out / "03_paired_memory_effect.png", dpi=220)
     plt.close(fig)
@@ -654,7 +804,7 @@ def make_figures(experiment_dir: Path,
     plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(8.5, 4.8))
-    labels = ["JSON failure", "Runtime error", "Clamped"]
+    labels = ["JSON failure", "Runtime error", "True bound violation"]
     x = np.arange(len(MODES))
     width = 0.23
     arrays = [
