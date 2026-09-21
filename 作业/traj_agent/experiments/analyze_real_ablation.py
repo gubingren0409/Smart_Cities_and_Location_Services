@@ -460,6 +460,20 @@ def summarize(experiment_dir: Path) -> Dict[str, Any]:
                     "post_fix_ci_vehicle_cluster": paired[
                         "stats"]["bootstrap_95_ci"],
                 },
+                "per_stratum": {
+                    new_mode: {
+                        stratum: {
+                            "pre_fix_mean": parent["per_stratum"][old_mode][stratum]["mean"],
+                            "post_fix_mean": per_stratum[new_mode][stratum]["mean"],
+                            "post_fix_unique_vehicle_n": per_stratum[
+                                new_mode][stratum]["unique_vehicle_n"],
+                            "post_fix_observation_n": per_stratum[
+                                new_mode][stratum]["observation_n"],
+                        }
+                        for stratum in per_stratum[new_mode]
+                    }
+                    for old_mode, new_mode in mode_map.items()
+                },
                 "warning": (
                     "修复前后目标函数、参数空间、模式语义和统计单位均已变化；"
                     "数值仅用于追踪修复影响，不能解释为同一实验条件下的因果差异。"
@@ -577,6 +591,22 @@ def write_report(experiment_dir: Path, summary: Mapping[str, Any]) -> None:
 
     lines += [
         "",
+        "### 分层探索性结果",
+        "",
+        "| 模式 | 分层 | 独立车辆 | 观测行 | 重复 | 平均得分变化 |",
+        "|---|---|---:|---:|---:|---:|",
+    ]
+    for mode in MODES:
+        for stratum, item in summary["per_stratum"][mode].items():
+            if not item["observation_n"]:
+                continue
+            lines.append(
+                f"| {mode} | {stratum} | {item['unique_vehicle_n']} | "
+                f"{item['observation_n']} | {item['repetitions']} | "
+                f"{fmt(item['mean'])} |")
+
+    lines += [
+        "",
         "### LLM proposal 与纯确定性搜索参考",
         "",
         "| 模式 | 独立车辆 | proposal − search 平均值 | 95% CI | proposal 更高比例 |",
@@ -592,6 +622,10 @@ def write_report(experiment_dir: Path, summary: Mapping[str, Any]) -> None:
         lines.append(
             f"| {mode} | {gap['unique_vehicle_n']} | {fmt(gap['mean'])} | "
             f"{ci_text} | {fmt(item['proposal_beats_search_rate']['mean'], 3)} |")
+    lines += [
+        "",
+        "`det-search-output` 的较高内部得分不能解释为真实清洗质量提升：当前 objective 以去噪后轨迹作为 DP 参考，尚无人工漂移或道路真值独立核验清洗删除是否正确。",
+    ]
 
     paired = summary["paired_memory_effect"]
     paired_ci = paired["stats"]["bootstrap_95_ci"]
@@ -614,6 +648,7 @@ def write_report(experiment_dir: Path, summary: Mapping[str, Any]) -> None:
         f"| direction accuracy | {fmt(no_mem['direction_accuracy']['mean'], 3)} | {fmt(mem['direction_accuracy']['mean'], 3)} |",
         "",
         "当前结论需同时依据质量区间和成本变化；不同 LLM 模式采用独立请求，差异同时包含组件作用与模型生成波动。",
+        "修复版没有检测到稳定的 Memory 质量增益；Memory prompt tokens 较高，调用次数和延迟受独立请求及失败重试影响，不能解释成稳定的成本下降。",
         "",
         "### 每辆车三轮平均 paired difference",
         "",
@@ -631,15 +666,16 @@ def write_report(experiment_dir: Path, summary: Mapping[str, Any]) -> None:
             "",
             comparison["warning"],
             "",
-            "| 修复后模式 | 修复前模式 | score delta（前→后） | constraint violation（前→后） | prompt tokens（前→后） |",
-            "|---|---|---:|---:|---:|",
+            "| 修复后模式 | 修复前模式 | score delta（前→后） | constraint violation（前→后） | prompt tokens（前→后） | median latency ms（前→后） |",
+            "|---|---|---:|---:|---:|---:|",
         ]
         for mode, row in comparison["mode_changes"].items():
             lines.append(
                 f"| {mode} | {row['pre_fix_mode']} | "
                 f"{fmt(row['pre_fix_score_delta_mean'])} → {fmt(row['post_fix_score_delta_mean'])} | "
                 f"{fmt(row['pre_fix_constraint_violation_rate'], 3)} → {fmt(row['post_fix_constraint_violation_rate'], 3)} | "
-                f"{row['pre_fix_prompt_tokens']} → {row['post_fix_prompt_tokens']} |")
+                f"{row['pre_fix_prompt_tokens']} → {row['post_fix_prompt_tokens']} | "
+                f"{fmt(row['pre_fix_median_latency_ms'], 1)} → {fmt(row['post_fix_median_latency_ms'], 1)} |")
         mem_cmp = comparison["memory"]
         pair_cmp = comparison["paired_memory_effect"]
         lines += [
@@ -650,7 +686,20 @@ def write_report(experiment_dir: Path, summary: Mapping[str, Any]) -> None:
             "",
             (f"Memory paired mean {fmt(pair_cmp['pre_fix_mean'])} → "
              f"{fmt(pair_cmp['post_fix_mean'])}；修复前为行级 bootstrap，修复后为车辆级统计。"),
+            "",
+            "### 两个 LLM+Verifier 模式的分层信号（修复前→修复后）",
+            "",
+            "| 模式 | 分层 | 独立车辆 | 观测行 | mean（前→后） |",
+            "|---|---|---:|---:|---:|",
         ]
+        for mode in ("llm+search-verifier", "llm+memory+search-verifier"):
+            for stratum, row in comparison["per_stratum"][mode].items():
+                if not row["post_fix_observation_n"]:
+                    continue
+                lines.append(
+                    f"| {mode} | {stratum} | {row['post_fix_unique_vehicle_n']} | "
+                    f"{row['post_fix_observation_n']} | "
+                    f"{fmt(row['pre_fix_mean'])} → {fmt(row['post_fix_mean'])} |")
 
     lines += [
         "",
@@ -670,11 +719,15 @@ def write_report(experiment_dir: Path, summary: Mapping[str, Any]) -> None:
             f"{a['mixed/degraded']} | {a['moving/ok']} | {a['moving/degraded']} |")
     coverage = summary["memory_coverage_summary"]
     region = coverage["procedural_region_n_samples"]
+    region_range = (
+        "无（本轮没有满足 min_samples=3 的分层参数区间）"
+        if region["n_regions"] == 0
+        else f"{region['min']}–{region['max']}")
     lines += [
         "",
         (f"Memory 模式共有 {coverage['holdout_rows']} 条 holdout 记录，其中 "
          f"{coverage['prior_available_rows']} 条取得 episodic 先验；L2 region 共 "
-         f"{region['n_regions']} 个，样本支持范围 {region['min']}–{region['max']}。"),
+         f"{region['n_regions']} 个，样本支持范围 {region_range}。"),
         "",
         "## 7. 分层结果的解释边界",
         "",
