@@ -559,7 +559,7 @@ def write_report(experiment_dir: Path, summary: Mapping[str, Any]) -> None:
         f"- 固定 12 条 demo、12 条 holdout、{exp['repetitions']} 次重复；demo 与 holdout 无重叠。",
         "- 每轮重建记忆库，holdout 只读；L2 参数区间要求至少 3 条 admitted demo。",
         "- 本实验比较工作流组件。带 `search-verifier` 的 LLM 模式中，Search 只提供内部参考，不修改 LLM proposal。",
-        "- `det-search-output` 才把有界确定性搜索结果作为最终输出；该参考不代表现实真值或绝对最优。",
+        "- `det-search-output` 才把有界确定性搜索结果作为最终输出；该参考不代表现实真值或全局最优。",
         "- 主质量分只含几何保真与压缩；runtime 单独报告，road 不可用时从分子和分母同时移除。",
         "",
         "## 2. 实际调用与可靠性",
