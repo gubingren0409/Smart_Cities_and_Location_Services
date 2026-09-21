@@ -107,11 +107,33 @@ def latest_case_rows(rows: Sequence[Dict[str, Any]]) -> list[Dict[str, Any]]:
     return list(latest.values())
 
 
+def aggregate_case_costs(rows: Sequence[Dict[str, Any]]) -> list[Dict[str, Any]]:
+    """按 case 汇总追加重试产生的全部真实调用、token 与延迟。"""
+    grouped: Dict[tuple[str, int, str, str], list[Dict[str, Any]]] = {}
+    for row in rows:
+        grouped.setdefault(case_key(row), []).append(row)
+    out = []
+    for attempts in grouped.values():
+        row = dict(attempts[-1])
+        for name in (
+            "llm_calls", "prompt_tokens", "completion_tokens",
+            "retry_count", "provider_error_count",
+        ):
+            row[name] = sum(int(a.get(name) or 0) for a in attempts)
+        for name in ("llm_elapsed_ms", "elapsed_ms"):
+            row[name] = sum(float(a.get(name) or 0.0) for a in attempts)
+        row["attempt_record_count"] = len(attempts)
+        out.append(row)
+    return out
+
+
 def summarize(experiment_dir: Path) -> Dict[str, Any]:
     config = json.loads(
         (experiment_dir / "config.json").read_text(encoding="utf-8")
     )
-    rows = latest_case_rows(read_jsonl(experiment_dir / "raw_results.jsonl"))
+    raw_rows = read_jsonl(experiment_dir / "raw_results.jsonl")
+    rows = latest_case_rows(raw_rows)
+    cost_rows = aggregate_case_costs(raw_rows)
     state = json.loads(
         (experiment_dir / "run_state.json").read_text(encoding="utf-8")
     )
@@ -121,6 +143,9 @@ def summarize(experiment_dir: Path) -> Dict[str, Any]:
 
     for idx, mode in enumerate(MODES):
         items = [r for r in holdout if r.get("mode") == mode]
+        cost_items = [
+            r for r in cost_rows
+            if r.get("phase") == "holdout" and r.get("mode") == mode]
         ok = [r for r in items if not r.get("error") and r.get("agent_ok")]
         applicable = [r for r in ok if r.get("applicable")]
         delta_fn = lambda r: (
@@ -158,25 +183,25 @@ def summarize(experiment_dir: Path) -> Dict[str, Any]:
                 direction_rows,
                 lambda r: float(r["direction_accuracy"]),
                 DEFAULT_SEED + 20 + idx),
-            "llm_calls": sum(int(r.get("llm_calls") or 0) for r in items),
+            "llm_calls": sum(int(r.get("llm_calls") or 0) for r in cost_items),
             "prompt_tokens": sum(
-                int(r.get("prompt_tokens") or 0) for r in items
+                int(r.get("prompt_tokens") or 0) for r in cost_items
             ),
             "completion_tokens": sum(
-                int(r.get("completion_tokens") or 0) for r in items
+                int(r.get("completion_tokens") or 0) for r in cost_items
             ),
             "latency_ms": cluster_stats(
-                items, lambda r: float(r.get("elapsed_ms") or 0.0),
+                cost_items, lambda r: float(r.get("elapsed_ms") or 0.0),
                 DEFAULT_SEED + 30 + idx),
             "failure_rate": (
                 sum(bool(r.get("error")) for r in items) / len(items)
                 if items else None
             ),
             "retry_count": sum(
-                int(r.get("retry_count") or 0) for r in items
+                int(r.get("retry_count") or 0) for r in cost_items
             ),
             "provider_error_count": sum(
-                int(r.get("provider_error_count") or 0) for r in items
+                int(r.get("provider_error_count") or 0) for r in cost_items
             ),
         }
 
@@ -264,12 +289,12 @@ def summarize(experiment_dir: Path) -> Dict[str, Any]:
         "vehicle_means": vehicle_means,
     }
 
-    calls = sum(int(r.get("llm_calls") or 0) for r in rows)
-    prompt_tokens = sum(int(r.get("prompt_tokens") or 0) for r in rows)
+    calls = sum(int(r.get("llm_calls") or 0) for r in raw_rows)
+    prompt_tokens = sum(int(r.get("prompt_tokens") or 0) for r in raw_rows)
     completion_tokens = sum(
-        int(r.get("completion_tokens") or 0) for r in rows
+        int(r.get("completion_tokens") or 0) for r in raw_rows
     )
-    total_latency = sum(float(r.get("elapsed_ms") or 0.0) for r in rows)
+    total_latency = sum(float(r.get("elapsed_ms") or 0.0) for r in raw_rows)
     demo_llm = [r for r in demo if int(r.get("llm_calls") or 0) > 0]
     n_demo = len(demo_llm) or 1
     calls_per_demo = sum(
@@ -461,11 +486,13 @@ def summarize(experiment_dir: Path) -> Dict[str, Any]:
             "case_elapsed_ms_sum": round(total_latency, 2),
             "case_elapsed_s_sum": round(total_latency / 1000.0, 2),
             "failed_cases": sum(bool(r.get("error")) for r in rows),
+            "failed_attempt_records": sum(
+                bool(r.get("error")) for r in raw_rows),
             "retry_count": sum(
-                int(r.get("retry_count") or 0) for r in rows
+                int(r.get("retry_count") or 0) for r in raw_rows
             ),
             "provider_error_count": sum(
-                int(r.get("provider_error_count") or 0) for r in rows
+                int(r.get("provider_error_count") or 0) for r in raw_rows
             ),
         },
         "mode_summary": mode_summary,
@@ -526,7 +553,9 @@ def write_report(experiment_dir: Path, summary: Mapping[str, Any]) -> None:
         (f"共发起 {usage['llm_calls']} 次真实 LLM 请求，使用 {usage['prompt_tokens']} prompt tokens "
          f"和 {usage['completion_tokens']} completion tokens。累计 case 墙钟时间 "
          f"{usage['case_elapsed_s_sum']:.2f}s；失败 {usage['failed_cases']} 个，重试 "
-         f"{usage['retry_count']} 次，provider 错误 {usage['provider_error_count']} 次。"),
+         f"{usage['retry_count']} 次，provider 错误 {usage['provider_error_count']} 次。"
+         f"JSONL 保留 {usage['failed_attempt_records']} 条失败尝试记录，"
+         "最终统计按 case key 采用最后一次成功结果。"),
         "",
         "## 3. 主结果",
         "",

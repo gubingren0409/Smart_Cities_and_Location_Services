@@ -8,7 +8,7 @@ from traj_agent.agent import provider as prov
 from traj_agent.agent.loop import TrajCleaningAgent
 from traj_agent.core import params as params_mod
 from traj_agent.experiments.analyze_real_ablation import (
-    cluster_stats, latest_case_rows,
+    aggregate_case_costs, cluster_stats, latest_case_rows,
 )
 from traj_agent.tools.registry import ToolRegistry, attach_dataset
 from traj_agent.verifier import objective as obj_mod
@@ -154,6 +154,21 @@ def test_retry_rows_keep_latest_case_for_statistics():
     }
     rows = [{**base, "error": "network"}, {**base, "error": ""}]
     assert latest_case_rows(rows) == [{**base, "error": ""}]
+
+
+def test_retry_rows_preserve_total_cost():
+    base = {
+        "phase": "holdout", "repetition": 1,
+        "mode": "llm-only", "vehicle_id": "10",
+    }
+    rows = [
+        {**base, "llm_calls": 3, "prompt_tokens": 0, "elapsed_ms": 100},
+        {**base, "llm_calls": 1, "prompt_tokens": 500, "elapsed_ms": 20},
+    ]
+    result = aggregate_case_costs(rows)[0]
+    assert result["llm_calls"] == 4
+    assert result["prompt_tokens"] == 500
+    assert result["elapsed_ms"] == 120
 
 
 def test_deterministic_output_mode_uses_search_best(real_raw):
