@@ -231,6 +231,51 @@ def summarize(experiment_dir: Path) -> Dict[str, Any]:
             ),
         }
 
+    memory_rows = [
+        r for r in holdout if r.get("mode") == "llm+memory+search"
+    ]
+    neighbor_counts = [
+        int(r.get("memory_neighbor_count") or 0) for r in memory_rows
+    ]
+    neighbor_distribution = {
+        str(n): neighbor_counts.count(n) for n in sorted(set(neighbor_counts))
+    }
+    similarities = [
+        float(value)
+        for row in memory_rows
+        for value in (row.get("memory_neighbor_similarities") or [])
+    ]
+    suggested_region_counts = [
+        len(r.get("memory_suggested_regions") or []) for r in memory_rows
+    ]
+    all_regions = [
+        region
+        for diag in state.get("memory_diagnostics", {}).values()
+        for region in diag.get("regions", [])
+    ]
+    memory_coverage = {
+        "holdout_rows": len(memory_rows),
+        "prior_available_rows": sum(
+            bool(r.get("memory_prior_available")) for r in memory_rows
+        ),
+        "neighbor_count_distribution": neighbor_distribution,
+        "neighbor_similarity": stats(similarities, DEFAULT_SEED + 120),
+        "suggested_region_count": stats(
+            suggested_region_counts, DEFAULT_SEED + 121
+        ),
+        "procedural_region_n_samples": {
+            "n_regions": len(all_regions),
+            "min": min((int(r["n_samples"]) for r in all_regions), default=None),
+            "max": max((int(r["n_samples"]) for r in all_regions), default=None),
+            "distribution": {
+                str(n): sum(
+                    int(r["n_samples"]) == n for r in all_regions
+                )
+                for n in sorted({int(r["n_samples"]) for r in all_regions})
+            },
+        },
+    }
+
     return {
         "experiment": {
             "git_commit_sha": config["git_commit_sha"],
@@ -263,6 +308,7 @@ def summarize(experiment_dir: Path) -> Dict[str, Any]:
         "per_stratum": per_stratum,
         "per_repetition": per_repetition,
         "memory_diagnostics": state.get("memory_diagnostics", {}),
+        "memory_coverage_summary": memory_coverage,
         "holdout_memory_retrieval": [
             {
                 k: r.get(k) for k in (
@@ -364,13 +410,84 @@ def write_report(experiment_dir: Path, summary: Mapping[str, Any]) -> None:
             "Memory 贡献。"
         ),
         "",
-        "## 5. 解释边界",
+        "### 三轮波动",
+        "",
+        "| repetition | llm-only | search-only | llm+search | llm+memory+search |",
+        "|---:|---:|---:|---:|---:|",
+    ]
+    for rep, values in summary["per_repetition"].items():
+        lines.append(
+            f"| {rep} | {fmt(values['llm-only']['mean'], 6)} | "
+            f"{fmt(values['search-only']['mean'], 6)} | "
+            f"{fmt(values['llm+search']['mean'], 6)} | "
+            f"{fmt(values['llm+memory+search']['mean'], 6)} |"
+        )
+
+    lines += [
+        "",
+        "## 5. Memory 证据覆盖",
+        "",
+        "| repetition | L1案例 | admitted | L2 region | stationary/ok | stationary/degraded | mixed/ok | mixed/degraded | moving/ok | moving/degraded |",
+        "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+    ]
+    for rep, diag in summary["memory_diagnostics"].items():
+        st = diag["stats"]
+        a = diag["demo_admitted_by_stratum"]
+        lines.append(
+            f"| {rep} | {st['n_episodic']} | {st['n_admitted']} | "
+            f"{st['n_procedural']} | {a['stationary/ok']} | "
+            f"{a['stationary/degraded']} | {a['mixed/ok']} | "
+            f"{a['mixed/degraded']} | {a['moving/ok']} | "
+            f"{a['moving/degraded']} |"
+        )
+    coverage = summary["memory_coverage_summary"]
+    sim = coverage["neighbor_similarity"]
+    region_samples = coverage["procedural_region_n_samples"]
+    lines += [
+        "",
+        (
+            f"Memory 模式的 {coverage['holdout_rows']} 条 holdout 记录中，"
+            f"{coverage['prior_available_rows']} 条取得记忆先验；邻居数分布为 "
+            f"{coverage['neighbor_count_distribution']}。邻居相似度均值 "
+            f"{fmt(sim['mean'], 3)}，范围可在 summary.json 的逐条记录中核对。"
+        ),
+        "",
+        (
+            f"三轮共生成 {region_samples['n_regions']} 个参数 region，"
+            f"每个 region 的 n_samples 仅为 {region_samples['min']} 到 "
+            f"{region_samples['max']}；精确到每个 region 的参数、分层和 "
+            "n_samples 均保存在 run_state.json 与 summary.json。"
+        ),
+        "",
+        (
+            "moving/degraded 三轮仅准入 1 条，moving 两类合计准入 6 条。"
+            "因此当前证据覆盖较薄，配对区间又覆盖 0，只能得出“尚未检出"
+            "稳定 Memory 增益”，不能据此判定 Memory 机制无效。"
+        ),
+        "",
+        "## 6. 分层 Demo 扩展成本估计",
+        "",
+        "| 每轮 demo 数 | 预计 LLM calls | prompt tokens | completion tokens | 预计时间（s） |",
+        "|---:|---:|---:|---:|---:|",
+    ]
+    for size, estimate in summary["expanded_demo_cost_estimates"].items():
+        lines.append(
+            f"| {size} | {estimate['estimated_llm_calls']} | "
+            f"{estimate['estimated_prompt_tokens']} | "
+            f"{estimate['estimated_completion_tokens']} | "
+            f"{estimate['estimated_elapsed_s']} |"
+        )
+    lines += [
+        "",
+        "以上估计只覆盖 demo 阶段的三轮调用，不含 holdout。100/200 条候选仅生成清单并估算成本，本轮未执行。",
+        "",
+        "## 7. 解释边界",
         "",
         "- 本实验评价 LLM 候选是否超过默认参数，以及是否接近同一内部目标下的确定性搜索参考。",
         "- 确定性搜索参考不是现实道路真值；尚未接入独立 OSM 道路或人工漂移标注。",
         "- 24/48/100/200 条 demo 候选已按固定种子分层生成；本轮没有自动执行高成本的 100/200 条扩展。",
         "",
-        "## 6. 产物",
+        "## 8. 产物",
         "",
         (
             "raw_results.jsonl 是 case 级原始证据，summary.json 是统计摘要，"

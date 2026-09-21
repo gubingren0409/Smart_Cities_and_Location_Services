@@ -431,8 +431,13 @@ def memory_snapshot(store: MemoryStore,
         total[key] = total.get(key, 0) + 1
         if row.get("admitted"):
             admitted[key] = admitted.get(key, 0) + 1
+    # ``MemoryStore.stats`` includes the SQLite path for local debugging.  The
+    # database is disposable runtime state, so its absolute path must not leak
+    # into the checked-in experiment evidence.
+    memory_stats = dict(store.stats())
+    memory_stats.pop("path", None)
     return {
-        "stats": store.stats(),
+        "stats": memory_stats,
         "demo_total_by_stratum": total,
         "demo_admitted_by_stratum": admitted,
         "regions": [r.to_dict() for r in store.query_regions()],

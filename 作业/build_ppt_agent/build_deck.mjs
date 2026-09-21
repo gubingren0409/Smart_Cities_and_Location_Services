@@ -36,13 +36,13 @@ const NOTES = {
  "核心机制三：四层记忆":
    "重点是 L2 和 L3 的分工。L2 是机器算出来的统计区间，L3 是人写的因果解释。两者不重复：L2 给数字锚点，L3 给物理直觉。硬规则是 agent 对 vault 只读，这样它的 bug 不可能损坏知识库。",
  "核心机制四：三段式调参":
-   "回答「参数怎么调」这个核心问题。LLM 不是优化器，它只给起点和方向。expected_effect 是白送的评分抓手，核验器只需比对符号。",
+   "回答参数怎么调这个核心问题。LLM 独立给候选参数和方向，确定性搜索再独立建立内部参考。expected_effect 可以让核验器直接比对预测与实测符号。",
  "工具层：LLM 的全部能力":
    "逐类讲工具。特别强调刻意缺席的 write_memory：这不是遗漏，是设计。有一条测试专门断言工具名里不含 write、save、delete。",
  "消融实验的两个方法学陷阱":
    "这一页是方法论价值所在。信息泄漏和模式标签造假都是很隐蔽的错误，做错了两者都会得出完全错误的结论。我们是用代码强制避免的，不是靠自觉。",
- "真实结果：记忆层没有带来可测增益":
-   "必须如实报告。三种含 LLM 模式的得分完全相同。根因已经定位到具体层面：moving 类轨迹在记忆里没有已验证案例。这不是设计失败，是数据饥饿。",
+ "ECNU 三轮结果：尚未检出稳定增益":
+   "使用 ecnu-plus 的三轮真实调用。Memory 配对均值略为正，但置信区间跨过零。moving/degraded 三轮只准入一条，每个参数区域也只有一到两个样本。",
  "六个被数据推翻的假设":
    "这页对做工程的人最有价值。每一条都是真实踩过的坑，而且都配了回归测试。可以挑两三个讲透，比如墨卡托 17% 和 Hausdorff 548 米对 4.77 米。",
  "当前状态与已知短板": "诚实交代边界。已完成的部分和已知短板要分开讲，不要把短板藏起来。",
@@ -97,7 +97,8 @@ function pageNum(s, n) {
     fontSize: 11, color: "AAB4BE", align: "right" });
 }
 function img(s, f, x, y, w, h) {
-  s.addImage({ path: path.join(ASSETS, f), x, y, w, h, sizing: { type: "contain", w, h } });
+  const imagePath = path.isAbsolute(f) ? f : path.join(ASSETS, f);
+  s.addImage({ path: imagePath, x, y, w, h, sizing: { type: "contain", w, h } });
 }
 function code(s, lines, x, y, w, h) {
   s.addShape(pptx.ShapeType.rect, { x, y, w, h, fill: { color: "1B2B3A" } });
@@ -116,7 +117,7 @@ function code(s, lines, x, y, w, h) {
   s.addShape(pptx.ShapeType.rect, { x: 0.8, y: 3.0, w: 1.5, h: 0.05, fill: { color: "4FA3D1" } });
   s.addText("让 LLM 选工具、提参数，由确定性代码判定它的建议好不好", {
     x: 0.8, y: 3.24, w: 8.6, h: 0.4, fontFace: ZH, fontSize: 15, color: "B8CEDA" });
-  s.addText("293 项测试 · 15 个工具 · 四层记忆 · 留出集消融", {
+  s.addText("298 项测试 · 15 个工具 · 四层记忆 · ECNU 三轮消融", {
     x: 0.8, y: 3.72, w: 8.6, h: 0.35, fontFace: ZH, fontSize: 12.5, color: "7A93A3" });
   endSlide();
 }
@@ -152,7 +153,7 @@ function code(s, lines, x, y, w, h) {
     { t: "LLM 不碰数值，也不当优化器。", big: true, color: ACCENT, gap: 4 },
     { t: "所有几何与统计计算在 core/ 里，是纯函数、可单测、不知道 LLM 存在。", level: 1, color: MUTED, gap: 11 },
     { t: "LLM 不能写记忆。", big: true, color: WARN, gap: 4 },
-    { t: "工具清单里故意没有 write_memory，记忆写入只发生在核验确认有效之后。", level: 1, color: MUTED, gap: 11 },
+    { t: "工具清单里故意没有 write_memory；确定性代码记录 L1，只有准入案例用于检索和 L2。", level: 1, color: MUTED, gap: 11 },
     { t: "坐标永不进上下文。", big: true, color: ACCENT, gap: 4 },
     { t: "只传句柄和标量诊断卡，117 万点留在进程内存里。", level: 1, color: MUTED, gap: 11 },
     { t: "提议与核验分离。", big: true, color: ACCENT, gap: 4 },
@@ -169,7 +170,7 @@ function code(s, lines, x, y, w, h) {
   const s = beginSlide();
   head(s, "分层架构", "结构");
   img(s, "arch_layers.png", 1.05, 1.2, 7.9, 3.9);
-  caption(s, "共 10584 行，293 项测试全绿", 5.06);
+  caption(s, "36 个 Python 源文件，298 项测试全绿", 5.06);
   pageNum(s, pageNo);
   endSlide();
 }
@@ -312,17 +313,17 @@ function code(s, lines, x, y, w, h) {
 // ===== 12 真实结果 =====
 {
   const s = beginSlide();
-  head(s, "真实结果：记忆层没有带来可测增益", "实测");
-  img(s, "ablation_real.png", 0.5, 1.16, 5.5, 3.7);
+  head(s, "ECNU 三轮结果：尚未检出稳定增益", "真实模型");
+  img(s, path.join(HERE, "..", "experiments", "llm_assisted_ecnu_20260921", "figures", "01_score_delta_by_mode.png"), 0.5, 1.16, 5.5, 3.7);
   bullets(s, [
-    { t: "三种含 LLM 模式的提议分逐位相同。", bold: true, color: WARN, gap: 9 },
-    { t: "根因已定位：", bold: true, color: INK, gap: 4 },
-    { t: "phase 1 准入的 5 条里，4 条静止、1 条 mixed。", level: 1, color: MUTED, gap: 5 },
-    { t: "moving 类轨迹在记忆里没有已验证案例。", level: 1, color: MUTED, gap: 5 },
-    { t: "4 条 moving holdout 检索到的区间数是 0。", level: 1, color: MUTED, gap: 9 },
-    { t: "瓶颈是 demo 集只有 12 条，不是设计失败。", color: OK, bold: true },
+    { t: "每模式 24 个适用样本，重复 3 轮。", bold: true, color: ACCENT, gap: 9 },
+    { t: "Memory − 无 Memory：均值 +0.001236。", bold: true, color: INK, gap: 5 },
+    { t: "95% CI [-0.000851, 0.003498]，覆盖 0。", level: 1, color: MUTED, gap: 5 },
+    { t: "胜 / 平 / 负为 16 / 0 / 8。", level: 1, color: MUTED, gap: 8 },
+    { t: "L2 每个参数区域只有 1–2 个样本。", color: WARN, gap: 5 },
+    { t: "当前尚未检出稳定 Memory 增益。", color: OK, bold: true },
   ], { x: 6.2, y: 1.3, w: 3.25, h: 3.5, fontSize: 12 });
-  caption(s, "如实报告：当前配置下不能声称记忆有效", 4.95);
+  caption(s, "三种含 LLM 模式的均值置信区间也都覆盖 0", 4.95);
   pageNum(s, pageNo);
   endSlide();
 }
@@ -361,21 +362,21 @@ function code(s, lines, x, y, w, h) {
   s.addText("已完成", { x: 0.6, y: 1.24, w: 4.2, h: 0.3,
     fontFace: ZH, fontSize: 13.5, bold: true, color: OK });
   bullets(s, [
-    "10584 行代码，293 项测试全绿",
-    "15 个工具、四层记忆、六类报告图",
+    "36 个 Python 源文件，298 项测试全绿",
+    "15 个工具、四层记忆、七类真实结果图",
     "离线 Mock provider 可完整跑通",
-    "接真实模型只需设一个环境变量",
+    "ECNU 四模式真实实验已重复 3 轮",
   ].map((t) => ({ t, gap: 9 })), { x: 0.6, y: 1.58, w: 4.25, h: 2.2, fontSize: 12.5 });
 
   s.addText("已知短板", { x: 5.2, y: 1.24, w: 4.3, h: 0.3,
     fontFace: ZH, fontSize: 13.5, bold: true, color: WARN });
   bullets(s, [
-    "记忆层无可测增益（数据饥饿）",
-    "尚未用真实 LLM 跑过消融",
-    "路网仅有协议与离线实现",
-    "未全量跑 11386 条",
+    "稳定的 LLM 或 Memory 增益",
+    "独立 OSM 或人工标注质量",
+    "100/200 条 Memory 扩展",
+    "全量 11386 条真实模型验证",
   ].map((t) => ({ t, gap: 9 })), { x: 5.2, y: 1.58, w: 4.25, h: 2.2, fontSize: 12.5 });
-  callout(s, "Mock provider 每次给出同一个 knee point，天然抹平模式差异。不接真实模型，消融表就没有信息量。",
+  callout(s, "真实运行：167 次 LLM 请求，529980 + 37761 tokens，case 时间合计 1416.83 秒，失败与重试均为 0。",
     0.6, 3.94, 8.85, 0.78, WARN);
   pageNum(s, pageNo);
   endSlide();
@@ -386,9 +387,9 @@ function code(s, lines, x, y, w, h) {
   const s = beginSlide();
   head(s, "下一步", "改进方向");
   const steps = [
-    ["1", "扩大 demo 集到 200 条以上", "让 moving 类轨迹积累到足够样本。这是当前最紧的瓶颈。", WARN],
-    ["2", "接真实 LLM 重跑消融", "真实模型的提议有方差，才能显出搜索兜底与记忆先验的价值。", ACCENT],
-    ["3", "放松准入阈值做敏感性扫描", "观察准入率与记忆增益的权衡曲线，这本身就是个好实验。", OK],
+    ["1", "先比较 24 与 48 条分层 demo", "优先增加 moving 证据，再看配对区间是否收窄。预计分别需要 88 和 176 次调用。", WARN],
+    ["2", "加入小规模独立质量核验", "对 moving 子集做人工标注或 OSM 中心线距离，只作为 secondary evaluation。", ACCENT],
+    ["3", "根据前两步决定是否扩到 100/200", "三轮 demo 预计需要 367/733 次调用，先看收益再承担成本。", OK],
   ];
   steps.forEach((st, i) => {
     const y = 1.3 + i * 1.16;
@@ -401,7 +402,7 @@ function code(s, lines, x, y, w, h) {
     s.addText(st[2], { x: 1.3, y: y + 0.42, w: 8.1, h: 0.6, fontFace: ZH,
       fontSize: 12.5, color: MUTED, lineSpacingMultiple: 1.18 });
   });
-  s.addText("按预期收益排序。第一条不解决，后面两条的结论都不可信。", {
+  s.addText("100/200 条候选清单已生成，本轮没有自动执行高成本批量调用。", {
     x: 0.6, y: 4.78, w: 8.85, h: 0.35, fontFace: ZH, fontSize: 12,
     color: ACCENT, italic: true });
   pageNum(s, pageNo);

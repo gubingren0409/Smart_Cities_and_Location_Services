@@ -30,18 +30,18 @@ const NOTES = {
    "这是方法论总览，后面每一页都在展开其中一步。建议强调第一步是替代 LLM 的语感，第三步是替代人的判断。LLM 只出现在第二步。",
  "第一步：把数据变成 LLM 能读的输入":
    "这一步的关键是纪律。117 万个点不可能进上下文，所以只给标量和句柄。诊断卡里最有用的是 regime 和时间轴质量，因为它们直接决定该用哪套参数。",
- "为什么要先分类型": "这一页解释为什么不能对全部数据用一套参数。实测数据是两个截然不同的群体，混在一起做参数推荐一定失败。这也是让 LLM 看诊断卡而不是看坐标的原因。",
+ "为什么要先分类型": "固定随机 200 条样本中，静止、混合和行驶分别占 47%、24% 和 29%。这只是该样本的分布，但足以说明参数实验需要分层，不能让某一类轨迹主导。",
  "第二步：给 LLM 的工具箱":
    "讲工具分类。重点是刻意不提供写记忆的工具，这条规则让记忆不会被幻觉污染。另外要说明工具返回的都是标量统计，不是坐标。",
- "第三步：参数怎么定": "回答参数怎么调这个核心问题。LLM 独立给候选参数和方向，不给最终值。这是本方法与传统自动调参最不同的地方，也是它能被自动判分的原因。",
+ "第三步：参数怎么定": "回答参数怎么调这个核心问题。LLM 独立给出候选参数和方向，确定性搜索再独立建立内部参考。LLM 不负责搜索最优，这也是建议能够被自动判分的基础。",
  "第四步：怎么判断 LLM 提得对不对":
    "核心页，建议讲慢。regret 需要统一内部参考，所以从默认参数独立跑一次确定性搜索。三种口径一定要讲清楚，否则会得出错误结论。方向准确率是零成本的额外判据，值得强调。",
  "记忆怎么用：只复用已准入案例":
    "讲清楚为什么要分层。L2 是机器算出来的统计，L3 是人写的解释，两者不冲突。注意最后一行的成本含义：跑少数、复用多数，这是 11386 条能落地的关键。",
  "消融实验：怎么证明这套流程有效":
    "方法论页。两个陷阱都会让结论完全相反，而且都很隐蔽。信息泄漏尤其容易犯，因为它在单条轨迹上看不出任何异常。",
- "实测结果：记忆层没有带来可测增益":
-   "必须如实讲。三种含 LLM 模式的得分完全相同。根因是 moving 类轨迹在记忆里一条已验证案例都没有，所以检索到的可用信息是零。这是数据饥饿，不是方法失败。",
+  "ECNU 三轮结果：尚未检出稳定增益":
+    "这页使用 ecnu-plus 的三轮真实调用。Memory 配对均值略为正，但置信区间跨过零。moving/degraded 三轮只准入一条，每个参数区域也只有一到两个样本，因此当前证据还不足以判断 Memory 的稳定贡献。",
  "六个被数据推翻的假设":
    "这页对做过实际数据处理的人最有价值。挑两三个讲透即可，比如墨卡托放大 17% 和 Hausdorff 的 548 米对 4.77 米。这些坑都不会让代码报错，只会让结论错。",
  "现在能跑到什么程度": "如实交代边界。左侧可直接用，右侧是还没验证的部分。不要把未验证的说成已验证。",
@@ -241,7 +241,7 @@ function hdrRow(cells, color = DARK) {
   const s = beginSlide();
   head(s, "为什么要先分类型", "关键前提");
   // 原生条形图
-  const data = [["静止轨迹", 63, "6C7A89"], ["混合", 17, "E8A33D"], ["行驶轨迹", 20, "2B7BBA"]];
+  const data = [["静止轨迹", 47, "6C7A89"], ["混合", 24, "E8A33D"], ["行驶轨迹", 29, "2B7BBA"]];
   const x0 = 0.75, y0 = 1.32, bw = 0.62, bh = 2.55, gapx = 1.0;
   s.addShape(S.line, { x: x0 - 0.12, y: y0 + bh, w: 3.6, h: 0,
     line: { color: BORDER, width: 1.2 } });
@@ -254,17 +254,17 @@ function hdrRow(cells, color = DARK) {
     s.addText(d[0], { x: x - 0.18, y: y0 + bh + 0.06, w: bw + 0.36, h: 0.3,
       fontFace: ZH, fontSize: 11.5, color: INK, align: "center" });
   });
-  s.addText("200 条抽样的轨迹类型分布", { x: 0.6, y: 4.32, w: 3.9, h: 0.3,
+  s.addText("固定随机 200 条样本（seed=20260920）", { x: 0.6, y: 4.32, w: 3.9, h: 0.3,
     fontFace: ZH, fontSize: 11, color: MUTED, align: "center" });
 
   bullets(s, [
-    { t: "静止与行驶是两个完全不同的群体。", big: true, color: WARN, gap: 8 },
-    { t: "静止轨迹：位移中位 42 米，重复点可占 90%，中位速度 0.1 m/s。", gap: 6 },
-    { t: "行驶轨迹：位移数公里至 20 公里，重复点通常低于 10%。", gap: 9 },
-    { t: "对这两类用同一套阈值，不是效果差一点，而是对其中一半数据完全失效。", bold: true, color: ACCENT, gap: 9 },
-    { t: "所以诊断卡把类型放在最前面，LLM 一眼就能看到该换参数。", color: MUTED },
+    { t: "三类轨迹的运动尺度和时间轴问题不同", big: true, color: WARN, gap: 8 },
+    { t: "固定样本计数：静止 94、混合 48、行驶 58。", gap: 7 },
+    { t: "该分布只描述这 200 条样本，不能写成全量 11386 辆的比例。", color: MUTED, gap: 9 },
+    { t: "参数实验按 regime 与 timeline_quality 分层，避免某一类样本主导结论。", bold: true, color: ACCENT, gap: 9 },
+    { t: "诊断卡先给轨迹类型，模型据此选择参数", color: MUTED },
   ], { x: 5.35, y: 1.3, w: 4.1, h: 3.6, fontSize: 12 });
-  caption(s, "占比来自 200 条抽样的实测统计");
+  caption(s, "占比来自固定随机样本，不代表全量数据分布");
   pageNum(s);
   endSlide();
 }
@@ -288,7 +288,7 @@ function hdrRow(cells, color = DARK) {
         fill: { color: i === 0 ? SOFT : PAPER } } }))),
   ], { x: 0.6, y: 1.28, w: 8.85, colW: [1.45, 4.4, 3.0], rowH: 0.47 });
 
-  callout(s, "为什么故意不给写记忆的工具：如果 LLM 能直接写，一次幻觉就会被后续检索不断放大，而且很难发现。记忆的写入权只交给核验通过的确定性代码。",
+  callout(s, "为什么故意不给写记忆的工具：确定性代码可把所有案例写入 L1 留档；只有 verifier 准入的案例会被检索并蒸馏到 L2。",
     0.6, 4.3, 8.85, 0.78, WARN);
   caption(s, "所有工具都是确定性函数，没有随机性、不联网、不调用 LLM", 5.14);
   pageNum(s);
@@ -316,7 +316,7 @@ function hdrRow(cells, color = DARK) {
   });
 
   bullets(s, [
-    { t: "关键：LLM 不是优化器，它只给起点和方向。", bold: true, color: ACCENT, gap: 7 },
+    { t: "关键：LLM 给独立候选与方向，不作为确定性搜索的起点。", bold: true, color: ACCENT, gap: 7 },
     { t: "dp_tolerance 区间 [0.5, 30] 米，上限约等于 GPS 定位精度。", gap: 5 },
     { t: "dt_threshold 区间 [15, 180] 秒，下界保住正常的 20 秒采样。", gap: 5 },
     { t: "dist_threshold 由 Δt × 限速 × 安全系数推导，不由位移分布推导。", gap: 5 },
@@ -374,10 +374,10 @@ function hdrRow(cells, color = DARK) {
   ], { x: 0.6, y: 1.28, w: 8.85, colW: [1.35, 3.6, 1.05, 2.85], rowH: 0.55 });
 
   bullets(s, [
-    { t: "机器算出来的参数区间（程序记忆）和人写的因果解释（人类知识）不重复：前者给数字锚点，后者给物理直觉。", gap: 8 },
-    { t: "成本含义：跑少数轨迹积累经验，其余轨迹直接查区间清洗，零 LLM 调用。这是 11386 条能落地的关键。", color: ACCENT, bold: true, gap: 8 },
-    { t: "安全边界：agent 对人类知识库只有读权限。它的任何 bug 都不可能损坏知识库。", color: WARN },
-  ], { y: 3.62, w: 8.85, h: 1.4, fontSize: 11.5 });
+    { t: "L1 保存全部案例；默认检索与 L2 蒸馏只用 verifier 已准入案例。", color: MUTED, gap: 5 },
+    { t: "L2 给参数区间，L3 给人写的物理解释；agent 对 L3 只读。", gap: 5 },
+    { t: "已准入经验可供其余轨迹查区间，从而减少 LLM 调用。", color: ACCENT, bold: true },
+  ], { y: 3.76, w: 8.85, h: 1.25, fontSize: 9.8 });
   pageNum(s);
   endSlide();
 }
@@ -416,13 +416,13 @@ function hdrRow(cells, color = DARK) {
   endSlide();
 }
 
-// ================= 11 实测结果（原生柱状图） =================
+// ================= 11 ECNU 真实结果（原生柱状图） =================
 {
   const s = beginSlide();
-  head(s, "实测结果：记忆层没有带来可测增益", "结果");
-  // 原生柱状图：相对基线提升 + 超基线率
-  const modes = ["llm-only", "search-only", "llm+search", "llm+\nmemory\n+search"];
-  const beat = [50, 25, 41.7, 41.7];
+  head(s, "ECNU 三轮结果：尚未检出稳定增益", "真实模型");
+  // 原生柱状图：三轮 holdout 的超基线率
+  const modes = ["LLM", "Search", "LLM+S", "LLM+M+S"];
+  const beat = [58.3, 37.5, 54.2, 58.3];
   const x0 = 0.75, y0 = 1.4, bw = 0.5, bh = 2.15, gapx = 0.62;
   s.addShape(S.line, { x: x0 - 0.1, y: y0 + bh, w: 4.15, h: 0,
     line: { color: BORDER, width: 1.2 } });
@@ -440,12 +440,12 @@ function hdrRow(cells, color = DARK) {
     fontFace: ZH, fontSize: 10.5, color: MUTED, align: "center" });
 
   bullets(s, [
-    { t: "三种含 LLM 模式的提议分逐位相同。", big: true, bold: true, color: WARN, gap: 8 },
-    { t: "根因已定位到具体层面：", bold: true, gap: 4 },
-    { t: "示范集准入的 5 条里，4 条是静止、1 条混合。", level: 1, color: MUTED, gap: 4 },
-    { t: "行驶类轨迹在记忆里一条已验证案例都没有。", level: 1, color: MUTED, gap: 4 },
-    { t: "所以 4 条行驶类留出样本检索到的可用区间数是 0。", level: 1, color: MUTED, gap: 8 },
-    { t: "结论：这是示范集太小造成的数据饥饿，不是方法失败。", color: OK, bold: true },
+    { t: "每模式 24 个适用样本，重复 3 轮。", big: true, bold: true, color: ACCENT, gap: 8 },
+    { t: "Memory − 无 Memory：", bold: true, gap: 4 },
+    { t: "平均 +0.001236，95% CI [-0.000851, 0.003498]。", level: 1, color: MUTED, gap: 4 },
+    { t: "胜 / 平 / 负为 16 / 0 / 8，但区间覆盖 0。", level: 1, color: MUTED, gap: 7 },
+    { t: "L2 每个参数区域只有 1–2 个样本。", color: WARN, gap: 5 },
+    { t: "结论：当前尚未检出稳定 Memory 增益。", color: OK, bold: true },
   ], { x: 5.35, y: 1.32, w: 4.1, h: 3.5, fontSize: 11.5 });
   pageNum(s);
   endSlide();
@@ -467,7 +467,7 @@ function hdrRow(cells, color = DARK) {
     ].map((r) => r.map((c, i) => ({
       text: c, options: { fontSize: 10.5, color: INK,
         fill: { color: i === 0 ? SOFT : PAPER } } }))),
-  ], { x: 0.6, y: 1.28, w: 8.85, colW: [2.3, 4.5, 2.05], rowH: 0.52 });
+  ], { x: 0.6, y: 1.28, w: 8.85, colW: [2.3, 4.5, 2.05], rowH: 0.47 });
   callout(s, "这些坑的共同点：代码都不会报错，只会让结论错。所以每条都写了回归测试。",
     0.6, 4.62, 8.85, 0.6, WARN);
   pageNum(s);
@@ -482,19 +482,19 @@ function hdrRow(cells, color = DARK) {
     fontFace: ZH, fontSize: 13.5, bold: true, color: OK });
   bullets(s, [
     "离线模式可完整跑通全流程",
-    "接真实模型只需设一个环境变量",
-    "参数判分与记忆准入已可用",
-    "六类报告图自动产出",
+    "ECNU 四模式真实实验已重复 3 轮",
+    "180 个 case 无失败；search-only 零次 LLM",
+    "七类真实结果图与 case 级证据已保存",
   ].map((t) => ({ t, gap: 9 })), { x: 0.6, y: 1.6, w: 4.25, h: 2.1, fontSize: 12.5 });
   s.addText("还没验证", { x: 5.2, y: 1.24, w: 4.3, h: 0.32,
     fontFace: ZH, fontSize: 13.5, bold: true, color: WARN });
   bullets(s, [
-    "记忆增益（需扩大示范集）",
-    "真实 LLM 的消融（未跑过）",
-    "路网约束（仅有接口）",
-    "全量 11386 条（未跑）",
+    "稳定的 LLM 或 Memory 增益",
+    "独立 OSM 或人工标注质量",
+    "100/200 条 Memory 扩展（成本较高）",
+    "全量 11386 条真实模型验证",
   ].map((t) => ({ t, gap: 9 })), { x: 5.2, y: 1.6, w: 4.25, h: 2.1, fontSize: 12.5 });
-  callout(s, "离线 provider 每次给出同一个拐点，天然抹平了模式差异。不接真实模型，消融表就没有信息量。",
+  callout(s, "真实运行：167 次 LLM 请求，529980 + 37761 tokens，case 时间合计 1416.83 秒，失败与重试均为 0。",
     0.6, 3.94, 8.85, 0.78, WARN);
   pageNum(s);
   endSlide();
@@ -505,9 +505,9 @@ function hdrRow(cells, color = DARK) {
   const s = beginSlide();
   head(s, "怎么接着做", "下一步");
   const steps = [
-    ["1", "把示范集扩到 200 条以上", "让行驶类轨迹积累到足够样本。这是当前最紧的瓶颈。", WARN],
-    ["2", "接真实 LLM 重跑消融", "真实模型的提议有方差，才能显出搜索兜底与记忆先验的价值。", ACCENT],
-    ["3", "放松准入阈值做敏感性扫描", "观察准入率与记忆增益的权衡曲线，这本身就是个好实验。", OK],
+    ["1", "先比较 24 与 48 条分层 demo", "优先增加 moving 证据，再看配对区间是否收窄。预计分别需要 88 和 176 次调用。", WARN],
+    ["2", "加入小规模独立质量核验", "对 moving 子集做人工标注或 OSM 中心线距离，只作为 secondary evaluation。", ACCENT],
+    ["3", "根据前两步决定是否扩到 100/200", "三轮 demo 预计需要 367/733 次调用，先看收益再承担成本。", OK],
   ];
   steps.forEach((st, i) => {
     const y = 1.3 + i * 1.14;
@@ -519,7 +519,7 @@ function hdrRow(cells, color = DARK) {
     s.addText(st[2], { x: 1.3, y: y + 0.42, w: 8.1, h: 0.6, fontFace: ZH,
       fontSize: 12.5, color: MUTED, lineSpacingMultiple: 1.16 });
   });
-  s.addText("按预期收益排序。第一条不解决，后面两条得到的结论都不可信。",
+  s.addText("100/200 条候选清单已生成，本轮没有自动执行高成本批量调用。",
     { x: 0.6, y: 4.72, w: 8.85, h: 0.35, fontFace: ZH, fontSize: 12,
       color: ACCENT, italic: true });
   pageNum(s);

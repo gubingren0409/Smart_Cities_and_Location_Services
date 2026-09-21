@@ -175,7 +175,7 @@ arrow(ax, (0.32, 0.555), (0.36, 0.555), color=MUTED)
 arrow(ax, (0.64, 0.555), (0.68, 0.555), color=MUTED)
 ax.text(0.5, 0.88, "三段式调参：LLM 不是优化器", ha="center",
         fontsize=15, fontweight="bold", color=INK)
-ax.text(0.5, 0.80, "它只负责给起点和方向，好不好由确定性搜索当标尺", ha="center",
+ax.text(0.5, 0.80, "它独立给候选参数和方向，确定性搜索另行建立内部参考", ha="center",
         fontsize=10.5, color=MUTED)
 ax.text(0.5, 0.05, "expected_effect 让方向准确率可以零成本计算（只需比对符号）",
         ha="center", fontsize=10, color=ACCENT, style="italic")

@@ -1,0 +1,192 @@
+{
+  "git_commit_sha": "869af59c55896844570d1982e1bfc2300fb6bd9a",
+  "date": "2026-09-21",
+  "provider": "OpenAICompatProvider",
+  "model": "ecnu-plus",
+  "base_url": "https://chat.ecnu.edu.cn/open/api/v1",
+  "api_key_present": true,
+  "python": "3.12.6",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "demo_vehicle_ids": [
+    "0",
+    "1",
+    "3",
+    "7",
+    "18",
+    "62",
+    "68",
+    "129",
+    "101",
+    "149",
+    "170",
+    "187"
+  ],
+  "holdout_vehicle_ids": [
+    "2",
+    "4",
+    "10",
+    "22",
+    "111",
+    "137",
+    "153",
+    "154",
+    "165",
+    "194",
+    "201",
+    "208"
+  ],
+  "repetitions": 3,
+  "seed": 20260921,
+  "modes": {
+    "llm-only": {
+      "use_llm": true,
+      "use_memory": false,
+      "use_search": false,
+      "regret_threshold": 0.05
+    },
+    "search-only": {
+      "use_llm": false,
+      "use_memory": false,
+      "use_search": true,
+      "regret_threshold": 0.05
+    },
+    "llm+search": {
+      "use_llm": true,
+      "use_memory": false,
+      "use_search": true,
+      "regret_threshold": 0.05
+    },
+    "llm+memory+search": {
+      "use_llm": true,
+      "use_memory": true,
+      "use_search": true,
+      "regret_threshold": 0.05
+    }
+  },
+  "tool_subset": [
+    "suggest_param_range",
+    "run_search",
+    "detect_anomalies"
+  ],
+  "direct_first": true,
+  "search_budget": {
+    "method": "coordinate_descent",
+    "start": "default_params",
+    "dimensions": [
+      "dp_tolerance",
+      "dt_threshold",
+      "max_speed_mps"
+    ],
+    "n_steps": 5,
+    "rounds": 3,
+    "max_evals": 60,
+    "note": "LLM候选独立执行；搜索从默认参数开始建立内部参考。"
+  },
+  "regret_threshold": 0.05,
+  "objective": {
+    "weights": {
+      "quality": 1.0,
+      "compression": 1.0,
+      "road": 0.5,
+      "runtime": 0.2
+    },
+    "length_ratio_floor": 0.98,
+    "min_applicable_length_m": 200.0,
+    "fidelity_scale_m": 30.0,
+    "warning": "确定性搜索是内部目标参考，不是现实道路真值。"
+  },
+  "parameter_defaults": {
+    "dt_threshold": 30.0,
+    "dist_threshold": 400.0,
+    "max_speed_mps": 38.0,
+    "max_accel_mps2": 6.0,
+    "max_turn_deg": 150.0,
+    "dp_tolerance": 5.0,
+    "min_seg_points": 5.0,
+    "min_seg_length_m": 65.0,
+    "smooth_window": 5.0
+  },
+  "parameter_bounds": [
+    {
+      "name": "dt_threshold",
+      "low": 15.0,
+      "high": 180.0,
+      "default": 30.0,
+      "unit": "s",
+      "integer": true,
+      "rationale": "切分用的时间间隔上界。数据 dt 主频 10s、p95 20s 且 10/20 双峰，故下界取 15s（保住正常 20s 采样），上界 180s（超过即为真实停车/失联）。默认 30s 是经验值但在此数据集上偏大，属于应当被实验推翻的起点。"
+    },
+    {
+      "name": "dist_threshold",
+      "low": 50.0,
+      "high": 3000.0,
+      "default": 400.0,
+      "unit": "m",
+      "integer": false,
+      "rationale": "切分用的空间跳跃上界。物理推导 = dt × 限速 × 安全系数，dt=20s 时 20×33.3×1.5≈1000m；下界 50m 用于拦住静止漂移。默认 400m 对应 20m/s × 20s，与讲义一致。"
+    },
+    {
+      "name": "max_speed_mps",
+      "low": 15.0,
+      "high": 55.0,
+      "default": 38.0,
+      "unit": "m/s",
+      "integer": false,
+      "rationale": "速度突变上界。下界 15m/s=54km/h 低于城区限速会误杀正常行驶；上界 55m/s≈198km/h 覆盖 GPS 噪声下的高速路段。默认 38m/s≈137km/h，高于任何合法城市行驶速度。"
+    },
+    {
+      "name": "max_accel_mps2",
+      "low": 1.0,
+      "high": 15.0,
+      "default": 6.0,
+      "unit": "m/s^2",
+      "integer": false,
+      "rationale": "加速度突变上界。乘用车紧急制动约 -8m/s^2、起步约 3m/s^2；取 6m/s^2 可容忍急刹而不放过 GPS 跳变造成的假加速度。"
+    },
+    {
+      "name": "max_turn_deg",
+      "low": 45.0,
+      "high": 175.0,
+      "default": 150.0,
+      "unit": "deg",
+      "integer": false,
+      "rationale": "单点转向角上界，用于识别漂移毛刺。真实路口掉头接近 180°但会持续多点；单点突变超过 150° 更可能是定位漂移。上界 175° 保留极限掉头。"
+    },
+    {
+      "name": "dp_tolerance",
+      "low": 0.5,
+      "high": 30.0,
+      "default": 5.0,
+      "unit": "m",
+      "integer": false,
+      "rationale": "DP 压缩容差。理论上限约为 GPS 定位精度 CEP（8m）——超过它就是在删真实几何。下界 0.5m 避免退化为不压缩；默认 5m 与讲义一致。"
+    },
+    {
+      "name": "min_seg_points",
+      "low": 2.0,
+      "high": 50.0,
+      "default": 5.0,
+      "unit": "pt",
+      "integer": true,
+      "rationale": "一个分段至少含有的点数。少于 2 点无法构成轨迹；默认 5 点与讲义一致。"
+    },
+    {
+      "name": "min_seg_length_m",
+      "low": 0.0,
+      "high": 500.0,
+      "default": 65.0,
+      "unit": "m",
+      "integer": false,
+      "rationale": "分段最小长度。默认 65m 与讲义一致，用于滤除静止抖动碎片。"
+    },
+    {
+      "name": "smooth_window",
+      "low": 2.0,
+      "high": 15.0,
+      "default": 5.0,
+      "unit": "pt",
+      "integer": true,
+      "rationale": "中值平滑窗口点数（奇数）。窗口过小无法压住孤立毛刺，过大（>15 点 ≈ 150s）会削平真实转弯。"
+    }
+  ]
+}

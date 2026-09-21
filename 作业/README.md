@@ -2,7 +2,7 @@
 
 对应课程作业的**任务③**：让 LLM 选择评估工具并提出参数建议，再用定量指标核验建议。
 
-完整文件导航见 [任务三_代码与目录清单.md](任务三_代码与目录清单.md)。当前正式实验结论见 [experiments/llm_assisted_20260920/实验报告.md](experiments/llm_assisted_20260920/实验报告.md)。
+完整文件导航见 [任务三_代码与目录清单.md](任务三_代码与目录清单.md)。当前真实模型实验结论见 [experiments/llm_assisted_ecnu_20260921/实验报告.md](experiments/llm_assisted_ecnu_20260921/实验报告.md)；`llm_assisted_20260920` 保留为 Mock 对照。
 
 ---
 
@@ -37,10 +37,10 @@
 python -m pip install -r requirements.txt
 python -m pytest tests -q
 
-# 接真实模型（任何 OpenAI 兼容端点）
+# 接 ECNU 真实模型
 export DSH_TRAJ_LLM_API_KEY=sk-xxx
-export DSH_TRAJ_LLM_BASE_URL=https://api.deepseek.com/v1
-export DSH_TRAJ_LLM_MODEL=deepseek-chat
+export DSH_TRAJ_LLM_BASE_URL=https://chat.ecnu.edu.cn/open/api/v1
+export DSH_TRAJ_LLM_MODEL=ecnu-plus
 ```
 
 ```python
@@ -146,3 +146,24 @@ Obsidian vault 就是一堆 `.md`，Python 用标准库直接读写，
 **注意**：关闭搜索时 regret 是绝对口径（最优=基线），
 **不能**与含搜索模式的归一化 regret 直接比较。代码会在
 `result.search["caveat"]` 里标注这一点。
+
+### 真实 ECNU 三轮结果
+
+固定使用 12 条 demo、12 条不重叠 holdout，四种模式各重复三轮。目标函数适用的样本每模式为 24 个；12 个静止短轨迹标为 `applicable=False`，不进入普通得分均值。
+
+| 模式 | 相对固定基线平均变化 | 95% bootstrap CI | 超过基线比例 | LLM 调用 |
+|---|---:|---:|---:|---:|
+| `llm-only` | -0.000050 | [-0.006178, 0.005441] | 58.3% | 36 |
+| `search-only` | -0.000555 | [-0.001081, -0.000142] | 37.5% | **0** |
+| `llm+search` | +0.000429 | [-0.005874, 0.006810] | 54.2% | 39 |
+| `llm+memory+search` | +0.001645 | [-0.004523, 0.007489] | 58.3% | 48 |
+
+Memory 与无 Memory 的配对差值均值为 +0.001236，95% CI 为 [-0.000851, 0.003498]，区间覆盖 0。三轮 L2 参数区域各自只有 1–2 个准入样本，其中 `moving/degraded` 三轮合计仅准入 1 条，因此当前实验尚未检出稳定的 Memory 增益，也不能据此判断 Memory 机制无效。
+
+运行入口：
+
+```bash
+python experiments/llm_assisted_ecnu_20260921/run_real_ablation.py --run
+```
+
+脚本逐 case 写入 JSONL，可从中断处恢复；若 provider 回退为 Mock 会立即终止。完整调用、token、延迟、分层与置信区间均保存在该实验目录。

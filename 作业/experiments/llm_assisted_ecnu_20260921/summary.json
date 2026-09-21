@@ -1,0 +1,3918 @@
+{
+  "experiment": {
+    "git_commit_sha": "869af59c55896844570d1982e1bfc2300fb6bd9a",
+    "date": "2026-09-21",
+    "provider": "OpenAICompatProvider",
+    "model": "ecnu-plus",
+    "base_url": "https://chat.ecnu.edu.cn/open/api/v1",
+    "repetitions": 3,
+    "demo_n_per_repetition": 12,
+    "holdout_n_per_mode_per_repetition": 12
+  },
+  "actual_usage": {
+    "llm_calls": 167,
+    "prompt_tokens": 529980,
+    "completion_tokens": 37761,
+    "case_elapsed_ms_sum": 1416832.56,
+    "case_elapsed_s_sum": 1416.83,
+    "failed_cases": 0,
+    "retry_count": 0,
+    "provider_error_count": 0
+  },
+  "mode_summary": {
+    "llm-only": {
+      "n_total": 36,
+      "n_success": 36,
+      "n_applicable": 24,
+      "score_delta": {
+        "n": 24,
+        "mean": -5.041666666665464e-05,
+        "median": 0.0031525000000000025,
+        "bootstrap_95_ci": [
+          -0.006178416666666649,
+          0.0054413750000000165
+        ]
+      },
+      "baseline_beaten_rate": {
+        "n": 24,
+        "mean": 0.5833333333333334,
+        "median": 1.0,
+        "bootstrap_95_ci": [
+          0.375,
+          0.7916666666666666
+        ]
+      },
+      "constraint_violation_rate": 0.05555555555555555,
+      "clamp_rate": 0.05555555555555555,
+      "json_success_rate": 1.0,
+      "direction_accuracy": {
+        "n": 24,
+        "mean": 0.6934041666666667,
+        "median": 0.6905,
+        "bootstrap_95_ci": [
+          0.6272166666666666,
+          0.7602375
+        ]
+      },
+      "llm_calls": 36,
+      "prompt_tokens": 105912,
+      "completion_tokens": 9600,
+      "latency_ms": {
+        "n": 36,
+        "mean": 4467.5408333333335,
+        "median": 3322.5699999999997,
+        "bootstrap_95_ci": [
+          3428.8269444444445,
+          5828.555555555556
+        ]
+      },
+      "failure_rate": 0.0,
+      "retry_count": 0,
+      "provider_error_count": 0
+    },
+    "search-only": {
+      "n_total": 36,
+      "n_success": 36,
+      "n_applicable": 24,
+      "score_delta": {
+        "n": 24,
+        "mean": -0.0005545833333333375,
+        "median": -3.600000000000825e-05,
+        "bootstrap_95_ci": [
+          -0.0010807916666666824,
+          -0.00014166666666667418
+        ]
+      },
+      "baseline_beaten_rate": {
+        "n": 24,
+        "mean": 0.375,
+        "median": 0.0,
+        "bootstrap_95_ci": [
+          0.20833333333333334,
+          0.5833333333333334
+        ]
+      },
+      "constraint_violation_rate": 0.0,
+      "clamp_rate": 0.0,
+      "json_success_rate": null,
+      "direction_accuracy": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "bootstrap_95_ci": null
+      },
+      "llm_calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "latency_ms": {
+        "n": 36,
+        "mean": 4586.451944444444,
+        "median": 2994.465,
+        "bootstrap_95_ci": [
+          3235.8975,
+          6002.0825
+        ]
+      },
+      "failure_rate": 0.0,
+      "retry_count": 0,
+      "provider_error_count": 0
+    },
+    "llm+search": {
+      "n_total": 36,
+      "n_success": 36,
+      "n_applicable": 24,
+      "score_delta": {
+        "n": 24,
+        "mean": 0.00042850000000000293,
+        "median": 0.00017900000000004024,
+        "bootstrap_95_ci": [
+          -0.005873750000000007,
+          0.006809666666666679
+        ]
+      },
+      "baseline_beaten_rate": {
+        "n": 24,
+        "mean": 0.5416666666666666,
+        "median": 1.0,
+        "bootstrap_95_ci": [
+          0.3333333333333333,
+          0.75
+        ]
+      },
+      "constraint_violation_rate": 0.0,
+      "clamp_rate": 0.0,
+      "json_success_rate": 1.0,
+      "direction_accuracy": {
+        "n": 23,
+        "mean": 0.7631434782608695,
+        "median": 0.8,
+        "bootstrap_95_ci": [
+          0.7141304347826087,
+          0.8121521739130435
+        ]
+      },
+      "llm_calls": 39,
+      "prompt_tokens": 116397,
+      "completion_tokens": 10111,
+      "latency_ms": {
+        "n": 36,
+        "mean": 11111.610833333332,
+        "median": 7768.8099999999995,
+        "bootstrap_95_ci": [
+          7464.193888888888,
+          16553.11611111111
+        ]
+      },
+      "failure_rate": 0.0,
+      "retry_count": 0,
+      "provider_error_count": 0
+    },
+    "llm+memory+search": {
+      "n_total": 36,
+      "n_success": 36,
+      "n_applicable": 24,
+      "score_delta": {
+        "n": 24,
+        "mean": 0.0016446666666666808,
+        "median": 0.002192499999999986,
+        "bootstrap_95_ci": [
+          -0.004523333333333321,
+          0.007488625000000006
+        ]
+      },
+      "baseline_beaten_rate": {
+        "n": 24,
+        "mean": 0.5833333333333334,
+        "median": 1.0,
+        "bootstrap_95_ci": [
+          0.375,
+          0.7916666666666666
+        ]
+      },
+      "constraint_violation_rate": 0.05555555555555555,
+      "clamp_rate": 0.05555555555555555,
+      "json_success_rate": 1.0,
+      "direction_accuracy": {
+        "n": 24,
+        "mean": 0.5656249999999999,
+        "median": 0.5,
+        "bootstrap_95_ci": [
+          0.5135416666666667,
+          0.625
+        ]
+      },
+      "llm_calls": 48,
+      "prompt_tokens": 166988,
+      "completion_tokens": 9537,
+      "latency_ms": {
+        "n": 36,
+        "mean": 10595.769722222223,
+        "median": 9274.46,
+        "bootstrap_95_ci": [
+          7941.955277777778,
+          14113.940833333334
+        ]
+      },
+      "failure_rate": 0.0,
+      "retry_count": 0,
+      "provider_error_count": 0
+    }
+  },
+  "paired_memory_effect": {
+    "definition": "proposal_score(llm+memory+search) - proposal_score(llm+search)",
+    "stats": {
+      "n": 24,
+      "mean": 0.0012355416666666845,
+      "median": 2.0999999999993246e-05,
+      "bootstrap_95_ci": [
+        -0.0008508333333333099,
+        0.00349808333333336
+      ]
+    },
+    "wins": 16,
+    "ties": 0,
+    "losses": 8,
+    "pairs": [
+      {
+        "repetition": 1,
+        "vehicle_id": "10",
+        "score_difference_memory_minus_no_memory": 0.00023300000000003873
+      },
+      {
+        "repetition": 1,
+        "vehicle_id": "22",
+        "score_difference_memory_minus_no_memory": 9.000000000036756e-06
+      },
+      {
+        "repetition": 1,
+        "vehicle_id": "153",
+        "score_difference_memory_minus_no_memory": -0.0013519999999999088
+      },
+      {
+        "repetition": 1,
+        "vehicle_id": "154",
+        "score_difference_memory_minus_no_memory": 0.00012900000000004574
+      },
+      {
+        "repetition": 1,
+        "vehicle_id": "165",
+        "score_difference_memory_minus_no_memory": 9.99999999995449e-06
+      },
+      {
+        "repetition": 1,
+        "vehicle_id": "194",
+        "score_difference_memory_minus_no_memory": -0.00010599999999993948
+      },
+      {
+        "repetition": 1,
+        "vehicle_id": "201",
+        "score_difference_memory_minus_no_memory": 0.0005519999999999969
+      },
+      {
+        "repetition": 1,
+        "vehicle_id": "208",
+        "score_difference_memory_minus_no_memory": 0.0006570000000000187
+      },
+      {
+        "repetition": 2,
+        "vehicle_id": "10",
+        "score_difference_memory_minus_no_memory": 1.2000000000012001e-05
+      },
+      {
+        "repetition": 2,
+        "vehicle_id": "22",
+        "score_difference_memory_minus_no_memory": 9.000000000036756e-06
+      },
+      {
+        "repetition": 2,
+        "vehicle_id": "153",
+        "score_difference_memory_minus_no_memory": 0.016042
+      },
+      {
+        "repetition": 2,
+        "vehicle_id": "154",
+        "score_difference_memory_minus_no_memory": 5.6000000000056005e-05
+      },
+      {
+        "repetition": 2,
+        "vehicle_id": "165",
+        "score_difference_memory_minus_no_memory": -4.000000000004e-06
+      },
+      {
+        "repetition": 2,
+        "vehicle_id": "194",
+        "score_difference_memory_minus_no_memory": -0.00016799999999994597
+      },
+      {
+        "repetition": 2,
+        "vehicle_id": "201",
+        "score_difference_memory_minus_no_memory": -0.013694000000000095
+      },
+      {
+        "repetition": 2,
+        "vehicle_id": "208",
+        "score_difference_memory_minus_no_memory": 0.00940299999999994
+      },
+      {
+        "repetition": 3,
+        "vehicle_id": "10",
+        "score_difference_memory_minus_no_memory": 0.014269000000000032
+      },
+      {
+        "repetition": 3,
+        "vehicle_id": "22",
+        "score_difference_memory_minus_no_memory": 2.999999999997449e-05
+      },
+      {
+        "repetition": 3,
+        "vehicle_id": "153",
+        "score_difference_memory_minus_no_memory": -5.299999999996974e-05
+      },
+      {
+        "repetition": 3,
+        "vehicle_id": "154",
+        "score_difference_memory_minus_no_memory": -3.999999999992898e-05
+      },
+      {
+        "repetition": 3,
+        "vehicle_id": "165",
+        "score_difference_memory_minus_no_memory": -2.9999999999752447e-06
+      },
+      {
+        "repetition": 3,
+        "vehicle_id": "194",
+        "score_difference_memory_minus_no_memory": 6.20000000000065e-05
+      },
+      {
+        "repetition": 3,
+        "vehicle_id": "201",
+        "score_difference_memory_minus_no_memory": 0.0034170000000000034
+      },
+      {
+        "repetition": 3,
+        "vehicle_id": "208",
+        "score_difference_memory_minus_no_memory": 0.00018300000000004424
+      }
+    ]
+  },
+  "per_stratum": {
+    "llm-only": {
+      "stationary/ok": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "bootstrap_95_ci": null
+      },
+      "stationary/degraded": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "bootstrap_95_ci": null
+      },
+      "mixed/ok": {
+        "n": 6,
+        "mean": -0.02114266666666668,
+        "median": -0.021175000000000027,
+        "bootstrap_95_ci": [
+          -0.025532666666666676,
+          -0.016741500000000003
+        ]
+      },
+      "mixed/degraded": {
+        "n": 6,
+        "mean": 0.004422500000000033,
+        "median": 0.005784500000000026,
+        "bootstrap_95_ci": [
+          0.0002940000000000535,
+          0.00821783333333335
+        ]
+      },
+      "moving/ok": {
+        "n": 6,
+        "mean": 0.017340666666666688,
+        "median": 0.016223000000000043,
+        "bootstrap_95_ci": [
+          0.01495200000000002,
+          0.01973800000000005
+        ]
+      },
+      "moving/degraded": {
+        "n": 6,
+        "mean": -0.0008221666666666608,
+        "median": 0.003078499999999984,
+        "bootstrap_95_ci": [
+          -0.004823166666666638,
+          0.003141999999999978
+        ]
+      }
+    },
+    "search-only": {
+      "stationary/ok": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "bootstrap_95_ci": null
+      },
+      "stationary/degraded": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "bootstrap_95_ci": null
+      },
+      "mixed/ok": {
+        "n": 6,
+        "mean": 4.083333333335104e-05,
+        "median": -1.1499999999997623e-05,
+        "bootstrap_95_ci": [
+          -4.149999999999062e-05,
+          0.00017583333333337503
+        ]
+      },
+      "mixed/degraded": {
+        "n": 6,
+        "mean": -0.0016685000000000172,
+        "median": -0.001639500000000016,
+        "bootstrap_95_ci": [
+          -0.0028275000000000015,
+          -0.0005211666666666837
+        ]
+      },
+      "moving/ok": {
+        "n": 6,
+        "mean": 6.733333333330815e-05,
+        "median": 3.7500000000023626e-05,
+        "bootstrap_95_ci": [
+          -6.666666667043408e-07,
+          0.00015366666666660755
+        ]
+      },
+      "moving/degraded": {
+        "n": 6,
+        "mean": -0.0006579999999999919,
+        "median": -0.00037049999999999583,
+        "bootstrap_95_ci": [
+          -0.001035666666666657,
+          -0.0002851666666666512
+        ]
+      }
+    },
+    "llm+search": {
+      "stationary/ok": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "bootstrap_95_ci": null
+      },
+      "stationary/degraded": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "bootstrap_95_ci": null
+      },
+      "mixed/ok": {
+        "n": 6,
+        "mean": -0.02118033333333334,
+        "median": -0.021249500000000004,
+        "bootstrap_95_ci": [
+          -0.02556550000000001,
+          -0.01676566666666668
+        ]
+      },
+      "mixed/degraded": {
+        "n": 6,
+        "mean": 0.004791500000000022,
+        "median": 0.004819500000000032,
+        "bootstrap_95_ci": [
+          0.0002903333333333369,
+          0.00928066666666666
+        ]
+      },
+      "moving/ok": {
+        "n": 6,
+        "mean": 0.016623166666666633,
+        "median": 0.016218999999999983,
+        "bootstrap_95_ci": [
+          0.012395333333333314,
+          0.020390666666666613
+        ]
+      },
+      "moving/degraded": {
+        "n": 6,
+        "mean": 0.001479666666666694,
+        "median": 0.00017900000000004024,
+        "bootstrap_95_ci": [
+          -0.005846666666666629,
+          0.010642166666666711
+        ]
+      }
+    },
+    "llm+memory+search": {
+      "stationary/ok": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "bootstrap_95_ci": null
+      },
+      "stationary/degraded": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "bootstrap_95_ci": null
+      },
+      "mixed/ok": {
+        "n": 6,
+        "mean": -0.01875733333333332,
+        "median": -0.021134999999999987,
+        "bootstrap_95_ci": [
+          -0.025515166666666634,
+          -0.009622333333333297
+        ]
+      },
+      "mixed/degraded": {
+        "n": 6,
+        "mean": 0.004726666666666675,
+        "median": 0.004785499999999998,
+        "bootstrap_95_ci": [
+          0.00014450000000001037,
+          0.009282833333333351
+        ]
+      },
+      "moving/ok": {
+        "n": 6,
+        "mean": 0.019065833333333393,
+        "median": 0.01885950000000003,
+        "bootstrap_95_ci": [
+          0.017012833333333404,
+          0.021328666666666735
+        ]
+      },
+      "moving/degraded": {
+        "n": 6,
+        "mean": 0.0015434999999999754,
+        "median": 0.002192499999999986,
+        "bootstrap_95_ci": [
+          -0.003089666666666676,
+          0.00556049999999995
+        ]
+      }
+    }
+  },
+  "per_repetition": {
+    "1": {
+      "llm-only": {
+        "n": 8,
+        "mean": 0.00020075000000001342,
+        "median": 0.003703500000000026,
+        "bootstrap_95_ci": [
+          -0.01041937499999998,
+          0.010193875000000033
+        ]
+      },
+      "search-only": {
+        "n": 8,
+        "mean": -0.000597375000000018,
+        "median": -3.600000000000825e-05,
+        "bootstrap_95_ci": [
+          -0.0014113750000000064,
+          1.9874999999967835e-05
+        ]
+      },
+      "llm+search": {
+        "n": 8,
+        "mean": 0.001166124999999997,
+        "median": 0.001576999999999995,
+        "bootstrap_95_ci": [
+          -0.009460500000000018,
+          0.011160124999999972
+        ]
+      },
+      "llm+memory+search": {
+        "n": 8,
+        "mean": 0.0011842500000000186,
+        "median": 0.0022059999999999858,
+        "bootstrap_95_ci": [
+          -0.009229624999999998,
+          0.010917250000000017
+        ]
+      }
+    },
+    "2": {
+      "llm-only": {
+        "n": 8,
+        "mean": -9.474999999998374e-05,
+        "median": 0.0006234999999999991,
+        "bootstrap_95_ci": [
+          -0.010492000000000001,
+          0.010161624999999994
+        ]
+      },
+      "search-only": {
+        "n": 8,
+        "mean": -0.0005006250000000045,
+        "median": 2.500000000016378e-06,
+        "bootstrap_95_ci": [
+          -0.0013696249999999716,
+          1.1999999999984245e-05
+        ]
+      },
+      "llm+search": {
+        "n": 8,
+        "mean": 0.000600375000000021,
+        "median": 0.00243850000000001,
+        "bootstrap_95_ci": [
+          -0.010527999999999996,
+          0.011206750000000036
+        ]
+      },
+      "llm+memory+search": {
+        "n": 8,
+        "mean": 0.002022000000000017,
+        "median": 0.0050134999999999486,
+        "bootstrap_95_ci": [
+          -0.00894287500000001,
+          0.011983250000000022
+        ]
+      }
+    },
+    "3": {
+      "llm-only": {
+        "n": 8,
+        "mean": -0.0002572499999999936,
+        "median": 0.003078499999999984,
+        "bootstrap_95_ci": [
+          -0.010237500000000017,
+          0.00820062500000001
+        ]
+      },
+      "search-only": {
+        "n": 8,
+        "mean": -0.0005657499999999899,
+        "median": -5.8000000000002494e-05,
+        "bootstrap_95_ci": [
+          -0.0014453750000000265,
+          7.275000000003806e-05
+        ]
+      },
+      "llm+search": {
+        "n": 8,
+        "mean": -0.0004810000000000092,
+        "median": -0.0008329999999999727,
+        "bootstrap_95_ci": [
+          -0.011124124999999985,
+          0.010029249999999962
+        ]
+      },
+      "llm+memory+search": {
+        "n": 8,
+        "mean": 0.001727750000000007,
+        "median": 0.0016790000000000138,
+        "bootstrap_95_ci": [
+          -0.009021500000000016,
+          0.011171125000000018
+        ]
+      }
+    }
+  },
+  "memory_diagnostics": {
+    "1": {
+      "stats": {
+        "n_episodic": 12,
+        "n_admitted": 7,
+        "admit_rate": 0.5833,
+        "n_procedural": 35,
+        "by_regime": [
+          {
+            "regime": "mixed",
+            "n": 2,
+            "mean_score": 0.6573
+          },
+          {
+            "regime": "moving",
+            "n": 1,
+            "mean_score": 0.5144
+          },
+          {
+            "regime": "stationary",
+            "n": 4,
+            "mean_score": 0.0
+          }
+        ]
+      },
+      "demo_total_by_stratum": {
+        "stationary/ok": 2,
+        "stationary/degraded": 2,
+        "mixed/ok": 2,
+        "mixed/degraded": 2,
+        "moving/ok": 2,
+        "moving/degraded": 2
+      },
+      "demo_admitted_by_stratum": {
+        "stationary/ok": 2,
+        "stationary/degraded": 2,
+        "mixed/ok": 1,
+        "mixed/degraded": 1,
+        "moving/ok": 1,
+        "moving/degraded": 0
+      },
+      "regions": [
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "dist_threshold",
+          "low": 50.0,
+          "high": 50.0,
+          "median": 50.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "dist_threshold",
+          "low": 50.0,
+          "high": 50.0,
+          "median": 50.0,
+          "n_samples": 1,
+          "mean_regret": 0.0212,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "dist_threshold",
+          "low": 50.0,
+          "high": 50.0,
+          "median": 50.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dist_threshold",
+          "low": 1000.0,
+          "high": 1000.0,
+          "median": 1000.0,
+          "n_samples": 1,
+          "mean_regret": 0.0044,
+          "mean_score": 0.6175
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 6.0,
+          "high": 6.0,
+          "median": 6.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.0212,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "dp_tolerance",
+          "low": 2.25,
+          "high": 4.75,
+          "median": 3.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.5144
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.0044,
+          "mean_score": 0.6175
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 1,
+          "mean_regret": 0.0212,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "dt_threshold",
+          "low": 24.25,
+          "high": 24.75,
+          "median": 24.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 35.0,
+          "high": 35.0,
+          "median": 35.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.5144
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 1,
+          "mean_regret": 0.0044,
+          "mean_score": 0.6175
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "max_accel_mps2",
+          "low": 1.0,
+          "high": 1.0,
+          "median": 1.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "max_accel_mps2",
+          "low": 1.0,
+          "high": 1.0,
+          "median": 1.0,
+          "n_samples": 1,
+          "mean_regret": 0.0212,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "max_accel_mps2",
+          "low": 6.0,
+          "high": 6.0,
+          "median": 6.0,
+          "n_samples": 1,
+          "mean_regret": 0.0044,
+          "mean_score": 0.6175
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 20.75,
+          "high": 32.25,
+          "median": 26.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 15.0,
+          "high": 15.0,
+          "median": 15.0,
+          "n_samples": 1,
+          "mean_regret": 0.0212,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "max_speed_mps",
+          "low": 38.0,
+          "high": 38.0,
+          "median": 38.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 15.0,
+          "high": 15.0,
+          "median": 15.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.5144
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "max_speed_mps",
+          "low": 43.0,
+          "high": 43.0,
+          "median": 43.0,
+          "n_samples": 1,
+          "mean_regret": 0.0044,
+          "mean_score": 0.6175
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "max_turn_deg",
+          "low": 45.0,
+          "high": 45.0,
+          "median": 45.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "max_turn_deg",
+          "low": 45.0,
+          "high": 45.0,
+          "median": 45.0,
+          "n_samples": 1,
+          "mean_regret": 0.0212,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "max_turn_deg",
+          "low": 150.0,
+          "high": 150.0,
+          "median": 150.0,
+          "n_samples": 1,
+          "mean_regret": 0.0044,
+          "mean_score": 0.6175
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "min_seg_length_m",
+          "low": 125.0,
+          "high": 375.0,
+          "median": 250.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "min_seg_length_m",
+          "low": 20.0,
+          "high": 20.0,
+          "median": 20.0,
+          "n_samples": 1,
+          "mean_regret": 0.0212,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "min_seg_length_m",
+          "low": 65.0,
+          "high": 65.0,
+          "median": 65.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "min_seg_length_m",
+          "low": 65.0,
+          "high": 65.0,
+          "median": 65.0,
+          "n_samples": 1,
+          "mean_regret": 0.0044,
+          "mean_score": 0.6175
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "min_seg_points",
+          "low": 2.0,
+          "high": 2.0,
+          "median": 2.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "min_seg_points",
+          "low": 2.0,
+          "high": 2.0,
+          "median": 2.0,
+          "n_samples": 1,
+          "mean_regret": 0.0212,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "min_seg_points",
+          "low": 5.0,
+          "high": 5.0,
+          "median": 5.0,
+          "n_samples": 1,
+          "mean_regret": 0.0044,
+          "mean_score": 0.6175
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "smooth_window",
+          "low": 2.0,
+          "high": 2.0,
+          "median": 2.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "smooth_window",
+          "low": 2.0,
+          "high": 2.0,
+          "median": 2.0,
+          "n_samples": 1,
+          "mean_regret": 0.0212,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "smooth_window",
+          "low": 5.0,
+          "high": 5.0,
+          "median": 5.0,
+          "n_samples": 1,
+          "mean_regret": 0.0044,
+          "mean_score": 0.6175
+        }
+      ]
+    },
+    "2": {
+      "stats": {
+        "n_episodic": 12,
+        "n_admitted": 9,
+        "admit_rate": 0.75,
+        "n_procedural": 21,
+        "by_regime": [
+          {
+            "regime": "mixed",
+            "n": 2,
+            "mean_score": 0.6574
+          },
+          {
+            "regime": "moving",
+            "n": 3,
+            "mean_score": 0.551
+          },
+          {
+            "regime": "stationary",
+            "n": 4,
+            "mean_score": 0.0
+          }
+        ]
+      },
+      "demo_total_by_stratum": {
+        "stationary/ok": 2,
+        "stationary/degraded": 2,
+        "mixed/ok": 2,
+        "mixed/degraded": 2,
+        "moving/ok": 2,
+        "moving/degraded": 2
+      },
+      "demo_admitted_by_stratum": {
+        "stationary/ok": 2,
+        "stationary/degraded": 2,
+        "mixed/ok": 1,
+        "mixed/degraded": 1,
+        "moving/ok": 2,
+        "moving/degraded": 1
+      },
+      "regions": [
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 1.0,
+          "high": 1.0,
+          "median": 1.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.0211,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "dp_tolerance",
+          "low": 1.0,
+          "high": 1.0,
+          "median": 1.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "degraded",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.003,
+          "mean_score": 0.5896
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 1,
+          "mean_regret": 0.0211,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "dt_threshold",
+          "low": 25.0,
+          "high": 27.0,
+          "median": 26.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "degraded",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 1,
+          "mean_regret": 0.003,
+          "mean_score": 0.5896
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 15.0,
+          "high": 15.0,
+          "median": 15.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 38.0,
+          "high": 38.0,
+          "median": 38.0,
+          "n_samples": 1,
+          "mean_regret": 0.0211,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "max_speed_mps",
+          "low": 15.0,
+          "high": 15.0,
+          "median": 15.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 30.5,
+          "high": 35.5,
+          "median": 33.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "max_speed_mps",
+          "low": 38.0,
+          "high": 38.0,
+          "median": 38.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "degraded",
+          "param": "max_speed_mps",
+          "low": 30.0,
+          "high": 30.0,
+          "median": 30.0,
+          "n_samples": 1,
+          "mean_regret": 0.003,
+          "mean_score": 0.5896
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "min_seg_length_m",
+          "low": 1.0,
+          "high": 1.0,
+          "median": 1.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "min_seg_length_m",
+          "low": 1.0,
+          "high": 1.0,
+          "median": 1.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "min_seg_points",
+          "low": 2.0,
+          "high": 2.0,
+          "median": 2.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        }
+      ]
+    },
+    "3": {
+      "stats": {
+        "n_episodic": 12,
+        "n_admitted": 8,
+        "admit_rate": 0.6667,
+        "n_procedural": 24,
+        "by_regime": [
+          {
+            "regime": "mixed",
+            "n": 2,
+            "mean_score": 0.6574
+          },
+          {
+            "regime": "moving",
+            "n": 2,
+            "mean_score": 0.5317
+          },
+          {
+            "regime": "stationary",
+            "n": 4,
+            "mean_score": 0.0
+          }
+        ]
+      },
+      "demo_total_by_stratum": {
+        "stationary/ok": 2,
+        "stationary/degraded": 2,
+        "mixed/ok": 2,
+        "mixed/degraded": 2,
+        "moving/ok": 2,
+        "moving/degraded": 2
+      },
+      "demo_admitted_by_stratum": {
+        "stationary/ok": 2,
+        "stationary/degraded": 2,
+        "mixed/ok": 1,
+        "mixed/degraded": 1,
+        "moving/ok": 2,
+        "moving/degraded": 0
+      },
+      "regions": [
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dist_threshold",
+          "low": 400.0,
+          "high": 400.0,
+          "median": 400.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 2.75,
+          "high": 6.25,
+          "median": 4.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 6.0,
+          "high": 6.0,
+          "median": 6.0,
+          "n_samples": 1,
+          "mean_regret": 0.0211,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "dp_tolerance",
+          "low": 2.375,
+          "high": 6.125,
+          "median": 4.25,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 17.25,
+          "high": 21.75,
+          "median": 19.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 1,
+          "mean_regret": 0.0211,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "dt_threshold",
+          "low": 17.25,
+          "high": 21.75,
+          "median": 19.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "max_accel_mps2",
+          "low": 6.0,
+          "high": 6.0,
+          "median": 6.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 20.75,
+          "high": 32.25,
+          "median": 26.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 38.0,
+          "high": 38.0,
+          "median": 38.0,
+          "n_samples": 1,
+          "mean_regret": 0.0211,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "max_speed_mps",
+          "low": 20.75,
+          "high": 32.25,
+          "median": 26.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 38.0,
+          "high": 38.0,
+          "median": 38.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "max_speed_mps",
+          "low": 38.0,
+          "high": 38.0,
+          "median": 38.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "max_turn_deg",
+          "low": 150.0,
+          "high": 150.0,
+          "median": 150.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "min_seg_length_m",
+          "low": 0.0,
+          "high": 0.0,
+          "median": 0.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "min_seg_length_m",
+          "low": 0.0,
+          "high": 0.0,
+          "median": 0.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "min_seg_length_m",
+          "low": 65.0,
+          "high": 65.0,
+          "median": 65.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "min_seg_points",
+          "low": 2.0,
+          "high": 2.0,
+          "median": 2.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "min_seg_points",
+          "low": 5.0,
+          "high": 5.0,
+          "median": 5.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "smooth_window",
+          "low": 5.0,
+          "high": 5.0,
+          "median": 5.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        }
+      ]
+    }
+  },
+  "memory_coverage_summary": {
+    "holdout_rows": 36,
+    "prior_available_rows": 36,
+    "neighbor_count_distribution": {
+      "1": 4,
+      "2": 16,
+      "3": 4,
+      "4": 12
+    },
+    "neighbor_similarity": {
+      "n": 96,
+      "mean": 0.6023125,
+      "median": 0.5769500000000001,
+      "bootstrap_95_ci": [
+        0.5732802083333334,
+        0.630584375
+      ]
+    },
+    "suggested_region_count": {
+      "n": 36,
+      "mean": 4.111111111111111,
+      "median": 3.5,
+      "bootstrap_95_ci": [
+        3.7222222222222223,
+        4.5
+      ]
+    },
+    "procedural_region_n_samples": {
+      "n_regions": 80,
+      "min": 1,
+      "max": 2,
+      "distribution": {
+        "1": 51,
+        "2": 29
+      }
+    }
+  },
+  "holdout_memory_retrieval": [
+    {
+      "repetition": 1,
+      "vehicle_id": "2",
+      "regime": "stationary",
+      "timeline_quality": "ok",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 4,
+      "memory_neighbor_similarities": [
+        0.8567,
+        0.7512,
+        0.716,
+        0.5693
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "dist_threshold",
+          "low": 50.0,
+          "high": 50.0,
+          "median": 50.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 6.0,
+          "high": 6.0,
+          "median": 6.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "max_accel_mps2",
+          "low": 1.0,
+          "high": 1.0,
+          "median": 1.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 20.75,
+          "high": 32.25,
+          "median": 26.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "max_turn_deg",
+          "low": 45.0,
+          "high": 45.0,
+          "median": 45.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        }
+      ]
+    },
+    {
+      "repetition": 1,
+      "vehicle_id": "4",
+      "regime": "stationary",
+      "timeline_quality": "ok",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 4,
+      "memory_neighbor_similarities": [
+        0.8958,
+        0.7004,
+        0.6758,
+        0.4891
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "dist_threshold",
+          "low": 50.0,
+          "high": 50.0,
+          "median": 50.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 6.0,
+          "high": 6.0,
+          "median": 6.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "max_accel_mps2",
+          "low": 1.0,
+          "high": 1.0,
+          "median": 1.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 20.75,
+          "high": 32.25,
+          "median": 26.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "max_turn_deg",
+          "low": 45.0,
+          "high": 45.0,
+          "median": 45.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        }
+      ]
+    },
+    {
+      "repetition": 1,
+      "vehicle_id": "10",
+      "regime": "mixed",
+      "timeline_quality": "ok",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 2,
+      "memory_neighbor_similarities": [
+        0.4121,
+        0.4004
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "dist_threshold",
+          "low": 50.0,
+          "high": 50.0,
+          "median": 50.0,
+          "n_samples": 1,
+          "mean_regret": 0.0212,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.0212,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 1,
+          "mean_regret": 0.0212,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "max_accel_mps2",
+          "low": 1.0,
+          "high": 1.0,
+          "median": 1.0,
+          "n_samples": 1,
+          "mean_regret": 0.0212,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 15.0,
+          "high": 15.0,
+          "median": 15.0,
+          "n_samples": 1,
+          "mean_regret": 0.0212,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "max_turn_deg",
+          "low": 45.0,
+          "high": 45.0,
+          "median": 45.0,
+          "n_samples": 1,
+          "mean_regret": 0.0212,
+          "mean_score": 0.6971
+        }
+      ]
+    },
+    {
+      "repetition": 1,
+      "vehicle_id": "22",
+      "regime": "mixed",
+      "timeline_quality": "ok",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 2,
+      "memory_neighbor_similarities": [
+        0.741,
+        0.5432
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "dist_threshold",
+          "low": 50.0,
+          "high": 50.0,
+          "median": 50.0,
+          "n_samples": 1,
+          "mean_regret": 0.0212,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.0212,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 1,
+          "mean_regret": 0.0212,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "max_accel_mps2",
+          "low": 1.0,
+          "high": 1.0,
+          "median": 1.0,
+          "n_samples": 1,
+          "mean_regret": 0.0212,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 15.0,
+          "high": 15.0,
+          "median": 15.0,
+          "n_samples": 1,
+          "mean_regret": 0.0212,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "max_turn_deg",
+          "low": 45.0,
+          "high": 45.0,
+          "median": 45.0,
+          "n_samples": 1,
+          "mean_regret": 0.0212,
+          "mean_score": 0.6971
+        }
+      ]
+    },
+    {
+      "repetition": 1,
+      "vehicle_id": "111",
+      "regime": "stationary",
+      "timeline_quality": "degraded",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 4,
+      "memory_neighbor_similarities": [
+        0.7769,
+        0.75,
+        0.6817,
+        0.5967
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "dist_threshold",
+          "low": 50.0,
+          "high": 50.0,
+          "median": 50.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "dp_tolerance",
+          "low": 2.25,
+          "high": 4.75,
+          "median": 3.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "dt_threshold",
+          "low": 24.25,
+          "high": 24.75,
+          "median": 24.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "max_speed_mps",
+          "low": 38.0,
+          "high": 38.0,
+          "median": 38.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "min_seg_length_m",
+          "low": 65.0,
+          "high": 65.0,
+          "median": 65.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        }
+      ]
+    },
+    {
+      "repetition": 1,
+      "vehicle_id": "137",
+      "regime": "stationary",
+      "timeline_quality": "degraded",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 4,
+      "memory_neighbor_similarities": [
+        0.4566,
+        0.4552,
+        0.4542,
+        0.4174
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "dist_threshold",
+          "low": 50.0,
+          "high": 50.0,
+          "median": 50.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "dp_tolerance",
+          "low": 2.25,
+          "high": 4.75,
+          "median": 3.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "dt_threshold",
+          "low": 24.25,
+          "high": 24.75,
+          "median": 24.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "max_speed_mps",
+          "low": 38.0,
+          "high": 38.0,
+          "median": 38.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "min_seg_length_m",
+          "low": 65.0,
+          "high": 65.0,
+          "median": 65.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        }
+      ]
+    },
+    {
+      "repetition": 1,
+      "vehicle_id": "153",
+      "regime": "moving",
+      "timeline_quality": "ok",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 1,
+      "memory_neighbor_similarities": [
+        0.537
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.5144
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 35.0,
+          "high": 35.0,
+          "median": 35.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.5144
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 15.0,
+          "high": 15.0,
+          "median": 15.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.5144
+        }
+      ]
+    },
+    {
+      "repetition": 1,
+      "vehicle_id": "154",
+      "regime": "moving",
+      "timeline_quality": "ok",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 1,
+      "memory_neighbor_similarities": [
+        0.5995
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.5144
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 35.0,
+          "high": 35.0,
+          "median": 35.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.5144
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 15.0,
+          "high": 15.0,
+          "median": 15.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.5144
+        }
+      ]
+    },
+    {
+      "repetition": 1,
+      "vehicle_id": "165",
+      "regime": "mixed",
+      "timeline_quality": "degraded",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 2,
+      "memory_neighbor_similarities": [
+        0.7015,
+        0.4935
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dist_threshold",
+          "low": 1000.0,
+          "high": 1000.0,
+          "median": 1000.0,
+          "n_samples": 1,
+          "mean_regret": 0.0044,
+          "mean_score": 0.6175
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.0044,
+          "mean_score": 0.6175
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 1,
+          "mean_regret": 0.0044,
+          "mean_score": 0.6175
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "max_accel_mps2",
+          "low": 6.0,
+          "high": 6.0,
+          "median": 6.0,
+          "n_samples": 1,
+          "mean_regret": 0.0044,
+          "mean_score": 0.6175
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "max_speed_mps",
+          "low": 43.0,
+          "high": 43.0,
+          "median": 43.0,
+          "n_samples": 1,
+          "mean_regret": 0.0044,
+          "mean_score": 0.6175
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "max_turn_deg",
+          "low": 150.0,
+          "high": 150.0,
+          "median": 150.0,
+          "n_samples": 1,
+          "mean_regret": 0.0044,
+          "mean_score": 0.6175
+        }
+      ]
+    },
+    {
+      "repetition": 1,
+      "vehicle_id": "194",
+      "regime": "mixed",
+      "timeline_quality": "degraded",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 2,
+      "memory_neighbor_similarities": [
+        0.8247,
+        0.4793
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dist_threshold",
+          "low": 1000.0,
+          "high": 1000.0,
+          "median": 1000.0,
+          "n_samples": 1,
+          "mean_regret": 0.0044,
+          "mean_score": 0.6175
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.0044,
+          "mean_score": 0.6175
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 1,
+          "mean_regret": 0.0044,
+          "mean_score": 0.6175
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "max_accel_mps2",
+          "low": 6.0,
+          "high": 6.0,
+          "median": 6.0,
+          "n_samples": 1,
+          "mean_regret": 0.0044,
+          "mean_score": 0.6175
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "max_speed_mps",
+          "low": 43.0,
+          "high": 43.0,
+          "median": 43.0,
+          "n_samples": 1,
+          "mean_regret": 0.0044,
+          "mean_score": 0.6175
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "max_turn_deg",
+          "low": 150.0,
+          "high": 150.0,
+          "median": 150.0,
+          "n_samples": 1,
+          "mean_regret": 0.0044,
+          "mean_score": 0.6175
+        }
+      ]
+    },
+    {
+      "repetition": 1,
+      "vehicle_id": "201",
+      "regime": "moving",
+      "timeline_quality": "degraded",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 1,
+      "memory_neighbor_similarities": [
+        0.4083
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.5144
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 35.0,
+          "high": 35.0,
+          "median": 35.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.5144
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 15.0,
+          "high": 15.0,
+          "median": 15.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.5144
+        }
+      ]
+    },
+    {
+      "repetition": 1,
+      "vehicle_id": "208",
+      "regime": "moving",
+      "timeline_quality": "degraded",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 1,
+      "memory_neighbor_similarities": [
+        0.4556
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.5144
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 35.0,
+          "high": 35.0,
+          "median": 35.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.5144
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 15.0,
+          "high": 15.0,
+          "median": 15.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.5144
+        }
+      ]
+    },
+    {
+      "repetition": 2,
+      "vehicle_id": "2",
+      "regime": "stationary",
+      "timeline_quality": "ok",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 4,
+      "memory_neighbor_similarities": [
+        0.8567,
+        0.7512,
+        0.716,
+        0.5693
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 1.0,
+          "high": 1.0,
+          "median": 1.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 15.0,
+          "high": 15.0,
+          "median": 15.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "min_seg_length_m",
+          "low": 1.0,
+          "high": 1.0,
+          "median": 1.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "min_seg_points",
+          "low": 2.0,
+          "high": 2.0,
+          "median": 2.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        }
+      ]
+    },
+    {
+      "repetition": 2,
+      "vehicle_id": "4",
+      "regime": "stationary",
+      "timeline_quality": "ok",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 4,
+      "memory_neighbor_similarities": [
+        0.8958,
+        0.7004,
+        0.6758,
+        0.4891
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 1.0,
+          "high": 1.0,
+          "median": 1.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 15.0,
+          "high": 15.0,
+          "median": 15.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "min_seg_length_m",
+          "low": 1.0,
+          "high": 1.0,
+          "median": 1.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "min_seg_points",
+          "low": 2.0,
+          "high": 2.0,
+          "median": 2.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        }
+      ]
+    },
+    {
+      "repetition": 2,
+      "vehicle_id": "10",
+      "regime": "mixed",
+      "timeline_quality": "ok",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 2,
+      "memory_neighbor_similarities": [
+        0.4121,
+        0.4004
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.0211,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 1,
+          "mean_regret": 0.0211,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 38.0,
+          "high": 38.0,
+          "median": 38.0,
+          "n_samples": 1,
+          "mean_regret": 0.0211,
+          "mean_score": 0.6971
+        }
+      ]
+    },
+    {
+      "repetition": 2,
+      "vehicle_id": "22",
+      "regime": "mixed",
+      "timeline_quality": "ok",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 2,
+      "memory_neighbor_similarities": [
+        0.741,
+        0.5432
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.0211,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 1,
+          "mean_regret": 0.0211,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 38.0,
+          "high": 38.0,
+          "median": 38.0,
+          "n_samples": 1,
+          "mean_regret": 0.0211,
+          "mean_score": 0.6971
+        }
+      ]
+    },
+    {
+      "repetition": 2,
+      "vehicle_id": "111",
+      "regime": "stationary",
+      "timeline_quality": "degraded",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 4,
+      "memory_neighbor_similarities": [
+        0.7769,
+        0.75,
+        0.6817,
+        0.5967
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "dp_tolerance",
+          "low": 1.0,
+          "high": 1.0,
+          "median": 1.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "dt_threshold",
+          "low": 25.0,
+          "high": 27.0,
+          "median": 26.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "max_speed_mps",
+          "low": 15.0,
+          "high": 15.0,
+          "median": 15.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "min_seg_length_m",
+          "low": 1.0,
+          "high": 1.0,
+          "median": 1.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        }
+      ]
+    },
+    {
+      "repetition": 2,
+      "vehicle_id": "137",
+      "regime": "stationary",
+      "timeline_quality": "degraded",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 4,
+      "memory_neighbor_similarities": [
+        0.4566,
+        0.4552,
+        0.4542,
+        0.4174
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "dp_tolerance",
+          "low": 1.0,
+          "high": 1.0,
+          "median": 1.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "dt_threshold",
+          "low": 25.0,
+          "high": 27.0,
+          "median": 26.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "max_speed_mps",
+          "low": 15.0,
+          "high": 15.0,
+          "median": 15.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "min_seg_length_m",
+          "low": 1.0,
+          "high": 1.0,
+          "median": 1.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        }
+      ]
+    },
+    {
+      "repetition": 2,
+      "vehicle_id": "153",
+      "regime": "moving",
+      "timeline_quality": "ok",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 3,
+      "memory_neighbor_similarities": [
+        0.6361,
+        0.537,
+        0.5187
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 30.5,
+          "high": 35.5,
+          "median": 33.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        }
+      ]
+    },
+    {
+      "repetition": 2,
+      "vehicle_id": "154",
+      "regime": "moving",
+      "timeline_quality": "ok",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 3,
+      "memory_neighbor_similarities": [
+        0.5995,
+        0.5846,
+        0.4934
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 30.5,
+          "high": 35.5,
+          "median": 33.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        }
+      ]
+    },
+    {
+      "repetition": 2,
+      "vehicle_id": "165",
+      "regime": "mixed",
+      "timeline_quality": "degraded",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 2,
+      "memory_neighbor_similarities": [
+        0.7015,
+        0.4935
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "max_speed_mps",
+          "low": 38.0,
+          "high": 38.0,
+          "median": 38.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        }
+      ]
+    },
+    {
+      "repetition": 2,
+      "vehicle_id": "194",
+      "regime": "mixed",
+      "timeline_quality": "degraded",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 2,
+      "memory_neighbor_similarities": [
+        0.8247,
+        0.4793
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "max_speed_mps",
+          "low": 38.0,
+          "high": 38.0,
+          "median": 38.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        }
+      ]
+    },
+    {
+      "repetition": 2,
+      "vehicle_id": "201",
+      "regime": "moving",
+      "timeline_quality": "degraded",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 3,
+      "memory_neighbor_similarities": [
+        0.8575,
+        0.5127,
+        0.4083
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "moving",
+          "timeline_quality": "degraded",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.003,
+          "mean_score": 0.5896
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "degraded",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 1,
+          "mean_regret": 0.003,
+          "mean_score": 0.5896
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "degraded",
+          "param": "max_speed_mps",
+          "low": 30.0,
+          "high": 30.0,
+          "median": 30.0,
+          "n_samples": 1,
+          "mean_regret": 0.003,
+          "mean_score": 0.5896
+        }
+      ]
+    },
+    {
+      "repetition": 2,
+      "vehicle_id": "208",
+      "regime": "moving",
+      "timeline_quality": "degraded",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 3,
+      "memory_neighbor_similarities": [
+        0.8377,
+        0.5653,
+        0.4556
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "moving",
+          "timeline_quality": "degraded",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.003,
+          "mean_score": 0.5896
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "degraded",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 1,
+          "mean_regret": 0.003,
+          "mean_score": 0.5896
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "degraded",
+          "param": "max_speed_mps",
+          "low": 30.0,
+          "high": 30.0,
+          "median": 30.0,
+          "n_samples": 1,
+          "mean_regret": 0.003,
+          "mean_score": 0.5896
+        }
+      ]
+    },
+    {
+      "repetition": 3,
+      "vehicle_id": "2",
+      "regime": "stationary",
+      "timeline_quality": "ok",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 4,
+      "memory_neighbor_similarities": [
+        0.8567,
+        0.7512,
+        0.716,
+        0.5693
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 2.75,
+          "high": 6.25,
+          "median": 4.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 17.25,
+          "high": 21.75,
+          "median": 19.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 20.75,
+          "high": 32.25,
+          "median": 26.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "min_seg_length_m",
+          "low": 0.0,
+          "high": 0.0,
+          "median": 0.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "min_seg_points",
+          "low": 2.0,
+          "high": 2.0,
+          "median": 2.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        }
+      ]
+    },
+    {
+      "repetition": 3,
+      "vehicle_id": "4",
+      "regime": "stationary",
+      "timeline_quality": "ok",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 4,
+      "memory_neighbor_similarities": [
+        0.8958,
+        0.7004,
+        0.6758,
+        0.4891
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 2.75,
+          "high": 6.25,
+          "median": 4.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 17.25,
+          "high": 21.75,
+          "median": 19.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 20.75,
+          "high": 32.25,
+          "median": 26.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "min_seg_length_m",
+          "low": 0.0,
+          "high": 0.0,
+          "median": 0.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "ok",
+          "param": "min_seg_points",
+          "low": 2.0,
+          "high": 2.0,
+          "median": 2.0,
+          "n_samples": 1,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        }
+      ]
+    },
+    {
+      "repetition": 3,
+      "vehicle_id": "10",
+      "regime": "mixed",
+      "timeline_quality": "ok",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 2,
+      "memory_neighbor_similarities": [
+        0.4121,
+        0.4004
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 6.0,
+          "high": 6.0,
+          "median": 6.0,
+          "n_samples": 1,
+          "mean_regret": 0.0211,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 1,
+          "mean_regret": 0.0211,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 38.0,
+          "high": 38.0,
+          "median": 38.0,
+          "n_samples": 1,
+          "mean_regret": 0.0211,
+          "mean_score": 0.6971
+        }
+      ]
+    },
+    {
+      "repetition": 3,
+      "vehicle_id": "22",
+      "regime": "mixed",
+      "timeline_quality": "ok",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 2,
+      "memory_neighbor_similarities": [
+        0.741,
+        0.5432
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 6.0,
+          "high": 6.0,
+          "median": 6.0,
+          "n_samples": 1,
+          "mean_regret": 0.0211,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 1,
+          "mean_regret": 0.0211,
+          "mean_score": 0.6971
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 38.0,
+          "high": 38.0,
+          "median": 38.0,
+          "n_samples": 1,
+          "mean_regret": 0.0211,
+          "mean_score": 0.6971
+        }
+      ]
+    },
+    {
+      "repetition": 3,
+      "vehicle_id": "111",
+      "regime": "stationary",
+      "timeline_quality": "degraded",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 4,
+      "memory_neighbor_similarities": [
+        0.7769,
+        0.75,
+        0.6817,
+        0.5967
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "dp_tolerance",
+          "low": 2.375,
+          "high": 6.125,
+          "median": 4.25,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "dt_threshold",
+          "low": 17.25,
+          "high": 21.75,
+          "median": 19.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "max_speed_mps",
+          "low": 20.75,
+          "high": 32.25,
+          "median": 26.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "min_seg_length_m",
+          "low": 0.0,
+          "high": 0.0,
+          "median": 0.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        }
+      ]
+    },
+    {
+      "repetition": 3,
+      "vehicle_id": "137",
+      "regime": "stationary",
+      "timeline_quality": "degraded",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 4,
+      "memory_neighbor_similarities": [
+        0.4566,
+        0.4552,
+        0.4542,
+        0.4174
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "dp_tolerance",
+          "low": 2.375,
+          "high": 6.125,
+          "median": 4.25,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "dt_threshold",
+          "low": 17.25,
+          "high": 21.75,
+          "median": 19.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "max_speed_mps",
+          "low": 20.75,
+          "high": 32.25,
+          "median": 26.5,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        },
+        {
+          "regime": "stationary",
+          "timeline_quality": "degraded",
+          "param": "min_seg_length_m",
+          "low": 0.0,
+          "high": 0.0,
+          "median": 0.0,
+          "n_samples": 2,
+          "mean_regret": 0.0,
+          "mean_score": 0.0
+        }
+      ]
+    },
+    {
+      "repetition": 3,
+      "vehicle_id": "153",
+      "regime": "moving",
+      "timeline_quality": "ok",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 2,
+      "memory_neighbor_similarities": [
+        0.6361,
+        0.537
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 38.0,
+          "high": 38.0,
+          "median": 38.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        }
+      ]
+    },
+    {
+      "repetition": 3,
+      "vehicle_id": "154",
+      "regime": "moving",
+      "timeline_quality": "ok",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 2,
+      "memory_neighbor_similarities": [
+        0.5995,
+        0.5846
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 38.0,
+          "high": 38.0,
+          "median": 38.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        }
+      ]
+    },
+    {
+      "repetition": 3,
+      "vehicle_id": "165",
+      "regime": "mixed",
+      "timeline_quality": "degraded",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 2,
+      "memory_neighbor_similarities": [
+        0.7015,
+        0.4935
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dist_threshold",
+          "low": 400.0,
+          "high": 400.0,
+          "median": 400.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "max_accel_mps2",
+          "low": 6.0,
+          "high": 6.0,
+          "median": 6.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "max_speed_mps",
+          "low": 38.0,
+          "high": 38.0,
+          "median": 38.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "max_turn_deg",
+          "low": 150.0,
+          "high": 150.0,
+          "median": 150.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        }
+      ]
+    },
+    {
+      "repetition": 3,
+      "vehicle_id": "194",
+      "regime": "mixed",
+      "timeline_quality": "degraded",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 2,
+      "memory_neighbor_similarities": [
+        0.8247,
+        0.4793
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dist_threshold",
+          "low": 400.0,
+          "high": 400.0,
+          "median": 400.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "max_accel_mps2",
+          "low": 6.0,
+          "high": 6.0,
+          "median": 6.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "max_speed_mps",
+          "low": 38.0,
+          "high": 38.0,
+          "median": 38.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        },
+        {
+          "regime": "mixed",
+          "timeline_quality": "degraded",
+          "param": "max_turn_deg",
+          "low": 150.0,
+          "high": 150.0,
+          "median": 150.0,
+          "n_samples": 1,
+          "mean_regret": 0.0043,
+          "mean_score": 0.6176
+        }
+      ]
+    },
+    {
+      "repetition": 3,
+      "vehicle_id": "201",
+      "regime": "moving",
+      "timeline_quality": "degraded",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 2,
+      "memory_neighbor_similarities": [
+        0.5127,
+        0.4083
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 38.0,
+          "high": 38.0,
+          "median": 38.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        }
+      ]
+    },
+    {
+      "repetition": 3,
+      "vehicle_id": "208",
+      "regime": "moving",
+      "timeline_quality": "degraded",
+      "memory_prior_available": true,
+      "memory_neighbor_count": 2,
+      "memory_neighbor_similarities": [
+        0.5653,
+        0.4556
+      ],
+      "memory_suggested_regions": [
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dp_tolerance",
+          "low": 8.0,
+          "high": 8.0,
+          "median": 8.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "dt_threshold",
+          "low": 24.0,
+          "high": 24.0,
+          "median": 24.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        },
+        {
+          "regime": "moving",
+          "timeline_quality": "ok",
+          "param": "max_speed_mps",
+          "low": 38.0,
+          "high": 38.0,
+          "median": 38.0,
+          "n_samples": 2,
+          "mean_regret": 0.0028,
+          "mean_score": 0.5317
+        }
+      ]
+    }
+  ],
+  "expanded_demo_cost_estimates": {
+    "24": {
+      "scope": "24 demo cases x 3 repetitions; holdout excluded",
+      "estimated_llm_calls": 88,
+      "estimated_prompt_tokens": 281366,
+      "estimated_completion_tokens": 17026,
+      "estimated_elapsed_s": 618.8
+    },
+    "48": {
+      "scope": "48 demo cases x 3 repetitions; holdout excluded",
+      "estimated_llm_calls": 176,
+      "estimated_prompt_tokens": 562732,
+      "estimated_completion_tokens": 34052,
+      "estimated_elapsed_s": 1237.7
+    },
+    "100": {
+      "scope": "100 demo cases x 3 repetitions; holdout excluded",
+      "estimated_llm_calls": 367,
+      "estimated_prompt_tokens": 1172358,
+      "estimated_completion_tokens": 70942,
+      "estimated_elapsed_s": 2578.5
+    },
+    "200": {
+      "scope": "200 demo cases x 3 repetitions; holdout excluded",
+      "estimated_llm_calls": 733,
+      "estimated_prompt_tokens": 2344717,
+      "estimated_completion_tokens": 141883,
+      "estimated_elapsed_s": 5157.1
+    }
+  },
+  "method_notes": [
+    "跨模式不使用平均regret排名；主比较量为proposal_score-baseline_score。",
+    "score统计只包含applicable=True且无运行错误的留出样本。",
+    "Bootstrap CI为样本级非参数区间，同时单独报告repetition波动。",
+    "确定性搜索是与LLM候选分开的内部参考，不是现实道路真值。"
+  ]
+}
