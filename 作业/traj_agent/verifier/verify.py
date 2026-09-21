@@ -1,7 +1,7 @@
 """核验器：把 LLM 的建议变成一个可判分的数字。
 
 这是任务③「再用定量指标核验建议」的核心，也是整个工作流的准入闸门：
-**只有通过核验的建议才允许写入记忆。**
+**所有案例可进入 L1 留档；只有通过核验的案例可供检索并进入 L2。**
 
 核验维度
 -------
@@ -196,6 +196,7 @@ def verify_proposal(proposal_params: Dict[str, float],
                     predicted_effects: Optional[Dict[str, str]] = None,
                     baseline_metrics: Optional[Dict[str, float]] = None,
                     observed_metrics: Optional[Dict[str, float]] = None,
+                    input_clamped_params: Optional[Sequence[str]] = None,
                     regret_threshold: float = 0.05) -> VerificationResult:
     """核验一条建议，并判定是否准予写入记忆。
 
@@ -216,8 +217,11 @@ def verify_proposal(proposal_params: Dict[str, float],
 
     # 1) 约束满足：提议参数是否越界
     _, clamped = params_mod.clamp_params(proposal_params)
-    res.clamped_params = list(clamped)
-    res.constraint_ok = len(clamped) == 0
+    # proposal_params 在 agent 执行前已经夹紧，如果只在这里重新
+    # 检查，就会丢失 LLM 原始输出越界的事实。调用方因此显式传入
+    # 执行前夹紧的参数名，用于约束违规率和记忆准入判定。
+    res.clamped_params = sorted(set(clamped) | set(input_clamped_params or ()))
+    res.constraint_ok = len(res.clamped_params) == 0
 
     # 2) 可行性
     res.feasible = bool(proposal_objective.feasible)

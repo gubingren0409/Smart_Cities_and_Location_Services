@@ -10,7 +10,7 @@
 
 | 问题 | 做法 |
 |---|---|
-| **LLM 猜参数不准** | 物理先验定区间 → LLM 提起点与方向 → 确定性搜索精调 |
+| **LLM 猜参数不准** | 物理先验约束空间 → LLM 独立提候选 → 确定性程序执行 → 独立搜索建立内部参考 |
 | **无法判断 LLM 的建议好不好** | `regret` = 相对确定性搜索最优的差距，**可自动判分** |
 | **11386 条轨迹全跑 LLM 太贵** | 记忆分层：跑少数、复用多数 |
 
@@ -22,9 +22,9 @@
 [3] LLM 提议      → {params, expected_effect, rationale}
 [4] 核验约束      → 纯代码，无 LLM
 [5] 执行提议      → 实测指标
-[6] 确定性搜索    → ground truth 最优
-[7] regret        → 提议 vs 最优（这是判据）
-[8] 记忆准入      → 仅当 regret 达标才写入 SQLite
+[6] 确定性搜索    → 从默认参数开始，建立内部参考
+[7] regret        → LLM 候选 vs 内部参考
+[8] 记忆留档      → 全部进 L1；仅达标案例可检索并进入 L2
 ```
 
 **第 3 步与第 7–8 步之间是全部价值所在**：它把「LLM 说得好不好」
@@ -34,7 +34,8 @@
 
 ```bash
 # 离线跑通（无需 API key）
-python3 -m pytest tests/ -q          # 当前应输出 293 passed
+python -m pip install -r requirements.txt
+python -m pytest tests -q
 
 # 接真实模型（任何 OpenAI 兼容端点）
 export DSH_TRAJ_LLM_API_KEY=sk-xxx
@@ -91,6 +92,10 @@ traj_agent/
 | L1 情景记忆 | SQLite 全量 `(诊断→参数→指标)` | **核验器** | — |
 | L2 程序记忆 | SQLite 蒸馏 `诊断签名→参数区间` | **核验器** | 12 维特征 kNN |
 | L3 人类知识 | Obsidian `.md` | **人** | 只读遍历 |
+
+L1 是完整实验账本，admitted=False 的失败案例也会保存；默认检索只读取
+admitted=1，L2 也只从这些已准入案例蒸馏。这样可以分析失败原因，同时
+避免未通过核验的参数影响后续推荐。
 
 **agent 对 Obsidian vault 只有读权限，永远不能写。**
 自动导出（`memory/export.py`）落到 `00-Inbox/`，人工 review 后才升格。

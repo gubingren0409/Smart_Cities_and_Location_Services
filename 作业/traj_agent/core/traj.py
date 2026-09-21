@@ -118,8 +118,9 @@ class Traj:
     def is_stationary(self, threshold_m: float = 200.0) -> bool:
         """是否为静止轨迹（总位移低于阈值）。
 
-        本项目 400 条抽样中约 63% 的车辆全程 20 分钟静止，
-        它们的「漂移」「转向角」都是 GPS 抖动而非行为，必须区别对待。
+        固定随机种子 20260920 的 200 条样本中，94 条（47%）被划为
+        stationary；这是样本统计而非全量比例。静止轨迹上的「漂移」「转向角」
+        多为 GPS 抖动，需与真实行驶行为区别处理。
         """
         return self.length_m < threshold_m
 

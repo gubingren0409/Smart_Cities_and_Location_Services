@@ -267,6 +267,6 @@ def sweep_dp_tolerance(traj: Traj,
                        algorithm: str = "dp") -> List[SimplifyResult]:
     """扫描 DP 容差，产出「质量—压缩率曲线」的原始数据。
 
-    这是任务②的核心实验，也是任务③里 verifier 计算 regret 的 ground truth 来源。
+    这是任务②的核心实验，也是任务③中 verifier 计算 regret 的内部参考来源。
     """
     return [simplify_trajectory(traj, tol, algorithm) for tol in tolerances]

@@ -1,0 +1,14 @@
+# Lab 1: notebooks, deterministic trajectory processing, reports, and real ECNU experiments
+jupyterlab
+nbclient
+numpy
+pandas
+matplotlib
+scipy
+shapely
+pyproj
+PyYAML
+openai
+python-dotenv
+python-docx
+pytest

@@ -438,3 +438,38 @@ def test_prior_only_proposal_does_not_use_llm(real_raw):
     assert r.ok
     assert r.proposal_source == "prior-only"
     assert r.llm_turns == 0
+
+
+def test_agent_preserves_pre_execution_clamp_evidence(real_raw):
+    class OutOfBoundsProvider:
+        name = "out-of-bounds"
+
+        def chat(self, messages, tools=None):
+            return prov.LLMResponse(
+                content=json.dumps({
+                    "params": {
+                        "dp_tolerance": 500.0,
+                        "dt_threshold": 30.0,
+                        "dist_threshold": 400.0,
+                        "max_speed_mps": 38.0,
+                    },
+                    "expected_effect": {},
+                    "rationale": "test",
+                }),
+                finish_reason="stop",
+            )
+
+    reg = ToolRegistry()
+    attach_dataset(reg.ctx, real_raw)
+    agent = TrajCleaningAgent(
+        registry=reg,
+        llm=OutOfBoundsProvider(),
+        memory=None,
+        use_search=False,
+    )
+    result = agent.run("153")
+    assert result.ok
+    assert result.proposal_params["dp_tolerance"] == 30.0
+    assert result.verification["constraint_ok"] is False
+    assert "dp_tolerance" in result.verification["clamped_params"]
+    assert result.verification["admitted"] is False

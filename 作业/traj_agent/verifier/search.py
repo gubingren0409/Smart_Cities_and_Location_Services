@@ -1,10 +1,10 @@
 """有界确定性搜索：为 LLM 的提议提供 ground-truth 参照。
 
-这是任务③「三段式调参」的第三段，也是 regret 的分母。
+这是任务③的独立确定性参考路径，也是 regret 的比较依据。
 
 为什么需要它
 -----------
-没有 ground truth 就无法判断 LLM 的建议好不好——「看起来合理」不是判据。
+没有统一的内部参考就无法判断 LLM 建议是否接近既定目标；「看起来合理」不是判据。
 本模块在参数的物理先验区间内做有界搜索，给出可复现的最优解，
 LLM 的得分即为它相对这个最优解的差距（regret）。
 
@@ -149,7 +149,7 @@ def coordinate_descent(base_params: Dict[str, float],
             span = (spec.high - spec.low)
             # 半径随轮次收缩，但**不能过早**：早先版本用 span/2^rounds，
             # 在 f(x)=-(x-8)^2、起点 30 的测试里只收敛到 10.64，
-            # 使 ground truth 偏弱、regret 被系统性低估。
+            # 使内部参考偏弱、regret 被系统性低估。
             # 改为线性衰减（rounds=3 时依次 0.50 / 0.33 / 0.17 倍跨度），
             # 先在粗网格上跨过最优，再逐步细化。
             frac = 1.0 / (r_i + 2.0)
@@ -178,7 +178,7 @@ def coordinate_descent(base_params: Dict[str, float],
             break
 
     # 收尾：在历史最优点周围做一次细粒度精修。
-    # 各维度已各自收敛后容易停在粗网格点上，这一步把 ground truth 逼近真最优，
+    # 各维度已各自收敛后容易停在粗网格点上，这一步让内部搜索参考更接近该目标空间内的最优，
     # 使 regret 的分母可靠。
     if trace.best_params:
         for name in names:

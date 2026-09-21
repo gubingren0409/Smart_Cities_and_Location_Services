@@ -7,9 +7,9 @@
   [3] LLM 提议（结构化：params / expected_effect / rationale）
   [4] 核验器检查约束（纯代码，无 LLM）
   [5] 执行提议 → 实测指标
-  [6] 确定性搜索 → ground truth 最优
+  [6] 确定性搜索 → 独立的内部参考
   [7] regret = score(search_best) - score(proposal)
-  [8] 仅当 regret <= 阈值 才写 SQLite 记忆
+  [8] 所有案例进 L1 留档；仅达标案例可供检索并进入 L2
 
 第 3 步与第 7-8 步之间是整个工作流的价值所在：它把「LLM 说得好不好」
 变成一个可自动判分的数字，而不是让人去读一段解释。
@@ -265,7 +265,8 @@ class TrajCleaningAgent:
             self._step(res, "verify", "clamp", {"clamped": clamped})
 
         # [4]-[7] 执行、搜索、核验
-        ver = self._evaluate_and_verify(res, handle, params, proposal)
+        ver = self._evaluate_and_verify(res, handle, params, proposal,
+                                        input_clamped_params=clamped)
         res.verification = ver.to_dict()
 
         # [8] 记忆准入（read_only 模式下跳过写入）
@@ -500,7 +501,9 @@ class TrajCleaningAgent:
 
     def _evaluate_and_verify(self, res: AgentResult, handle: str,
                              params: Dict[str, float],
-                             proposal: Dict[str, Any]) -> verify_mod.VerificationResult:
+                             proposal: Dict[str, Any],
+                             input_clamped_params: Optional[Sequence[str]] = None
+                             ) -> verify_mod.VerificationResult:
         # [5] 执行提议
         t0 = time.perf_counter()
         measured, _ = self._execute(handle, params)
@@ -519,7 +522,7 @@ class TrajCleaningAgent:
         base_obj = self._objective_of(base_measured, base_params)
         res.baseline_objective = base_obj.to_dict()
 
-        # [6] 确定性搜索（ground truth）
+        # [6] 确定性搜索（独立内部参考，不是道路真值）
         if self.use_search:
             t1 = time.perf_counter()
             trace = self._run_search(handle, params)
@@ -575,12 +578,13 @@ class TrajCleaningAgent:
             predicted_effects={str(k): str(v) for k, v in predicted.items()},
             baseline_metrics=baseline_metrics,
             observed_metrics=observed,
+            input_clamped_params=input_clamped_params,
             regret_threshold=self.regret_threshold,
         )
 
     def _run_search(self, handle: str,
                     seed: Dict[str, float]) -> search_mod.SearchTrace:
-        """在物理先验区间内做坐标下降，得到 ground truth 最优分。"""
+        """从默认参数开始坐标下降，得到同一内部目标下的参考最优分。"""
         cache: Dict[str, float] = {}
 
         def evaluator(p: Dict[str, float]) -> float:

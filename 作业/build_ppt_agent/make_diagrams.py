@@ -85,9 +85,9 @@ steps = [
     (0.52, 0.72, "3 LLM 提议", "params\nexpected_effect\nrationale", "#8A6D1F"),
     (0.76, 0.72, "4 核验约束", "纯代码\n无 LLM", "#1F6F5C"),
     (0.04, 0.20, "5 执行提议", "实测指标", "#2B7BBA"),
-    (0.28, 0.20, "6 确定性搜索", "ground truth 最优", "#1F6F5C"),
+    (0.28, 0.20, "6 确定性搜索", "内部参考最优", "#1F6F5C"),
     (0.52, 0.20, "7 regret", "提议 vs 最优", "#C0392B"),
-    (0.76, 0.20, "8 记忆准入", "达标才写入 SQLite", "#6B4A7A"),
+    (0.76, 0.20, "8 记忆准入", "全部进 L1；达标进 L2", "#6B4A7A"),
 ]
 for x, yy, title, sub, c in steps:
     box(ax, x, yy + 0.10, 0.20, 0.115, title, c, fs=11.5, radius=0.012)
@@ -162,8 +162,8 @@ save(fig, "memory_tiers.png")
 fig, ax = blank(11, 4.4)
 seg = [
     (0.04, "① 物理先验定区间", "9 个参数各有合法区间\n由数据分布或物理量反推", "确定性代码", "#2B7BBA"),
-    (0.36, "② LLM 提起点与方向", "params + expected_effect\n强制结构化输出", "LLM", "#8A6D1F"),
-    (0.68, "③ 有界搜索精调", "坐标下降 + knee point\n给出 ground truth", "确定性代码", "#1F6F5C"),
+    (0.36, "② LLM 独立提候选与方向", "params + expected_effect\n强制结构化输出", "LLM", "#8A6D1F"),
+    (0.68, "③ 独立确定性搜索", "坐标下降 + knee point\n给出内部参考", "确定性代码", "#1F6F5C"),
 ]
 for x, title, sub, who, c in seg:
     box(ax, x, 0.48, 0.28, 0.15, title, c, fs=12, radius=0.014)
