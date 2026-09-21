@@ -769,28 +769,55 @@ def make_figures(experiment_dir: Path,
         "figure.dpi": 140,
     })
 
-    fig, ax = plt.subplots(figsize=(8, 4.8))
-    data = []
-    for mode in MODES:
-        values = [
+    proposal_modes = [
+        "llm-only",
+        "prior-only+search-verifier",
+        "llm+search-verifier",
+        "llm+memory+search-verifier",
+    ]
+    short_labels = {
+        "llm-only": "LLM only",
+        "prior-only+search-verifier": "Prior + verifier",
+        "llm+search-verifier": "LLM + verifier",
+        "llm+memory+search-verifier": "LLM + memory",
+        "det-search-output": "Det. search",
+    }
+
+    def _score_deltas(mode: str) -> list[float]:
+        return [
             float(r["proposal_score"]) - float(r["baseline_score"])
             for r in rows
             if r.get("mode") == mode
             and not r.get("error")
             and r.get("applicable")
         ]
-        data.append(values)
-    bp = ax.boxplot(
-        data, tick_labels=MODES, patch_artist=True, showmeans=True
+
+    fig, axes = plt.subplots(
+        1,
+        2,
+        figsize=(11.5, 5.0),
+        gridspec_kw={"width_ratios": [4, 1.25]},
     )
-    for patch, mode in zip(bp["boxes"], MODES):
-        patch.set_facecolor(colors[mode])
-        patch.set_alpha(0.75)
-    ax.axhline(0, color="#555", lw=1)
-    ax.set_ylabel("Proposal score - baseline score")
-    ax.set_title("Score change relative to fixed default baseline")
-    ax.tick_params(axis="x", rotation=18)
-    fig.tight_layout()
+    panels = [
+        (axes[0], proposal_modes, "Proposal modes (detail)"),
+        (axes[1], ["det-search-output"], "Search output\n(separate scale)"),
+    ]
+    for ax, modes, title in panels:
+        bp = ax.boxplot(
+            [_score_deltas(mode) for mode in modes],
+            tick_labels=[short_labels[mode] for mode in modes],
+            patch_artist=True,
+            showmeans=True,
+        )
+        for patch, mode in zip(bp["boxes"], modes):
+            patch.set_facecolor(colors[mode])
+            patch.set_alpha(0.75)
+        ax.axhline(0, color="#555", lw=1)
+        ax.set_title(title)
+        ax.tick_params(axis="x", rotation=15)
+    axes[0].set_ylabel("Score change")
+    fig.suptitle("Score change relative to fixed default baseline")
+    fig.tight_layout(rect=(0, 0, 1, 0.94))
     fig.savefig(out / "01_score_delta_by_mode.png", dpi=220)
     plt.close(fig)
 
