@@ -9,7 +9,8 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Mapping, Optional, Sequence
 
 from .real_ablation import (
-    DEFAULT_SEED, MODES, STAGE1_HOLDOUT, STRATA, atomic_json, read_jsonl,
+    DEFAULT_SEED, MODES, STAGE1_HOLDOUT, STRATA, atomic_json, case_key,
+    read_jsonl,
 )
 from ..verifier.ablation import MODE_SPECS
 
@@ -98,11 +99,19 @@ def cluster_stats(rows: Sequence[Mapping[str, Any]],
     }
 
 
+def latest_case_rows(rows: Sequence[Dict[str, Any]]) -> list[Dict[str, Any]]:
+    """同一 case 可因 retry-failed 追加多行；统计只取最后一次。"""
+    latest: Dict[tuple[str, int, str, str], Dict[str, Any]] = {}
+    for row in rows:
+        latest[case_key(row)] = row
+    return list(latest.values())
+
+
 def summarize(experiment_dir: Path) -> Dict[str, Any]:
     config = json.loads(
         (experiment_dir / "config.json").read_text(encoding="utf-8")
     )
-    rows = read_jsonl(experiment_dir / "raw_results.jsonl")
+    rows = latest_case_rows(read_jsonl(experiment_dir / "raw_results.jsonl"))
     state = json.loads(
         (experiment_dir / "run_state.json").read_text(encoding="utf-8")
     )
@@ -660,7 +669,8 @@ def make_figures(experiment_dir: Path,
     out = experiment_dir / "figures"
     out.mkdir(parents=True, exist_ok=True)
     rows = [
-        r for r in read_jsonl(experiment_dir / "raw_results.jsonl")
+        r for r in latest_case_rows(
+            read_jsonl(experiment_dir / "raw_results.jsonl"))
         if r.get("phase") == "holdout"
     ]
     colors = {

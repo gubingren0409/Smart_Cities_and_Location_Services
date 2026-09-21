@@ -7,7 +7,9 @@ from tests.conftest import pt
 from traj_agent.agent import provider as prov
 from traj_agent.agent.loop import TrajCleaningAgent
 from traj_agent.core import params as params_mod
-from traj_agent.experiments.analyze_real_ablation import cluster_stats
+from traj_agent.experiments.analyze_real_ablation import (
+    cluster_stats, latest_case_rows,
+)
 from traj_agent.tools.registry import ToolRegistry, attach_dataset
 from traj_agent.verifier import objective as obj_mod
 
@@ -143,6 +145,15 @@ def test_vehicle_cluster_statistics_separate_rows_and_vehicles():
     assert result["unique_vehicle_n"] == 2
     assert result["repetitions"] == 3
     assert result["bootstrap_unit"] == "vehicle_id"
+
+
+def test_retry_rows_keep_latest_case_for_statistics():
+    base = {
+        "phase": "holdout", "repetition": 1,
+        "mode": "llm-only", "vehicle_id": "10",
+    }
+    rows = [{**base, "error": "network"}, {**base, "error": ""}]
+    assert latest_case_rows(rows) == [{**base, "error": ""}]
 
 
 def test_deterministic_output_mode_uses_search_best(real_raw):
