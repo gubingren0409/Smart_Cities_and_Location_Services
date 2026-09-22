@@ -3,12 +3,17 @@ from __future__ import annotations
 
 import json
 from dataclasses import replace
+import hashlib
+from pathlib import Path
+import subprocess
 
 import pytest
 
 from traj_agent.core import diagnosis, params as params_mod, traj as traj_mod
 from traj_agent.experiments import analyze_objective_optimization as analyzer
 from traj_agent.experiments import objective_optimization as opt
+from traj_agent.experiments import objective_optimization_refined as refined
+from traj_agent.experiments import objective_optimization_refined_runner as refined_runner
 from traj_agent.memory.store import MemoryStore
 from traj_agent.verifier import search as search_mod
 
@@ -166,3 +171,115 @@ def test_retry_rows_use_latest_result_but_preserve_all_cost(tmp_path):
     assert rows[0]["llm_calls"] == 3
     assert rows[0]["prompt_tokens"] == 30
     assert rows[0]["provider_error_count"] == 1
+
+
+def test_strong_reference_uses_no_llm_and_is_not_weaker(real_raw):
+    defaults = params_mod.active_default_params()
+    old = {
+        "applicable": True,
+        "search_best_score": -999.0,
+        "search_best_params": defaults,
+        "n_evaluations": 1,
+    }
+    row = refined.run_strong_reference_case(
+        real_raw, "153", old,
+        global_budget=3, multi_starts=1, cd_max_evals=3)
+    assert row["llm_calls"] == 0
+    assert row["strong_reference_score"] >= row["old_reference_score"]
+
+
+def test_reference_containment_is_closed_and_multidimensional():
+    bounds = {
+        "dp_tolerance": (1.0, 5.0),
+        "dist_threshold": (100.0, 500.0),
+        "max_speed_mps": (20.0, 40.0),
+    }
+    assert refined.region_contains({
+        "dp_tolerance": 1.0,
+        "dist_threshold": 500.0,
+        "max_speed_mps": 30.0,
+    }, bounds)
+    assert not refined.region_contains({
+        "dp_tolerance": 1.0,
+        "dist_threshold": 501.0,
+        "max_speed_mps": 30.0,
+    }, bounds)
+
+
+def test_normalized_region_volume_exact_full_and_point():
+    full = opt.active_bounds()
+    assert refined.normalized_region_volume(full) == pytest.approx(1.0)
+    half = dict(full)
+    low, high = full["dp_tolerance"]
+    half["dp_tolerance"] = (low, low + (high - low) / 2.0)
+    assert refined.normalized_region_volume(half) == pytest.approx(0.5)
+    point = {name: (bounds[0], bounds[0]) for name, bounds in full.items()}
+    assert refined.normalized_region_volume(point) == pytest.approx(0.0)
+
+
+def test_deterministic_memory_regions_have_zero_llm_cost():
+    prior = {
+        "neighbors": [
+            {"params": {"dp_tolerance": value,
+                        "dist_threshold": 300 + value,
+                        "max_speed_mps": 30 + value}}
+            for value in (2.0, 3.0, 4.0, 5.0, 6.0)
+        ],
+        "suggested_regions": [
+            {"param": "dp_tolerance", "low": 2.0, "high": 6.0},
+        ],
+    }
+    episodic = refined.episodic_region_bounds(prior)
+    procedural = refined.procedural_region_bounds(prior)
+    assert refined.normalized_region_volume(episodic) < 1.0
+    assert refined.normalized_region_volume(procedural) < 1.0
+    assert refined.online_cost(search_elapsed_ms=12.0)["llm_calls"] == 0
+
+
+def test_online_cost_excludes_offline_teacher_and_sums_llm_search():
+    cost = refined.online_cost(
+        search_elapsed_ms=25.0,
+        proposal={
+            "llm_elapsed_ms": 75.0,
+            "elapsed_ms": 90.0,
+            "llm_calls": 1,
+            "prompt_tokens": 10,
+            "completion_tokens": 2,
+        },
+    )
+    assert cost["total_online_ms"] == pytest.approx(100.0)
+    assert cost["end_to_end_online_ms"] == pytest.approx(115.0)
+    assert "teacher" not in cost
+
+
+def test_paired_rows_align_by_vehicle_repetition_and_budget():
+    rows = [
+        {"vehicle_id": "a", "repetition": 1, "budget": 3},
+        {"vehicle_id": "b", "repetition": 2, "budget": 10},
+    ]
+    assert refined.validate_paired_alignment(rows, list(reversed(rows)))
+    assert not refined.validate_paired_alignment(rows, rows[:1])
+
+
+def test_objective_hash_matches_frozen_experiment_config():
+    repo_dir = Path(__file__).resolve().parents[2]
+    config = json.loads((
+        repo_dir / "作业" / "experiments" /
+        refined_runner.OLD_EXPERIMENT / "config.json"
+    ).read_text(encoding="utf-8"))
+    objective = repo_dir / "作业" / "traj_agent" / "verifier" / "objective.py"
+    actual = "sha256:" + hashlib.sha256(objective.read_bytes()).hexdigest()
+    assert actual == config["objective_version"]
+
+
+def test_v2_experiment_is_untouched_since_frozen_baseline():
+    repo_dir = Path(__file__).resolve().parents[2]
+    result = subprocess.run(
+        [
+            "git", "diff", "--quiet", refined_runner.BASELINE_COMMIT, "--",
+            "作业/experiments/llm_assisted_ecnu_20260921_v2",
+        ],
+        cwd=repo_dir,
+        check=False,
+    )
+    assert result.returncode == 0

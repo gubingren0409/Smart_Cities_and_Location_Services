@@ -1,0 +1,158 @@
+{
+  "experiment": "objective-optimization-refined",
+  "date": "2026-09-22",
+  "execution_base_commit": "6204b5bae33adf6debbc1e66339c42a0bd18ef07",
+  "frozen_baseline_commit": "6204b5bae33adf6debbc1e66339c42a0bd18ef07",
+  "objective_version": "sha256:80a0edef281a589627b83af08381e0b2ccd4e73eb7b49a612308c8c4044bed4e",
+  "expected_objective_version": "sha256:80a0edef281a589627b83af08381e0b2ccd4e73eb7b49a612308c8c4044bed4e",
+  "objective_status": "unchanged",
+  "active_parameter_space": {
+    "names": [
+      "dp_tolerance",
+      "dist_threshold",
+      "max_speed_mps"
+    ],
+    "defaults": {
+      "dp_tolerance": 5.0,
+      "dist_threshold": 400.0,
+      "max_speed_mps": 38.0
+    },
+    "bounds": [
+      {
+        "name": "dp_tolerance",
+        "low": 0.5,
+        "high": 30.0,
+        "default": 5.0,
+        "unit": "m",
+        "integer": false,
+        "rationale": "DP 压缩容差。0.5–8m 是结合民用 GPS CEP 量级的物理推荐范围；30m 是用于观察激进压缩行为的实验探索上界，不表示 30m 仍具同等几何保真。下界 0.5m 避免退化为不压缩；默认 5m 与讲义一致。"
+      },
+      {
+        "name": "dist_threshold",
+        "low": 50.0,
+        "high": 3000.0,
+        "default": 400.0,
+        "unit": "m",
+        "integer": false,
+        "rationale": "切分用的空间跳跃上界。物理推导 = dt × 限速 × 安全系数，dt=20s 时 20×33.3×1.5≈1000m；下界 50m 用于拦住静止漂移。默认 400m 对应 20m/s × 20s，与讲义一致。"
+      },
+      {
+        "name": "max_speed_mps",
+        "low": 15.0,
+        "high": 55.0,
+        "default": 38.0,
+        "unit": "m/s",
+        "integer": false,
+        "rationale": "速度突变上界。下界 15m/s=54km/h 低于城区限速会误杀正常行驶；上界 55m/s≈198km/h 覆盖 GPS 噪声下的高速路段。默认 38m/s≈137km/h，高于任何合法城市行驶速度。"
+      }
+    ]
+  },
+  "holdout_manifest": [
+    "2",
+    "4",
+    "10",
+    "22",
+    "111",
+    "137",
+    "153",
+    "154",
+    "165",
+    "194",
+    "201",
+    "208"
+  ],
+  "teacher_sizes": [
+    12,
+    24,
+    48,
+    100,
+    200
+  ],
+  "fixed_budgets": [
+    3,
+    5,
+    10,
+    20
+  ],
+  "repetitions": 3,
+  "strong_reference": {
+    "definition": "max(old_cd60, global_halton512, four_multistart_cd60)",
+    "global_budget": 512,
+    "multi_starts": 4,
+    "coordinate_descent_max_evals": 60,
+    "llm_calls": 0,
+    "scope": "fixed holdout Objective-applicable vehicles only"
+  },
+  "deterministic_memory_rules": {
+    "episodic": "top-5 retrieved teacher params per dimension P25-P75; missing dimension uses full range; width below 10% global range expands around interval midpoint",
+    "procedural": "direct L2 IQR; missing dimension uses full range",
+    "fixed_before_holdout_execution": true,
+    "llm_calls": 0
+  },
+  "cost_definition": {
+    "total_online_ms": "llm_elapsed_ms + objective_search_elapsed_ms",
+    "end_to_end_online_ms": "proposal outer elapsed_ms + objective_search_elapsed_ms",
+    "teacher_offline_excluded_from_query_cost": true
+  },
+  "frozen_artifacts": {
+    "objective_optimization_20260922": {
+      "tree_digest": "sha256:2b937abe9100f484859081e9061634d14de8656c43e78fcc1c777326f7cf2f87",
+      "files": {
+        "config.json": "sha256:a717797cb7ac9a6dcae647eb23d3717c1c57005c246c2be3d81c186a153e1e02",
+        "figures/01_gap_to_search_by_method.png": "sha256:9fcf363cfcc86faf8714ee67068e1f2a218cd1f3ef547354c0fe91c7cb3a0c76",
+        "figures/02_gain_recovery_by_budget.png": "sha256:acf1db446244111a57ef981c6c36935af9c0ba39a204c02b071771d54d66bddd",
+        "figures/03_near_search_rate.png": "sha256:68c79914acaa54f72726155e09ec44f1ffa46f57e13f273fc3f0fa384116fa11",
+        "figures/04_demo_size_vs_memory_coverage.png": "sha256:b2ec0d6b2a2dbb83beff0e20d2e5e7be716ef617f0a1f65c68000141776a4ea1",
+        "figures/05_demo_size_vs_gap.png": "sha256:fc5aaafa80789cbb609b09d52e8a5b061d52ddc2fcbbd6c015d29fb91f8107e7",
+        "figures/06_parameter_regions_by_regime.png": "sha256:2ad7ee93e47df5df60731ed8fc32c79eb997ba34ef5f1e70e60b97f6c4ea14e3",
+        "figures/07_cost_vs_objective.png": "sha256:a85e6db09dd4fcc6ba70cb57331e7f9ce00809cc846c53eb27b7e85e6855fc87",
+        "holdout_reference.jsonl": "sha256:18480f75ae86c2f9d80ab97b515790b6e56cb3d7f7aa807a91c7365f8cb1b108",
+        "memory_diagnostics.json": "sha256:53e4b56b851c36ccf84bda0d0ebc44299916a9e3cfeee814e193dd182d0ead79",
+        "raw_results.jsonl": "sha256:de13bd94214077cbe34a30fecbcabd82891b2908fa1eb44b0037b0480fb7c363",
+        "region_proposals.jsonl": "sha256:fa0ec4f5798439860231dbb7ccea8dc4d1cd5f4c4506512b2e28e6514d5df6e9",
+        "run_objective_optimization.py": "sha256:dc1cbf28dfc785308f0d70f173e370f88677205dd19d78f72a4ce799dc4fb01f",
+        "search_teacher.jsonl": "sha256:3483c9ef4c94882aa0f8ef40bc8769a88bf3e0d32f5a0d1c5b3fa072dde38e93",
+        "summary.json": "sha256:24542e652a65c2e5e16c78898a9ea90ee796c58a9e60b7ce28e59200e56dd287",
+        "teacher_analysis.json": "sha256:ee70d43b265ea446c1b935ca5e0680a4f2d66cf97219377f78bf9ccdc838ff5d",
+        "teacher_manifest.json": "sha256:079b9fa325b8e75a4c08a229f5fb7d786d6b676bc31712f36a08a204cda3235e",
+        "修复反馈.md": "sha256:b7aa2a52e0392efaf4bb1033752ae2507b2e1167443dc30377533f59aeb4898b",
+        "实验报告.md": "sha256:4a1e5a80c054922202df42d978f68ae3a93a8c0378828408cf5340528991723e"
+      }
+    },
+    "llm_assisted_ecnu_20260921_v2": {
+      "tree_digest": "sha256:ce48b47882ceae75bc9ccb48adec1b2919b89cf07d9273452b8e98b7ff8f709f",
+      "files": {
+        "config.json": "sha256:2af90ca09830b248c5f73004ca3e931df28dbb2eaae19b97274ca97a3a0963eb",
+        "figures/01_score_delta_by_mode.png": "sha256:13e8a163c1bb77f9a90521b36ca1a0538cf36f70dfd417a9ffb6a1a0e721789e",
+        "figures/02_baseline_beaten_rate.png": "sha256:80ac0a0f8a174a6a9e2ba20daea13023e3520828d6719cd5bc26ae587c3c9a29",
+        "figures/03_paired_memory_effect.png": "sha256:47d1075cf47b2bcd46168054f3f09e8ff843de6f4a99dcc7a8fe943d47c55cdf",
+        "figures/04_by_regime.png": "sha256:1eba046c94db6b98593f1845704faf36dd50748a8d8d0d8fb29b74fcd05c8bc9",
+        "figures/05_token_latency.png": "sha256:0422e76df3e9ff3334e22ae1de0b91ffd21e52be2ba97268614dd0abf82a736f",
+        "figures/06_reliability_rates.png": "sha256:e83c0c5619d06b279d5908de986c7145b5373a63940b9bab63de961a29229077",
+        "figures/07_memory_coverage.png": "sha256:3c4b0917b87484d74c2cb79c2d6d87fcdb2a7a4d03f103d9aea2119f44545321",
+        "raw_results.jsonl": "sha256:62a200d2c45a9ba78f171b3d7b7caf7b1848d5dfe325b2ad9a98a4992245a497",
+        "run_real_ablation.py": "sha256:afac2d047f64be125fff02293ee26552cd8dddd8cd5bc0f177252fce063f18a6",
+        "run_state.json": "sha256:17a313fc23289950516bd19863d1d389992cea904e39ea6cf033133879582fe1",
+        "sample_manifest.json": "sha256:3da4157d9c5a8a030da4c83c376c6ee6ed015128b8594cb3cc3e0f5ed50d006f",
+        "summary.json": "sha256:1b76c16b38bbcc39ecd3d3e8cfc8983ad7d3c1a1db5ed80879424c6632add390",
+        "修复反馈.md": "sha256:373d71f1cd28cc15484a9ec846e5cd60f55e097bfbb72f72b10d600887065524",
+        "实验报告.md": "sha256:8adb593bbfed87a452a95b92d454e26df7d25cda46f4576566e02cbd94c3bf44"
+      }
+    }
+  },
+  "no_new_llm_calls": true,
+  "validation": {
+    "targeted_pytest": "17 passed in 153.47s (0:02:33)",
+    "pytest": "329 passed in 504.61s (0:08:24)",
+    "objective_diff_from_frozen_baseline": false,
+    "old_objective_experiment_diff_from_frozen_baseline": false,
+    "v2_experiment_diff_from_frozen_baseline": false,
+    "artifact_secret_pattern_matches": 0,
+    "artifact_absolute_path_matches": 0,
+    "figures_expected": 7,
+    "figures_visually_inspected": 7,
+    "artifact_validation": "PASS: strong=8, region=576, deterministic=1440, figures=7, new_llm_calls=0",
+    "git_diff_check": "passed",
+    "png_decode_check": "7/7 passed"
+  }
+}
