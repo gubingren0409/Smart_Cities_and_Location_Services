@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS episodic (
     score REAL,
     regret REAL,
     mode TEXT,                       -- 消融实验的分组标签
+    source TEXT NOT NULL DEFAULT 'llm-verified',
     run_id TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_episodic_seg ON episodic(seg_id);
@@ -65,6 +66,7 @@ CREATE TABLE IF NOT EXISTS procedural (
     mean_regret REAL,
     mean_score REAL,
     evidence_ids TEXT,                -- 支撑该区间的 episodic id 列表
+    source TEXT NOT NULL DEFAULT 'llm-verified',
     UNIQUE(regime, timeline_quality, signature, param_name)
 );
 
@@ -92,6 +94,7 @@ class MemoryCase:
     regret: Optional[float] = None
     similarity: float = 0.0
     diagnosis: Dict[str, Any] = field(default_factory=dict)
+    source: str = "llm-verified"
 
     def to_dict(self, max_features: int = 0) -> Dict[str, Any]:
         return {
@@ -99,6 +102,7 @@ class MemoryCase:
             "seg_id": self.seg_id,
             "vehicle_id": self.vehicle_id,
             "regime": self.regime,
+            "source": self.source,
             "similarity": round(self.similarity, 4),
             "params": {k: (round(float(v), 4) if isinstance(v, (int, float)) else v)
                        for k, v in sorted(self.params.items())},
@@ -123,6 +127,7 @@ class ParamRegion:
     n_samples: int
     mean_regret: Optional[float] = None
     mean_score: Optional[float] = None
+    source: str = "llm-verified"
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -135,6 +140,7 @@ class ParamRegion:
             "n_samples": self.n_samples,
             "mean_regret": None if self.mean_regret is None else round(self.mean_regret, 4),
             "mean_score": None if self.mean_score is None else round(self.mean_score, 4),
+            "source": self.source,
         }
 
 
@@ -152,7 +158,24 @@ class MemoryStore:
         self._conn.row_factory = sqlite3.Row
         with self._lock:
             self._conn.executescript(SCHEMA)
+            self._ensure_column(
+                "episodic", "source",
+                "TEXT NOT NULL DEFAULT 'llm-verified'",
+            )
+            self._ensure_column(
+                "procedural", "source",
+                "TEXT NOT NULL DEFAULT 'llm-verified'",
+            )
             self._conn.commit()
+
+    def _ensure_column(self, table: str, name: str, declaration: str) -> None:
+        columns = {
+            str(row["name"])
+            for row in self._conn.execute(f"PRAGMA table_info({table})")
+        }
+        if name not in columns:
+            self._conn.execute(
+                f"ALTER TABLE {table} ADD COLUMN {name} {declaration}")
 
     def close(self) -> None:
         with self._lock:
@@ -170,7 +193,8 @@ class MemoryStore:
                    mode: str = "",
                    run_id: str = "",
                    score: Optional[float] = None,
-                   regret: Optional[float] = None) -> int:
+                   regret: Optional[float] = None,
+                   source: str = "llm-verified") -> int:
         """记录一条经验。返回 episodic id。
 
         即使 admitted=False 也**照常写入**——失败经验同样有价值：
@@ -184,9 +208,9 @@ class MemoryStore:
                 """INSERT INTO episodic
                    (created_at, seg_id, vehicle_id, regime, timeline_quality,
                     feature_version, features, diagnosis_json, params_json,
-                    metrics_json, objective_json, verification_json,
-                    admitted, admit_reason, score, regret, mode, run_id)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                     metrics_json, objective_json, verification_json,
+                     admitted, admit_reason, score, regret, mode, source, run_id)
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (time.time(), card.seg_id, card.vehicle_id, card.regime,
                  card.timeline_quality, feat_mod.FEATURE_VERSION,
                  json.dumps(vec), json.dumps(card.to_dict(), ensure_ascii=False),
@@ -196,8 +220,8 @@ class MemoryStore:
                  json.dumps(verification, ensure_ascii=False, default=str),
                  1 if admitted else 0, admit_reason,
                  None if score is None else float(score),
-                 None if regret is None else float(regret),
-                 mode, run_id))
+                  None if regret is None else float(regret),
+                  mode, str(source), run_id))
             self._conn.commit()
             return int(cur.lastrowid)
 
@@ -228,7 +252,8 @@ class MemoryStore:
                  metric: str = "euclidean",
                  timeline_quality: Optional[str] = None,
                  exclude_seg_ids: Optional[Sequence[str]] = None,
-                 exclude_ids: Optional[Sequence[int]] = None) -> List[MemoryCase]:
+                 exclude_ids: Optional[Sequence[int]] = None,
+                 sources: Optional[Sequence[str]] = None) -> List[MemoryCase]:
         """按特征相似度检索历史案例。
 
         regime 是**门控**而非一个距离维度：静止轨迹与行驶轨迹的
@@ -244,6 +269,10 @@ class MemoryStore:
         if timeline_quality:
             where.append("timeline_quality=?")
             args.append(timeline_quality)
+        if sources:
+            marks = ",".join("?" for _ in sources)
+            where.append(f"source IN ({marks})")
+            args.extend(str(value) for value in sources)
         excluded = set(exclude_seg_ids or ())
         excluded_ids = set(int(i) for i in (exclude_ids or ()))
         sql = "SELECT * FROM episodic"
@@ -282,12 +311,14 @@ class MemoryStore:
                 regret=(None if row["regret"] is None else float(row["regret"])),
                 similarity=s,
                 diagnosis=_load_json(row["diagnosis_json"]),
+                source=str(row["source"] or "llm-verified"),
             ))
         return out
 
     def retrieve_similar(self, card: DiagnosisCard, k: int = 5,
                          metric: str = "euclidean",
-                         exclude_self: bool = True) -> List[MemoryCase]:
+                         exclude_self: bool = True,
+                         sources: Optional[Sequence[str]] = None) -> List[MemoryCase]:
         """按诊断卡检索相似案例。regime 作为硬门控。
 
         exclude_self 默认开启：评测场景下必须排除同一条轨迹（同一 seg_id）的
@@ -297,12 +328,13 @@ class MemoryStore:
         excl = [card.seg_id] if exclude_self else None
         cases = self.retrieve(feat_mod.featurize(card), k=k,
                               regime=card.regime, metric=metric,
-                              exclude_seg_ids=excl)
+                              exclude_seg_ids=excl, sources=sources)
         if not cases:
             # regime 门控下无结果时放宽到同 timeline 质量，便于冷启动
             cases = self.retrieve(feat_mod.featurize(card), k=k, regime=None,
                                   timeline_quality=card.timeline_quality,
-                                  metric=metric, exclude_seg_ids=excl)
+                                  metric=metric, exclude_seg_ids=excl,
+                                  sources=sources)
         return cases
 
     def all_features(self) -> List[Tuple[int, str, List[float]]]:
@@ -322,7 +354,8 @@ class MemoryStore:
     def rebuild_procedural(self, param_names: Optional[Sequence[str]] = None,
                           min_samples: int = 3,
                           quantile_low: float = 0.25,
-                          quantile_high: float = 0.75) -> int:
+                          quantile_high: float = 0.75,
+                          source: str = "llm-verified") -> int:
         """从 L1 蒸馏 L2：按 (regime, timeline_quality, param) 给出推荐区间。
 
         只用 **admitted=1** 的记录——这正是准入闸门的价值所在：
@@ -337,7 +370,8 @@ class MemoryStore:
         with self._lock:
             rows = self._conn.execute(
                 """SELECT regime, timeline_quality, params_json, score, regret
-                   FROM episodic WHERE admitted=1""").fetchall()
+                   FROM episodic WHERE admitted=1 AND source=?""",
+                (str(source),)).fetchall()
 
         buckets: Dict[Tuple[str, str, str], List[Tuple[float, float, float]]] = {}
         for row in rows:
@@ -369,8 +403,9 @@ class MemoryStore:
                 self._conn.execute(
                     """INSERT INTO procedural
                        (updated_at, regime, timeline_quality, signature, param_name,
-                        low, high, median, n_samples, mean_regret, mean_score, evidence_ids)
-                       VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+                        low, high, median, n_samples, mean_regret, mean_score,
+                        evidence_ids, source)
+                       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
                        ON CONFLICT(regime, timeline_quality, signature, param_name)
                        DO UPDATE SET updated_at=excluded.updated_at,
                                      low=excluded.low, high=excluded.high,
@@ -378,16 +413,19 @@ class MemoryStore:
                                      n_samples=excluded.n_samples,
                                      mean_regret=excluded.mean_regret,
                                      mean_score=excluded.mean_score,
-                                     evidence_ids=excluded.evidence_ids""",
+                                     evidence_ids=excluded.evidence_ids,
+                                     source=excluded.source""",
                     (time.time(), regime, tl, signature, name, low, high, med,
-                     len(items), mean_regret, mean_score, json.dumps([])))
+                     len(items), mean_regret, mean_score, json.dumps([]),
+                     str(source)))
                 n_written += 1
             self._conn.commit()
         return n_written
 
     def query_regions(self, regime: Optional[str] = None,
                       timeline_quality: Optional[str] = None,
-                      param_name: Optional[str] = None) -> List[ParamRegion]:
+                      param_name: Optional[str] = None,
+                      source: Optional[str] = None) -> List[ParamRegion]:
         where: List[str] = []
         args: List[Any] = []
         for col, val in (("regime", regime), ("timeline_quality", timeline_quality),
@@ -395,6 +433,9 @@ class MemoryStore:
             if val:
                 where.append(f"{col}=?")
                 args.append(val)
+        if source:
+            where.append("source=?")
+            args.append(str(source))
         sql = "SELECT * FROM procedural"
         if where:
             sql += " WHERE " + " AND ".join(where)
@@ -406,6 +447,7 @@ class MemoryStore:
             param_name=r["param_name"], low=float(r["low"]), high=float(r["high"]),
             median=float(r["median"]), n_samples=int(r["n_samples"]),
             mean_regret=r["mean_regret"], mean_score=r["mean_score"],
+            source=str(r["source"] or "llm-verified"),
         ) for r in rows]
 
     # ---- 统计 -----------------------------------------------------------
@@ -418,6 +460,9 @@ class MemoryStore:
             by_regime = self._conn.execute(
                 """SELECT regime, COUNT(*) c, AVG(score) s FROM episodic
                    WHERE admitted=1 GROUP BY regime""").fetchall()
+            by_source = self._conn.execute(
+                """SELECT source, COUNT(*) c FROM episodic
+                   WHERE admitted=1 GROUP BY source""").fetchall()
         return {
             "n_episodic": int(total),
             "n_admitted": int(adm),
@@ -426,6 +471,7 @@ class MemoryStore:
             "by_regime": [{"regime": r["regime"], "n": int(r["c"]),
                            "mean_score": None if r["s"] is None else round(r["s"], 4)}
                           for r in by_regime],
+            "by_source": {str(r["source"]): int(r["c"]) for r in by_source},
             "path": self.path,
         }
 

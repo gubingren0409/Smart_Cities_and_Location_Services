@@ -592,7 +592,7 @@ class TrajCleaningAgent:
             # regret 退化为「提议相对基线的绝对差距」。
             #
             # 注意：这个数值**不能**与含搜索模式的归一化 regret 直接比较，
-            # 因为分母的含义不同（一个是本模式可达上限，一个是全局最优）。
+            # 因为分母的含义不同（一个是本模式可达上限，一个是有界搜索参考）。
             # 消融表必须标注这一点，否则会得出「关掉搜索更好」的错误结论。
             trace = search_mod.SearchTrace(method="disabled")
             trace.best_score = base_obj.score

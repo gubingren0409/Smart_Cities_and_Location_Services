@@ -68,8 +68,9 @@ PARAM_SPECS: Dict[str, ParamSpec] = {
         name="dt_threshold", low=15.0, high=180.0, default=30.0, unit="s", integer=True,
         rationale=(
             "切分用的时间间隔上界。数据 dt 主频 10s、p95 20s 且 10/20 双峰，"
-            "故下界取 15s（保住正常 20s 采样），上界 180s（超过即为真实停车/失联）。"
-            "默认 30s 是经验值但在此数据集上偏大，属于应当被实验推翻的起点。"
+            "按 dt > threshold 切分的实现语义，保留正常 20s 采样时物理推荐值应不低于 20s；"
+            "15s 只是用于敏感性实验的探索下界，会主动切开 20s 间隔。"
+            "上界 180s 用于覆盖长时间停车/失联情形；默认 30s 是待实验检验的经验起点。"
         ),
     ),
     "dist_threshold": ParamSpec(
@@ -105,7 +106,8 @@ PARAM_SPECS: Dict[str, ParamSpec] = {
     "dp_tolerance": ParamSpec(
         name="dp_tolerance", low=0.5, high=30.0, default=5.0, unit="m",
         rationale=(
-            "DP 压缩容差。理论上限约为 GPS 定位精度 CEP（8m）——超过它就是在删真实几何。"
+            "DP 压缩容差。0.5–8m 是结合民用 GPS CEP 量级的物理推荐范围；"
+            "30m 是用于观察激进压缩行为的实验探索上界，不表示 30m 仍具同等几何保真。"
             "下界 0.5m 避免退化为不压缩；默认 5m 与讲义一致。"
         ),
     ),

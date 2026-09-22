@@ -41,7 +41,10 @@ class MemoryPrior:
 
 
 def prior_for(card: DiagnosisCard, store: Optional[MemoryStore],
-              k: int = 5, max_params: int = 6) -> MemoryPrior:
+              k: int = 5, max_params: int = 6,
+              use_episodic: bool = True,
+              use_procedural: bool = True,
+              sources: Optional[Sequence[str]] = None) -> MemoryPrior:
     """组装检索到的先验。无记忆时返回 available=False 而不是报错。"""
     vec = feat_mod.featurize(card)
     prior = MemoryPrior(
@@ -58,23 +61,34 @@ def prior_for(card: DiagnosisCard, store: Optional[MemoryStore],
 
     # exclude_self=True：绝不把「正在评估的这条轨迹」自己的历史记录当成先验，
     # 那属于信息泄漏，会让消融实验失真。
-    cases: List[MemoryCase] = store.retrieve_similar(card, k=k, exclude_self=True)
-    prior.available = bool(cases)
+    cases: List[MemoryCase] = []
+    if use_episodic:
+        cases = store.retrieve_similar(
+            card, k=k, exclude_self=True, sources=sources)
     prior.n_neighbors = len(cases)
     prior.neighbors = [c.to_dict() for c in cases]
 
-    regions: List[ParamRegion] = store.query_regions(
-        regime=card.regime, timeline_quality=card.timeline_quality)
-    if not regions:
-        regions = store.query_regions(regime=card.regime)
+    regions: List[ParamRegion] = []
+    region_source = sources[0] if sources and len(sources) == 1 else None
+    if use_procedural:
+        regions = store.query_regions(
+            regime=card.regime,
+            timeline_quality=card.timeline_quality,
+            source=region_source,
+        )
+        if not regions:
+            regions = store.query_regions(
+                regime=card.regime, source=region_source)
     prior.suggested_regions = [r.to_dict() for r in regions[:max_params]]
+    prior.available = bool(cases or regions)
 
-    if not cases:
+    if not prior.available:
         prior.caution = (
             f"同 regime({card.regime}) 下没有已验证的相似案例，"
             "历史先验的参考价值有限。"
         )
-    elif max((c.similarity for c in cases), default=0.0) < 0.9:
+    elif use_episodic and cases and max(
+            (c.similarity for c in cases), default=0.0) < 0.9:
         prior.caution = (
             f"最相似案例的相似度仅 {max(c.similarity for c in cases):.3f}，"
             "说明本条轨迹的特征与历史案例差异较大，先验应当弱化使用。"

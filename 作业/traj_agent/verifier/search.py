@@ -6,7 +6,7 @@
 -----------
 没有统一的内部参考就无法判断 LLM 建议是否接近既定目标；「看起来合理」不是判据。
 本模块在参数的物理先验区间内做有界搜索，给出预算内参考解。
-它不是现实真值，也不保证是参数空间的全局最优解。
+它只是在固定参数空间和固定预算下得到的 bounded internal reference。
 
 搜索策略
 -------
@@ -25,6 +25,7 @@ from ..core import params as params_mod
 
 
 Evaluator = Callable[[Dict[str, float]], float]
+SearchBounds = Dict[str, Tuple[float, float]]
 
 
 @dataclass
@@ -199,6 +200,104 @@ def coordinate_descent(base_params: Dict[str, float],
                     if c not in trace.clamped_params:
                         trace.clamped_params.append(c)
                 trace.record(cand, evaluator(cand))
+    return trace
+
+
+def full_parameter_bounds(
+    names: Optional[Sequence[str]] = None,
+) -> SearchBounds:
+    """返回活动参数的完整合法区间。"""
+    selected = list(names) if names is not None else list(
+        params_mod.ACTIVE_EXECUTION_PARAMS)
+    return {
+        name: (float(params_mod.PARAM_SPECS[name].low),
+               float(params_mod.PARAM_SPECS[name].high))
+        for name in selected
+    }
+
+
+def normalize_search_bounds(
+    bounds: Optional[SearchBounds],
+    names: Optional[Sequence[str]] = None,
+) -> SearchBounds:
+    """把局部搜索区间夹到全局合法区间，并统一 low/high 顺序。"""
+    global_bounds = full_parameter_bounds(names)
+    out: SearchBounds = {}
+    for name, (global_low, global_high) in global_bounds.items():
+        proposed = (bounds or {}).get(name, (global_low, global_high))
+        try:
+            low, high = float(proposed[0]), float(proposed[1])
+        except (TypeError, ValueError, IndexError):
+            low, high = global_low, global_high
+        if not math.isfinite(low) or not math.isfinite(high):
+            low, high = global_low, global_high
+        if low > high:
+            low, high = high, low
+        out[name] = (
+            max(global_low, min(global_high, low)),
+            max(global_low, min(global_high, high)),
+        )
+    return out
+
+
+def _halton(index: int, base: int) -> float:
+    """小规模确定性低差异序列；index 从 1 开始。"""
+    result = 0.0
+    factor = 1.0 / base
+    value = int(index)
+    while value > 0:
+        result += factor * (value % base)
+        value //= base
+        factor /= base
+    return result
+
+
+def budgeted_region_search(
+    start_params: Dict[str, float],
+    evaluator: Evaluator,
+    max_evals: int,
+    bounds: Optional[SearchBounds] = None,
+    search_params: Optional[Sequence[str]] = None,
+) -> SearchTrace:
+    """在给定区域内用固定次数的确定性采样搜索。
+
+    第一次评估使用区域起点，其余点使用三维 Halton 序列。Pure Search
+    传入完整参数边界，warm start 传入 LLM/Memory 提议的局部区域；两者
+    共享完全相同的采样器和 Objective evaluation 预算。
+    """
+    budget = int(max_evals)
+    if budget < 1:
+        raise ValueError("max_evals 必须至少为 1")
+    names = list(search_params) if search_params is not None else list(
+        params_mod.ACTIVE_EXECUTION_PARAMS)
+    normalized_bounds = normalize_search_bounds(bounds, names)
+    global_defaults = params_mod.active_default_params()
+    start: Dict[str, float] = {}
+    for name in names:
+        low, high = normalized_bounds[name]
+        value = float(start_params.get(name, global_defaults[name]))
+        start[name] = max(low, min(high, value))
+    start, clamped = _clamp(start)
+
+    trace = SearchTrace(method="budgeted_region_halton")
+    trace.clamped_params = list(clamped)
+    trace.baseline_params = dict(global_defaults)
+    trace.record(start, evaluator(start))
+
+    primes = (2, 3, 5, 7, 11, 13, 17)
+    for index in range(1, budget):
+        candidate = dict(start)
+        for dim, name in enumerate(names):
+            low, high = normalized_bounds[name]
+            value = low + _halton(index, primes[dim]) * (high - low)
+            if params_mod.PARAM_SPECS[name].integer:
+                value = float(round(value))
+            candidate[name] = value
+        candidate, clamped = _clamp(candidate)
+        for name in clamped:
+            if name not in trace.clamped_params:
+                trace.clamped_params.append(name)
+        trace.record(candidate, evaluator(candidate))
     return trace
 
 
