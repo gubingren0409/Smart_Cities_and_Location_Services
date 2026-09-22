@@ -391,6 +391,10 @@ def run_formal_stage(
     *,
     repetitions: int = 3,
     retry_failed: bool = False,
+    teacher_sizes: Optional[Sequence[int]] = None,
+    results_filename: str = "raw_results.jsonl",
+    runtime_tag: str = "",
+    write_shared_artifacts: bool = True,
 ) -> None:
     from dotenv import load_dotenv
 
@@ -406,6 +410,14 @@ def run_formal_stage(
         raise RuntimeError("正式实验必须使用 OpenAICompatProvider")
 
     raw = traj_mod.load_raw(str(data_path))
+    selected_sizes = tuple(
+        int(size) for size in
+        (teacher_sizes if teacher_sizes is not None else opt.DEFAULT_TEACHER_SIZES)
+    )
+    unknown_sizes = sorted(set(selected_sizes) - set(opt.DEFAULT_TEACHER_SIZES))
+    if not selected_sizes or unknown_sizes:
+        raise ValueError(f"teacher_sizes 非法：{unknown_sizes or selected_sizes}")
+
     existing_config_path = experiment_dir / "config.json"
     existing_config = (
         json.loads(existing_config_path.read_text(encoding="utf-8"))
@@ -415,7 +427,8 @@ def run_formal_stage(
         "teacher_generation_commit",
         existing_config.get("implementation_commit", "unknown"),
     )
-    atomic_json(experiment_dir / "config.json", config)
+    if write_shared_artifacts:
+        atomic_json(experiment_dir / "config.json", config)
     manifest = json.loads(
         (experiment_dir / "teacher_manifest.json").read_text(encoding="utf-8"))
     if manifest["teacher_holdout_overlap"]:
@@ -430,11 +443,13 @@ def run_formal_stage(
     if len(teacher_rows) < max(opt.DEFAULT_TEACHER_SIZES):
         raise RuntimeError("teacher data 尚未完成200条")
 
-    runtime_dir = experiment_dir / ".runtime"
+    safe_runtime_tag = re.sub(r"[^A-Za-z0-9_-]+", "_", runtime_tag).strip("_")
+    runtime_dir = experiment_dir / (
+        ".runtime" if not safe_runtime_tag else f".runtime_{safe_runtime_tag}")
     runtime_dir.mkdir(exist_ok=True)
     stores: Dict[int, MemoryStore] = {}
     memory_diagnostics: Dict[str, Any] = {}
-    for size in opt.DEFAULT_TEACHER_SIZES:
+    for size in selected_sizes:
         path = runtime_dir / f"teacher_{size}.sqlite"
         if path.exists():
             path.unlink()
@@ -443,7 +458,11 @@ def run_formal_stage(
             store, raw, teacher_rows[:size], min_samples=3)
         stores[size] = store
         memory_diagnostics[str(size)] = diagnostics
-    atomic_json(experiment_dir / "memory_diagnostics.json", memory_diagnostics)
+    if write_shared_artifacts:
+        # 默认全量运行写出完整诊断；分片只负责计算结果，防止并发覆盖。
+        if set(selected_sizes) != set(opt.DEFAULT_TEACHER_SIZES):
+            raise ValueError("分片运行不得 write_shared_artifacts=True")
+        atomic_json(experiment_dir / "memory_diagnostics.json", memory_diagnostics)
 
     reference_path = experiment_dir / "holdout_reference.jsonl"
     references = latest_by(read_jsonl(reference_path), ("vehicle_id",))
@@ -473,7 +492,7 @@ def run_formal_stage(
         for vehicle_id in V2_HOLDOUT:
             evaluator = opt.TrajectoryEvaluator(raw, vehicle_id)
             combinations = [(0, "none", None)]
-            for size in opt.DEFAULT_TEACHER_SIZES:
+            for size in selected_sizes:
                 combinations.extend([
                     (size, "episodic-only", stores[size]),
                     (size, "procedural-only", stores[size]),
@@ -502,7 +521,7 @@ def run_formal_stage(
                     flush=True,
                 )
 
-    results_path = experiment_dir / "raw_results.jsonl"
+    results_path = experiment_dir / results_filename
     results = latest_by(
         read_jsonl(results_path),
         ("repetition", "teacher_size", "method", "budget", "vehicle_id"),
@@ -510,7 +529,7 @@ def run_formal_stage(
     global_bounds = opt.active_bounds()
     defaults = params_mod.active_default_params()
     for repetition in range(1, int(repetitions) + 1):
-        for teacher_size in opt.DEFAULT_TEACHER_SIZES:
+        for teacher_size in selected_sizes:
             for vehicle_id in V2_HOLDOUT:
                 reference = references[(vehicle_id,)]
                 if reference.get("error"):
@@ -537,13 +556,19 @@ def run_formal_stage(
                         proposal,
                     ))
                 for method, bounds, start, proposal in method_specs:
+                    # 3/5/10/20 次 Halton 搜索共享严格相同的前缀。这里让同一
+                    # method 的 evaluator cache 跨预算保留，避免重复执行已经
+                    # 计算过的 Objective；每个预算仍生成完整 trace，并保留其
+                    # 规定的逻辑 evaluation 数。elapsed_ms 记录达到该预算所需
+                    # 的累计实际时间，因而仍可与独立运行该预算比较。
+                    evaluator.cache.clear()
+                    cumulative_elapsed_ms = 0.0
                     for budget in opt.DEFAULT_BUDGETS:
                         key = (repetition, teacher_size, method, budget, vehicle_id)
                         existing = results.get(key)
                         if existing and (not retry_failed or not existing.get("error")):
                             continue
                         try:
-                            evaluator.cache.clear()
                             outcome = opt.run_budgeted_method(
                                 evaluator,
                                 bounds=bounds,
@@ -552,6 +577,12 @@ def run_formal_stage(
                                 reference_score=float(reference["search_best_score"]),
                                 reference_params=reference["search_best_params"],
                             )
+                            incremental_elapsed_ms = float(outcome["elapsed_ms"])
+                            cumulative_elapsed_ms += incremental_elapsed_ms
+                            outcome["elapsed_ms"] = round(cumulative_elapsed_ms, 2)
+                            outcome["incremental_elapsed_ms"] = round(
+                                incremental_elapsed_ms, 2)
+                            outcome["execution_reuse"] = "cumulative_budget_prefix"
                             row = {
                                 "record_type": "method_result",
                                 "repetition": repetition,
