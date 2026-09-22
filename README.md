@@ -10,7 +10,7 @@
 - `作业/AI使用记录_实验一.md`：真实 Human–AI 交互证据及修改前后位置说明。
 - `作业/traj_dict.json`：实验数据。
 - `作业/utils/`、`作业/douglas_peucker.py`：老师框架及基础工具。
-- `作业/任务3_LLM辅助评估清洗.ipynb`、`作业/traj_agent/`：课程选做部分的辅助评估框架与演示。
+- `作业/任务3_LLM辅助评估清洗.ipynb`、`作业/traj_agent/`：课程选做部分的辅助评估框架、Search-Verified Memory 与 warm-start search。
 - `作业/任务三_代码与目录清单.md`：任务三源码、测试、实验结果和展示材料的完整导航。
 - `作业/tests/`：几何、清洗、简化、代理、核验和记忆模块测试。
 - `作业/figures/`、`作业/experiments/`：真实运行生成的图表和实验结果。
@@ -34,6 +34,13 @@ python -m pytest tests -q
 ```powershell
 cd 作业
 python examples/run_demo.py --sample 200
+```
+
+从已保存的真实实验记录重建 Objective-Oriented Optimization 报告与七张图：
+
+```powershell
+cd 作业
+python experiments/objective_optimization_20260922/run_objective_optimization.py --stage analyze
 ```
 
 未设置模型 API 凭据时，辅助评估演示使用项目自带的 `MockProvider`。仓库不包含任何真实 API 密钥。

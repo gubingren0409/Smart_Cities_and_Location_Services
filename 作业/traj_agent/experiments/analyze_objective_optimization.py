@@ -96,10 +96,18 @@ def summarize(experiment_dir: Path) -> Dict[str, Any]:
                         recovery_items,
                         lambda r: None if r.get("evaluations_to_90_gain") is None
                         else float(r["evaluations_to_90_gain"])),
+                    "evaluations_to_90_reach_rate": cluster_stats(
+                        recovery_items,
+                        lambda r: 1.0 if r.get("evaluations_to_90_gain") is not None
+                        else 0.0),
                     "evaluations_to_95_gain": cluster_stats(
                         recovery_items,
                         lambda r: None if r.get("evaluations_to_95_gain") is None
                         else float(r["evaluations_to_95_gain"])),
+                    "evaluations_to_95_reach_rate": cluster_stats(
+                        recovery_items,
+                        lambda r: 1.0 if r.get("evaluations_to_95_gain") is not None
+                        else 0.0),
                     "search_evaluations": sum(
                         int(r["n_evaluations"]) for r in items),
                     "latency_ms": cluster_stats(
@@ -241,14 +249,21 @@ def write_report(experiment_dir: Path, summary: Mapping[str, Any]) -> None:
     lines = [
         "# 固定 Objective 下的参数提议与 Warm-start Search 实验",
         "",
-        "## 1. 实验口径",
+        "## 1. 问题与实验口径",
         "",
-        "本实验冻结上一版 Objective、活动参数和60次有界内部搜索参考。"
-        "Teacher 与 Memory 均不使用 holdout；固定预算比较继续以车辆为统计 cluster。",
+        "研究问题是：在不修改助教 Objective 的前提下，LLM 与 Memory 能否作为"
+        "确定性搜索的 warm start，用更少的 Objective evaluations 得到高分参数。",
+        "",
+        "本实验冻结上一版 Objective、活动参数和最多60次的有界内部搜索参考。"
+        "该参考只用于课程 Objective 下的比较，适用范围受固定参数空间和预算约束。"
+        "Teacher 与 Memory 均不使用 holdout；固定预算比较以车辆为统计 cluster。",
         "",
         f"Search Teacher Dataset 含 **{teacher['n_unique_vehicles']}** 辆独立车辆，"
         f"与 holdout 重叠 **{len(teacher['teacher_holdout_overlap'])}** 辆，"
         f"teacher 阶段 LLM 调用 **{teacher['total_llm_calls']}** 次。",
+        "",
+        "固定 holdout 为12辆，其中8辆满足 Objective applicable 条件；每个 LLM "
+        "条件重复3次，固定预算为3、5、10、20。",
         "",
         "## 2. Teacher 参数结构",
         "",
@@ -268,8 +283,28 @@ def write_report(experiment_dir: Path, summary: Mapping[str, Any]) -> None:
 
     lines += [
         "",
-        "各诊断层的 Search best 参数分布见 `teacher_analysis.json` 与图06。"
-        "这些区间来自 teacher data，不是人工设定。",
+        "四个 applicable 诊断层的 Search best 分布如下，表内为 median [P25, P75]。"
+        "这些区间来自 Teacher data，不是人工设定。",
+        "",
+        "| 诊断层 | n | dp_tolerance (m) | dist_threshold (m) | max_speed (m/s) |",
+        "|---|---:|---:|---:|---:|",
+    ]
+    distributions = teacher["parameter_distributions"]
+    for stratum in ("mixed/ok", "mixed/degraded", "moving/ok", "moving/degraded"):
+        row = distributions[f"stratum:{stratum}"]
+        values = []
+        for name in ("dp_tolerance", "dist_threshold", "max_speed_mps"):
+            item = row["parameters"][name]
+            values.append(
+                f"{_fmt(item['median'], 3)} [{_fmt(item['p25'], 3)}, "
+                f"{_fmt(item['p75'], 3)}]")
+        lines.append(f"| {stratum} | {row['n']} | " + " | ".join(values) + " |")
+
+    lines += [
+        "",
+        "各层中位数和四分位区间存在位移，但区间仍有重叠，因此属于诊断相关结构，"
+        "不能解释为边界清晰的天然类别。stationary 轨迹因 Objective 不适用而保持"
+        "默认参数，不参与 L2 区域形成。",
         "",
         "## 3. Search-Verified Memory",
         "",
@@ -288,12 +323,38 @@ def write_report(experiment_dir: Path, summary: Mapping[str, Any]) -> None:
 
     lines += [
         "",
-        "## 4. 固定预算主结果",
+        "min_samples=3 时，L2 从 12 条 Teacher 的0个区域增加到24条及以上的"
+        "12个区域（4个 applicable 诊断层 × 3个参数）。min_samples=5 时需至少"
+        "48条 Teacher 才达到12个区域。Episodic 的100%覆盖包含跨 regime 回退，"
+        "同 regime 覆盖为66.7%。",
+        "",
+        "## 4. LLM 直接区域提议",
+        "",
+        "下表是 LLM 所提区域中点到有界内部参考的 signed gap；越小越好。",
+        "",
+        "| Teacher规模 | No Memory | Episodic | Procedural | Both |",
+        "|---:|---:|---:|---:|---:|",
+    ]
+    for size in DEFAULT_TEACHER_SIZES:
+        direct = summary["direct_region_gap"][str(size)]
+        lines.append(
+            f"| {size} | {_fmt(direct['none']['mean'])} | "
+            f"{_fmt(direct['episodic-only']['mean'])} | "
+            f"{_fmt(direct['procedural-only']['mean'])} | "
+            f"{_fmt(direct['episodic+procedural']['mean'])} |")
+
+    lines += [
+        "",
+        "No Memory 的平均 gap 为0.1583；Teacher=200 时 Both 降到0.0887，"
+        "缩小约44%。直接提议仍明显落后于后续 warm-start search，说明 LLM 更适合"
+        "提供搜索区域。",
+        "",
+        "## 5. 固定预算主结果",
         "",
         "下表使用最大 Teacher 规模200。Gain Recovery 只在 search headroom≥0.02时计算。",
         "",
-        "| 方法 | budget | Gap-to-Search | Gain Recovery | Near-Search Rate | evals-to-95% |",
-        "|---|---:|---:|---:|---:|---:|",
+        "| 方法 | budget | Gap-to-Search | Gain Recovery | Near-Search Rate | 95%到达率 | evals-to-95%* |",
+        "|---|---:|---:|---:|---:|---:|---:|",
     ]
     for method in _method_order():
         for budget in DEFAULT_BUDGETS:
@@ -303,26 +364,95 @@ def write_report(experiment_dir: Path, summary: Mapping[str, Any]) -> None:
                 f"{_fmt(cell['gap_to_search']['mean'])} | "
                 f"{_fmt(cell['gain_recovery']['mean'])} | "
                 f"{_fmt(cell['near_search_rate']['mean'], 3)} | "
+                f"{_fmt(cell['evaluations_to_95_reach_rate']['mean'], 3)} | "
                 f"{_fmt(cell['evaluations_to_95_gain']['median'], 1)} |")
 
     lines += [
         "",
-        "## 5. 配对比较与成本",
+        "说明：evals-to-95% 只对预算内实际达到目标的记录取中位数，必须与到达率一起解释。",
+        "",
+        "## 6. 配对比较",
         "",
         "Warm-start 与 Pure Search 按同一车辆、同一预算、同一 repetition 配对。"
-        "完整车辆聚类区间保存在 `summary.json`。",
+        "下表是 Teacher=200 时 warm-start − Pure Search 的 Objective 差值；"
+        "95%区间按 vehicle cluster bootstrap。",
+        "",
+        "| Memory | budget=10 mean [95% CI] | budget=20 mean [95% CI] |",
+        "|---|---:|---:|",
+    ]
+    for mode in MEMORY_MODES:
+        values = []
+        for budget in (10, 20):
+            stat = summary["paired_warmstart_vs_pure"]["200"][mode][str(budget)][
+                "warm_minus_pure_score"]
+            ci = stat["bootstrap_95_ci"]
+            values.append(
+                f"{_fmt(stat['mean'])} [{_fmt(ci[0])}, {_fmt(ci[1])}]")
+        lines.append(f"| {mode} | {values[0]} | {values[1]} |")
+
+    lines += [
+        "",
+        "Teacher=200 时四种 warm-start 的配对均值都高于 Pure Search。"
+        "budget=10 时 Episodic-only 平均提升0.1191，Both 为0.1165，"
+        "Procedural-only 只有0.0056。样本仅8辆 applicable 车辆，部分区间较宽。",
+        "",
+        "## 7. Teacher 规模与 Memory 消融",
+        "",
+        "以下为 budget=10 的 mean Gap-to-Search。",
+        "",
+        "| Teacher规模 | Episodic | Procedural | Both |",
+        "|---:|---:|---:|---:|",
+    ]
+    for size in DEFAULT_TEACHER_SIZES:
+        cells = summary["cells"][str(size)]
+        lines.append(
+            f"| {size} | {_fmt(cells['llm-warmstart:episodic-only']['10']['gap_to_search']['mean'])} | "
+            f"{_fmt(cells['llm-warmstart:procedural-only']['10']['gap_to_search']['mean'])} | "
+            f"{_fmt(cells['llm-warmstart:episodic+procedural']['10']['gap_to_search']['mean'])} |")
+
+    lines += [
+        "",
+        "Episodic-only 随 Teacher 规模增加稳定改善；Both 在24和48条时退化，到100条"
+        "后才明显改善；Procedural-only 波动较大。因此不能概括为 Teacher 越多就对"
+        "所有 Memory 模式稳定增益，主要贡献来自 Episodic retrieval。",
+        "",
+        "## 8. 调用成本与收益",
+        "",
+        "| 模式 | tokens/提案 | median LLM latency (ms) | budget=10 配对提升 |",
+        "|---|---:|---:|---:|",
+    ]
+    for mode in MEMORY_MODES:
+        cost_size = "0" if mode == "none" else "200"
+        cost = summary["proposal_costs"][cost_size][mode]
+        tokens_per = (cost["prompt_tokens"] + cost["completion_tokens"]) / cost["n"]
+        improvement = summary["paired_warmstart_vs_pure"]["200"][mode]["10"][
+            "warm_minus_pure_score"]["mean"]
+        lines.append(
+            f"| {mode} | {tokens_per:.1f} | {cost['median_latency_ms']:.1f} | "
+            f"{_fmt(improvement)} |")
+
+    lines += [
         "",
         f"实际 LLM 调用 {usage['llm_calls']} 次，prompt tokens "
         f"{usage['prompt_tokens']}，completion tokens {usage['completion_tokens']}；"
         f"逻辑 Objective evaluations {usage['logical_search_evaluations']} 次。",
         "",
-        "## 6. 解释边界",
+        "Episodic-only 在规模200每次约885 tokens，budget=10 配对提升0.1191，"
+        "是当前更有效的成本分配。Both 每次约1031 tokens，平均提升略低，但"
+        "Near-Search Rate 更高。Procedural-only token 更少，Objective 增益也很小。",
         "",
-        "1. 本实验没有修改 Objective；结论只回答在该课程 Objective 下的搜索效率。",
-        "2. 60次 reference 是固定预算下的 bounded internal reference。",
-        "3. 不同 repetition 的 LLM 区域提议仍可能包含服务端生成波动。",
-        "4. evaluations-to-target 对 headroom 不足的轨迹记为 N/A。",
-        "5. Teacher 与 holdout 零重叠，holdout 未参与 Memory、prompt 或区域调优。",
+        "## 9. 结论与限制",
+        "",
+        "1. 本实验没有修改 Objective；结论只回答该课程 Objective 下的搜索效率。",
+        "2. 200条 Search Teacher 与 Episodic retrieval 能有效缩小 gap；Procedural L2 "
+        "单独使用的收益有限。",
+        "3. 最多60次的 reference 是 bounded internal reference；负 signed gap 只表示"
+        "超过当前有界参考。",
+        "4. holdout 只有12辆，其中8辆 applicable，vehicle-cluster 区间仍较宽。",
+        "5. evaluations-to-target 对 headroom 不足的记录记为 N/A；未达到目标的记录"
+        "不进入 evaluation 中位数。",
+        "6. 只测试一个 provider/model 和三次生成重复，跨模型泛化尚未验证。",
+        "7. Teacher 与 holdout 零重叠，holdout 未参与 Memory、prompt 或区域调优。",
         "",
     ]
     (experiment_dir / "实验报告.md").write_text("\n".join(lines), encoding="utf-8")
@@ -359,6 +489,7 @@ def make_figures(experiment_dir: Path, summary: Mapping[str, Any]) -> None:
     for patch, method in zip(bp["boxes"], methods):
         patch.set_facecolor(colors[method]); patch.set_alpha(0.75)
     ax.axhline(0, color="#555", lw=1)
+    ax.set_yscale("symlog", linthresh=0.01, linscale=1.0)
     ax.set_ylabel("Reference score - method score")
     ax.set_title("Gap to bounded reference (teacher=200, budget=10)")
     fig.tight_layout(); fig.savefig(out / "01_gap_to_search_by_method.png", dpi=220); plt.close(fig)
@@ -421,37 +552,100 @@ def make_figures(experiment_dir: Path, summary: Mapping[str, Any]) -> None:
     fig.savefig(out / "06_parameter_regions_by_regime.png", dpi=220); plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(8.5, 5.0))
+    label_offsets = {
+        "pure-search": (-10, -12),
+        "llm-warmstart:none": (4, -12),
+        "llm-warmstart:episodic-only": (-58, 6),
+        "llm-warmstart:procedural-only": (4, -12),
+        "llm-warmstart:episodic+procedural": (4, 7),
+    }
     for method in methods:
+        if method == "pure-search":
+            x = 0.0
+        else:
+            mode = method.split(":", 1)[1]
+            cost_size = "0" if mode == "none" else "200"
+            cost = summary["proposal_costs"][cost_size][mode]
+            x = (cost["prompt_tokens"] + cost["completion_tokens"]) / cost["n"]
         for budget in DEFAULT_BUDGETS:
             cell = summary["cells"]["200"][method][str(budget)]
-            x = (cell["latency_ms"]["median"] or 0) / 1000.0
             y = cell["objective"]["mean"]
             ax.scatter(x, y, s=30 + budget * 3, color=colors[method], alpha=0.8)
             if budget in (3, 20):
                 ax.annotate(f"{labels[method]} b{budget}", (x, y), fontsize=7,
-                            xytext=(3, 3), textcoords="offset points")
-    ax.set_xlabel("Median search latency per case (s)")
+                            xytext=label_offsets[method], textcoords="offset points")
+    ax.set_xlabel("LLM tokens per region proposal")
     ax.set_ylabel("Mean Objective")
-    ax.set_title("Search cost vs Objective (teacher=200; marker size=budget)")
+    ax.set_title("LLM token cost vs Objective (teacher=200; marker size=budget)")
     fig.tight_layout(); fig.savefig(out / "07_cost_vs_objective.png", dpi=220); plt.close(fig)
 
 
 def write_feedback(experiment_dir: Path, summary: Mapping[str, Any]) -> None:
+    usage = summary["actual_usage"]
+    paired = summary["paired_warmstart_vs_pure"]["200"]
+    cells = summary["cells"]["200"]
+    direct = summary["direct_region_gap"]["200"]
+    test_result = summary.get("config", {}).get("validation", {}).get(
+        "pytest", "未记录")
     lines = [
-        "# Objective-Oriented Optimization 完成情况",
+        "# Objective-Oriented Optimization 完成反馈",
         "",
-        "- Objective 公式、权重、可行性定义：未修改",
-        "- v2 实验目录：未修改",
+        "## 完整性",
+        "",
+        f"- Search Teacher：{summary['teacher']['n_unique_vehicles']} 辆，0 次 LLM",
         "- Teacher/Holdout overlap：0",
-        f"- Search Teacher 独立车辆：{summary['teacher']['n_unique_vehicles']}",
-        f"- 完整结果行：{summary['actual_usage']['result_rows']}",
-        f"- LLM 调用：{summary['actual_usage']['llm_calls']}",
-        f"- Prompt tokens：{summary['actual_usage']['prompt_tokens']}",
-        f"- Completion tokens：{summary['actual_usage']['completion_tokens']}",
-        f"- Provider errors：{summary['actual_usage']['provider_errors']}",
-        f"- 最终失败：{summary['result_failures']}",
+        f"- 区域提案：{usage['proposal_rows']} 行，LLM 调用 {usage['llm_calls']} 次",
+        f"- 固定预算结果：{usage['result_rows']} 行，最终失败 {summary['result_failures']} 行",
+        f"- Provider errors / retries：{usage['provider_errors']} / {usage['retries']}",
+        "- Objective 公式、权重、可行性定义：未修改",
+        "- v2 实验目录与既有结果：未修改",
         "",
-        "详细结果、车辆聚类区间和成本见 `summary.json` 与 `实验报告.md`。",
+        "## 最终验收问题逐项回答",
+        "",
+        f"1. **Search Teacher Dataset 有多少辆独立车辆？** "
+        f"{summary['teacher']['n_unique_vehicles']} 辆。",
+        "2. **与 holdout 是否零重叠？** 是，重叠数为0。",
+        "3. **三个 active 参数谁最敏感？** `dp_tolerance` 明显最高，其后是 "
+        "`max_speed_mps`，最后是 `dist_threshold`。",
+        "4. **Search best 是否存在诊断分群？** 存在诊断相关位移，但各层区间有重叠，"
+        "属于中等结构，不是边界清晰的分群。",
+        "5. **L2 region 从0增加到多少？** min_samples=3 时由规模12的0个增至"
+        "规模24及以上的12个；min_samples=5 时规模48才达到12个。",
+        "6. **Episodic 与 Procedural coverage 分别多少？** 最大规模下 Episodic "
+        "覆盖100%，同 regime 覆盖66.7%；Procedural 覆盖66.7%。",
+        "7. **LLM direct proposal 的 gap 是否缩小？** 是。No Memory 为0.1583，"
+        f"规模200的 Both 为{direct['episodic+procedural']['mean']:.4f}，缩小约44%；"
+        "规模变化并非全程单调。",
+        "8. **固定 budget 下 Warm-start 是否优于 Pure Search？** 在 Teacher=200 的"
+        "四种模式中配对均值均为正；budget=10 时 Episodic-only / Both / "
+        f"Procedural-only 分别提升 "
+        f"{paired['episodic-only']['10']['warm_minus_pure_score']['mean']:.4f} / "
+        f"{paired['episodic+procedural']['10']['warm_minus_pure_score']['mean']:.4f} / "
+        f"{paired['procedural-only']['10']['warm_minus_pure_score']['mean']:.4f}。",
+        "9. **达到95% Search gain 分别需要多少 evaluations？** 在有足够 headroom 且"
+        "预算20内成功达到的记录中，Pure / Episodic-only / Both 的中位数为 "
+        f"{cells['pure-search']['20']['evaluations_to_95_gain']['median']:.0f} / "
+        f"{cells['llm-warmstart:episodic-only']['20']['evaluations_to_95_gain']['median']:.0f} / "
+        f"{cells['llm-warmstart:episodic+procedural']['20']['evaluations_to_95_gain']['median']:.0f}；"
+        "对应到达率为 "
+        f"{cells['pure-search']['20']['evaluations_to_95_reach_rate']['mean']:.1%} / "
+        f"{cells['llm-warmstart:episodic-only']['20']['evaluations_to_95_reach_rate']['mean']:.1%} / "
+        f"{cells['llm-warmstart:episodic+procedural']['20']['evaluations_to_95_reach_rate']['mean']:.1%}。",
+        "10. **Demo/Teacher size 增加是否带来稳定收益？** Episodic-only 稳定改善；"
+        "Both 和 Procedural-only 非单调，因此整体答案是否。",
+        "11. **哪种 Memory 真正有贡献？** Episodic 是主要贡献来源；Both 改善 "
+        "Near-Search Rate，Procedural-only 单独贡献很小。",
+        "12. **token 增加是否值得？** Episodic-only 在规模200每提案约885 tokens，"
+        "budget=10 配对提升0.1191，当前性价比最好；Both token 更多但平均提升略低；"
+        "Procedural-only 不划算。",
+        "13. **本轮有没有修改 Objective？** 没有。",
+        f"14. **完整测试多少 passed？** {test_result}。",
+        "15. **当前限制？** holdout 仅12辆且只有8辆 applicable；一个 provider/model、"
+        "三次生成重复；有界参考受固定空间和预算约束；部分车辆聚类置信区间较宽。",
+        "",
+        f"实际成本：prompt tokens {usage['prompt_tokens']}，completion tokens "
+        f"{usage['completion_tokens']}，逻辑 Objective evaluations "
+        f"{usage['logical_search_evaluations']}。",
         "",
     ]
     (experiment_dir / "修复反馈.md").write_text("\n".join(lines), encoding="utf-8")

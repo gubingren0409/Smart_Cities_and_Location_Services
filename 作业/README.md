@@ -2,7 +2,7 @@
 
 对应课程作业的**任务③**：让 LLM 选择评估工具并提出参数建议，再用定量指标核验建议。
 
-完整文件导航见 [任务三_代码与目录清单.md](任务三_代码与目录清单.md)。当前真实模型实验结论见 [experiments/llm_assisted_ecnu_20260921/实验报告.md](experiments/llm_assisted_ecnu_20260921/实验报告.md)；`llm_assisted_20260920` 保留为 Mock 对照。
+完整文件导航见 [任务三_代码与目录清单.md](任务三_代码与目录清单.md)。最新的固定 Objective 优化实验见 [experiments/objective_optimization_20260922/实验报告.md](experiments/objective_optimization_20260922/实验报告.md)；上一轮修复版组件消融保存在 `llm_assisted_ecnu_20260921_v2`，`llm_assisted_20260920` 保留为 Mock 对照。
 
 ---
 
@@ -167,3 +167,23 @@ python experiments/llm_assisted_ecnu_20260921_v2/run_real_ablation.py --run
 ```
 
 脚本逐 case 写入 JSONL 并支持断点恢复。修复前实验完整保存在 `experiments/llm_assisted_ecnu_20260921/`，修复版产物在 `experiments/llm_assisted_ecnu_20260921_v2/`。
+
+## 9. 固定 Objective 的 warm-start 优化实验
+
+新实验使用200辆与 holdout 零重叠的 Search Teacher，显式区分
+`deterministic-search-reference` 与 `llm-verified` Memory 来源。LLM 输出合法参数区域，
+确定性 Halton 搜索在3、5、10、20次相同 Objective evaluation 预算下完成最终优化。
+
+固定12辆 holdout、3次提议重复共得到576个真实 LLM 区域提案和3600行固定预算结果，
+最终错误为0。Teacher=200、budget=10 时，Episodic-only 相对 Pure Search 的配对平均
+Objective 提升为0.1191；Procedural-only 为0.0056。结论只适用于冻结的课程 Objective。
+
+重建现有报告和七张图不会调用 LLM：
+
+```bash
+python experiments/objective_optimization_20260922/run_objective_optimization.py --stage analyze
+```
+
+完整产物、指标定义和限制见
+[实验报告](experiments/objective_optimization_20260922/实验报告.md) 与
+[完成反馈](experiments/objective_optimization_20260922/修复反馈.md)。
