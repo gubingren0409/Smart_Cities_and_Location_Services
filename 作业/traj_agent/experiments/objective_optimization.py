@@ -252,10 +252,12 @@ def populate_search_memory(
         min_samples=int(min_samples),
         source=TEACHER_SOURCE,
     )
+    memory_stats = store.stats()
+    memory_stats.pop("path", None)
     return {
         "min_samples": int(min_samples),
         "region_count": int(region_count),
-        "stats": store.stats(),
+        "stats": memory_stats,
         "regions": [
             region.to_dict()
             for region in store.query_regions(source=TEACHER_SOURCE)
