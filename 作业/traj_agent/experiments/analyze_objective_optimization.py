@@ -273,8 +273,8 @@ def write_report(experiment_dir: Path, summary: Mapping[str, Any]) -> None:
         "",
         "## 3. Search-Verified Memory",
         "",
-        "| Teacher规模 | min_samples=3 regions | min_samples=5 regions | Episodic coverage | Procedural coverage |",
-        "|---:|---:|---:|---:|---:|",
+        "| Teacher规模 | min_samples=3 regions | min_samples=5 regions | Episodic coverage | 同regime Episodic | Procedural coverage |",
+        "|---:|---:|---:|---:|---:|---:|",
     ]
     for size in DEFAULT_TEACHER_SIZES:
         m3 = summary["memory_scaling"][str(size)]["3"]
@@ -283,6 +283,7 @@ def write_report(experiment_dir: Path, summary: Mapping[str, Any]) -> None:
         lines.append(
             f"| {size} | {m3['region_count']} | {m5['region_count']} | "
             f"{coverage['episodic']['rate']:.1%} | "
+            f"{coverage['episodic_same_regime']['rate']:.1%} | "
             f"{coverage['procedural']['rate']:.1%} |")
 
     lines += [

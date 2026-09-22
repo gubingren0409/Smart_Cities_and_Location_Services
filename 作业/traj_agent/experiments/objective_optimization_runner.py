@@ -158,16 +158,25 @@ def run_teacher_stage(
     raw = traj_mod.load_raw(str(data_path))
     config = build_config(repo_dir)
     atomic_json(experiment_dir / "config.json", config)
-    manifest = opt.teacher_manifest(
-        raw,
-        holdout=V2_HOLDOUT,
-        excluded_demo=V2_DEMO,
-        size=int(size),
-        seed=int(seed),
-    )
+    manifest_path = experiment_dir / "teacher_manifest.json"
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if (
+            int(manifest.get("seed", -1)) != int(seed)
+            or len(manifest.get("vehicle_ids") or []) != int(size)
+        ):
+            raise RuntimeError("现有 teacher manifest 与本次 seed/size 不一致")
+    else:
+        manifest = opt.teacher_manifest(
+            raw,
+            holdout=V2_HOLDOUT,
+            excluded_demo=V2_DEMO,
+            size=int(size),
+            seed=int(seed),
+        )
     if manifest["teacher_holdout_overlap"]:
         raise RuntimeError("teacher set 与 holdout 重叠")
-    atomic_json(experiment_dir / "teacher_manifest.json", manifest)
+    atomic_json(manifest_path, manifest)
 
     path = experiment_dir / "search_teacher.jsonl"
     completed = {
@@ -217,15 +226,27 @@ def analyze_teacher(experiment_dir: Path, raw: Mapping[str, Any]) -> Dict[str, A
                 store, raw, subset, min_samples=min_samples)
             coverage = {
                 "episodic": 0,
+                "episodic_same_regime": 0,
                 "procedural": 0,
                 "episodic+procedural": 0,
+            }
+            coverage_modes = {
+                "episodic": "episodic-only",
+                "procedural": "procedural-only",
+                "episodic+procedural": "episodic+procedural",
             }
             for vehicle_id in V2_HOLDOUT:
                 card = diagnosis.diagnose(
                     traj_mod.traj_from_raw(vehicle_id, *raw[vehicle_id]))
-                for mode in coverage:
-                    if opt.memory_prior(card, store, mode)["available"]:
-                        coverage[mode] += 1
+                for label, mode in coverage_modes.items():
+                    prior = opt.memory_prior(card, store, mode)
+                    if prior["available"]:
+                        coverage[label] += 1
+                    if label == "episodic" and any(
+                        neighbor.get("regime") == card.regime
+                        for neighbor in prior.get("neighbors") or []
+                    ):
+                        coverage["episodic_same_regime"] += 1
             region_widths: Dict[str, List[float]] = {}
             for region in diagnostics["regions"]:
                 region_widths.setdefault(region["param"], []).append(
@@ -385,7 +406,15 @@ def run_formal_stage(
         raise RuntimeError("正式实验必须使用 OpenAICompatProvider")
 
     raw = traj_mod.load_raw(str(data_path))
+    existing_config_path = experiment_dir / "config.json"
+    existing_config = (
+        json.loads(existing_config_path.read_text(encoding="utf-8"))
+        if existing_config_path.exists() else {})
     config = build_config(repo_dir, provider)
+    config["teacher_generation_commit"] = existing_config.get(
+        "teacher_generation_commit",
+        existing_config.get("implementation_commit", "unknown"),
+    )
     atomic_json(experiment_dir / "config.json", config)
     manifest = json.loads(
         (experiment_dir / "teacher_manifest.json").read_text(encoding="utf-8"))
@@ -564,4 +593,3 @@ def run_formal_stage(
     for path in runtime_dir.glob("*.sqlite*"):
         path.unlink(missing_ok=True)
     runtime_dir.rmdir()
-
