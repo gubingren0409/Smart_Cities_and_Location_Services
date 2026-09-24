@@ -159,6 +159,22 @@ def _is_auth_error(errors: Sequence[Any]) -> bool:
         "authentication", "invalid api key", "incorrect api key", "401", "403"))
 
 
+def _attach_cached_road_metrics(
+    row: Dict[str, Any], evaluator: opt.TrajectoryEvaluator,
+    params: Mapping[str, float], road_cache_dir: Optional[Path],
+) -> None:
+    if road_cache_dir is None:
+        return
+    cache_path = Path(road_cache_dir) / f"vehicle_{evaluator.vehicle_id}.geojson.gz"
+    if not cache_path.exists():
+        return
+    matcher = OSMRoadMatcher.from_geojson(cache_path, match_tolerance_m=30.0)
+    _, simplified = evaluator.agent._execute(evaluator.handle, dict(params))
+    match = matcher.match(simplified.traj)
+    row["road_backend"] = "OSMRoadMatcher/EPSG:32651/STRtree"
+    row["road_metrics"] = match.stats()
+
+
 def _terminal_case(
     raw: Mapping[str, Any],
     vehicle_id: str,
@@ -215,6 +231,7 @@ def _terminal_case(
             "selected_objective": default_objective,
             "elapsed_ms": (time.perf_counter() - started) * 1000.0,
         })
+        _attach_cached_road_metrics(base, evaluator, defaults, road_cache_dir)
         return base, False
 
     llm_slot_consumed = False
@@ -277,14 +294,7 @@ def _terminal_case(
         "elapsed_ms": (time.perf_counter() - started) * 1000.0,
     })
 
-    if road_cache_dir is not None:
-        cache_path = Path(road_cache_dir) / f"vehicle_{vehicle_id}.geojson.gz"
-        if cache_path.exists():
-            matcher = OSMRoadMatcher.from_geojson(cache_path, match_tolerance_m=30.0)
-            _, simplified = evaluator.agent._execute(evaluator.handle, trace.best_params)
-            match = matcher.match(simplified.traj)
-            base["road_backend"] = "OSMRoadMatcher/EPSG:32651/STRtree"
-            base["road_metrics"] = match.stats()
+    _attach_cached_road_metrics(base, evaluator, trace.best_params, road_cache_dir)
     return base, llm_slot_consumed
 
 
