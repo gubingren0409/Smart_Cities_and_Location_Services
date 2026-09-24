@@ -328,10 +328,11 @@ def _aggregate_summary(
         }
     llm_rows = [row for row in rows if int(row.get("llm_calls") or 0) > 0]
     road_rows = [row for row in rows if row.get("road_metrics")]
+    expected = len(source_ids)
     pass_state = (
-        coverage["n_unique_source_vehicle_ids"] == 11386
-        and coverage["n_terminal_records"] == 11386
-        and coverage["n_unique_terminal_vehicle_ids"] == 11386
+        coverage["n_unique_source_vehicle_ids"] == expected
+        and coverage["n_terminal_records"] == expected
+        and coverage["n_unique_terminal_vehicle_ids"] == expected
         and not coverage["missing_vehicle_ids"]
         and not coverage["duplicate_terminal_ids"]
         and statuses["permanent_error"] == 0
