@@ -47,7 +47,16 @@ def _json(path: Path, payload: Any) -> None:
         json.dump(payload, handle, ensure_ascii=False, indent=2)
         handle.flush()
         os.fsync(handle.fileno())
-    tmp.replace(path)
+    # Windows 上杀毒/索引器可能短暂持有目标文件，os.replace 会报 WinError 5。
+    # terminal JSONL 已先 fsync，因此这里只需有限重试状态快照，不应中断批处理。
+    for attempt in range(10):
+        try:
+            tmp.replace(path)
+            break
+        except PermissionError:
+            if attempt == 9:
+                raise
+            time.sleep(0.1 * (attempt + 1))
 
 
 def _sha256(path: Path) -> str:
