@@ -518,7 +518,8 @@ def run(
         "implementation_commit": _git_head(repo),
         "data_file": data_path.name,
         "data_sha256": _sha256(data_path),
-        "teacher_file": str(teacher_path),
+        "teacher_file": str(
+            teacher_path.relative_to(data_path.parent)).replace("\\", "/"),
         "teacher_count": 200,
         "similarity_threshold": float(similarity_threshold),
         "similarity_threshold_basis": (

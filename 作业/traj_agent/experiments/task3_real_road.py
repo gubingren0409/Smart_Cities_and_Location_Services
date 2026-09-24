@@ -316,7 +316,8 @@ def run(data_path: Path, manifest_path: Path, out: Path, repo: Path) -> Dict[str
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "implementation_commit": commit,
         "data_path": str(data_path.name),
-        "holdout_source": str(manifest_path),
+        "holdout_source": str(
+            manifest_path.relative_to(data_path.parent)).replace("\\", "/"),
         "holdout": list(holdout),
         "road_source": "OpenStreetMap",
         "road_api": "https://api.openstreetmap.org/api/0.6/map",
@@ -372,7 +373,8 @@ def run(data_path: Path, manifest_path: Path, out: Path, repo: Path) -> Dict[str
         "cases": metadata_rows,
     })
     _json(out / "road_eval_manifest.json", {
-        "source_manifest": str(manifest_path),
+        "source_manifest": str(
+            manifest_path.relative_to(data_path.parent)).replace("\\", "/"),
         "expected_vehicle_ids": list(holdout),
         "completed_vehicle_ids": [row["vehicle_id"] for row in rows],
         "missing_vehicle_ids": sorted(set(holdout) - {row["vehicle_id"] for row in rows}),

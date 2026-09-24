@@ -2,7 +2,7 @@
 
 对应课程作业的**任务③**：让 LLM 选择评估工具并提出参数建议，再用定量指标核验建议。
 
-完整文件导航见 [任务三_代码与目录清单.md](任务三_代码与目录清单.md)。最新的固定 Objective 优化实验见 [experiments/objective_optimization_20260922/实验报告.md](experiments/objective_optimization_20260922/实验报告.md)；上一轮修复版组件消融保存在 `llm_assisted_ecnu_20260921_v2`，`llm_assisted_20260920` 保留为 Mock 对照。
+完整文件导航见 [任务三_代码与目录清单.md](任务三_代码与目录清单.md)。四项完成度见 [任务三_四项完成度验收.md](任务三_四项完成度验收.md)；真实 OSM 路网实验与 11,386 辆全量运行分别保存在 `task3_real_road_20260924` 和 `task3_full_11386_20260924`。既有固定 Objective 优化实验与真实模型消融保持在原目录。
 
 ---
 
@@ -76,7 +76,7 @@ traj_agent/
 │   ├── metrics.py     点数/长度/Hausdorff/Fréchet/耗时 ← 任务①
 │   ├── diagnosis.py   诊断卡（喂给 LLM 的唯一视图）
 │   └── params.py      参数物理先验
-├── road/       路网匹配协议 + 离线实现           ← 任务①新需求（接口就位）
+├── road/       路网协议 + OSM/UTM/STRtree 真实后端 ← 任务①路网约束
 ├── tools/      JSON-Schema 工具层（LLM 唯一能碰的层）
 ├── verifier/   目标函数、knee point、搜索、核验
 ├── memory/     SQLite 四层记忆 + 特征 kNN
@@ -187,3 +187,18 @@ python experiments/objective_optimization_20260922/run_objective_optimization.py
 完整产物、指标定义和限制见
 [实验报告](experiments/objective_optimization_20260922/实验报告.md) 与
 [完成反馈](experiments/objective_optimization_20260922/修复反馈.md)。
+
+## 10. 真实路网与全量部署
+
+真实路网后端位于 `road/osm.py`。固定 12 条 holdout 的 OSM 缓存、逐车指标、
+有/无路网对照和地图图件位于：
+
+- [真实路网实验报告](experiments/task3_real_road_20260924/实验报告.md)
+- [真实路网 summary](experiments/task3_real_road_20260924/summary.json)
+
+全量 runner 位于 `experiments/task3_full_run.py`，支持逐 case `flush + fsync`、
+terminal vehicle_id 恢复、真实 LLM 有界路由和确定性 fallback。正式结果为
+11,386/11,386 unique terminal records：
+
+- [全量运行报告](experiments/task3_full_11386_20260924/全量运行报告.md)
+- [全量 summary](experiments/task3_full_11386_20260924/summary.json)
