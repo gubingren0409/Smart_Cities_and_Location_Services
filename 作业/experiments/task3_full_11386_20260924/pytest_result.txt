@@ -1,0 +1,5 @@
+Command: python -m pytest -q
+Working directory: 作业/
+Result: 340 passed
+Elapsed: 452.30 s (0:07:32)
+Executed: 2026-09-24

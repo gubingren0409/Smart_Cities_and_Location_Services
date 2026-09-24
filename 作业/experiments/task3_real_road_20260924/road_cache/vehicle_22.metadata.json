@@ -1,0 +1,36 @@
+{
+  "source": "OpenStreetMap",
+  "source_url": "https://api.openstreetmap.org/api/0.6/map",
+  "license": "ODbL 1.0",
+  "fetched_at_utc": "2026-09-24T06:26:12.726984+00:00",
+  "input_bbox_wgs84": [
+    121.324443,
+    31.329638,
+    121.34616,
+    31.349602
+  ],
+  "query_bbox_wgs84": [
+    121.32133900844505,
+    31.326891144229734,
+    121.34926545641716,
+    31.352348297199704
+  ],
+  "buffer_m": 300.0,
+  "network_filter": "highway present; non-motorized/construction classes excluded",
+  "road_feature_count": 150,
+  "highway_distribution": {
+    "motorway": 4,
+    "motorway_link": 23,
+    "primary": 21,
+    "residential": 37,
+    "service": 21,
+    "tertiary": 11,
+    "track": 2,
+    "unclassified": 31
+  },
+  "features_with_true_maxspeed": 0,
+  "true_maxspeed_feature_rate": 0.0,
+  "cache_file": "vehicle_22.geojson.gz",
+  "cache_sha256": "22eeb166afb2416262ec87c9d1bdb232bd8bf2ad041cc9b158ba91ee9a3a8e97",
+  "implementation_commit": "8f3cf9e28d323ddfa7be3adbb5b4eff6ff0935da"
+}

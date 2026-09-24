@@ -1,0 +1,87 @@
+{
+  "status": "PASS",
+  "coverage": {
+    "n_source_vehicle_ids": 11386,
+    "n_unique_source_vehicle_ids": 11386,
+    "n_terminal_records": 11386,
+    "n_unique_terminal_vehicle_ids": 11386,
+    "coverage_rate": 1.0,
+    "missing_vehicle_ids": [],
+    "unexpected_vehicle_ids": [],
+    "duplicate_source_ids": [],
+    "duplicate_terminal_ids": [],
+    "pending": 0
+  },
+  "terminal_status": {
+    "fallback_success": 596,
+    "not_applicable": 5464,
+    "success": 5326
+  },
+  "routing": {
+    "deterministic-capacity-fallback": 596,
+    "episodic-region-search": 5318,
+    "llm-region-search": 8,
+    "not_applicable": 5464
+  },
+  "n_total": 11386,
+  "n_not_applicable": 5464,
+  "n_memory_only": 5318,
+  "n_procedural": 0,
+  "n_llm_routed": 8,
+  "n_deterministic_fallback": 596,
+  "n_llm_success": 8,
+  "n_llm_failed_then_fallback": 0,
+  "n_fallback_success": 596,
+  "n_permanent_error": 0,
+  "actual_api_calls": 8,
+  "prompt_tokens": 8047,
+  "completion_tokens": 659,
+  "llm_latency_ms": 18830.927499991958,
+  "provider_errors": 0,
+  "retries": 0,
+  "deterministic_search_evaluations": 17766,
+  "total_wall_clock_s": 2643.3294208049774,
+  "resumed_terminal_records": 3586,
+  "checkpoint_resume_verified": true,
+  "quality_by_route": {
+    "deterministic-capacity-fallback": {
+      "n": 596,
+      "objective_mean": 0.5603426174496644,
+      "feasible_rate": 0.8305369127516778,
+      "reference_gap": null,
+      "reference_gap_note": "全量部署未运行每车 strong reference，故不伪造 gap"
+    },
+    "episodic-region-search": {
+      "n": 5318,
+      "objective_mean": 0.6689090259496051,
+      "feasible_rate": 0.9638962015795411,
+      "reference_gap": null,
+      "reference_gap_note": "全量部署未运行每车 strong reference，故不伪造 gap"
+    },
+    "llm-region-search": {
+      "n": 8,
+      "objective_mean": 0.727975,
+      "feasible_rate": 1.0,
+      "reference_gap": null,
+      "reference_gap_note": "全量部署未运行每车 strong reference，故不伪造 gap"
+    },
+    "not_applicable": {
+      "n": 5464,
+      "objective_mean": null,
+      "feasible_rate": 0.0,
+      "reference_gap": null,
+      "reference_gap_note": "全量部署未运行每车 strong reference，故不伪造 gap"
+    }
+  },
+  "road_cached_case_count": 12,
+  "road_match_rate_mean": 0.7134416666666666,
+  "objective_definition_modified": false,
+  "historical_experiments_overwritten": false,
+  "post_run_road_metric_enrichment_vehicle_ids": [
+    "2",
+    "4",
+    "111",
+    "137"
+  ],
+  "post_run_road_metric_enrichment_count": 4
+}
