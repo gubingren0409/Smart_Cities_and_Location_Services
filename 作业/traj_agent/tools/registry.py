@@ -352,6 +352,29 @@ class ToolRegistry:
         def apply_road_constraint(ctx: ToolContext, handle: str,
                                  tolerance_ratio: float = 0.1) -> Dict[str, Any]:
             traj = ctx.store.get(handle)
+            if ctx.road_matcher is not None and getattr(
+                    ctx.road_matcher, "available", False):
+                report = ctx.road_matcher.match(traj)
+                snapped = Traj(
+                    traj.vehicle_id,
+                    list(traj.timestamps),
+                    list(report.matched_coords),
+                    traj.segment_index,
+                    list(traj.reasons),
+                )
+                new_handle = ctx.store.put(
+                    snapped, parent=handle, operation="road_snap",
+                    params={"backend": type(ctx.road_matcher).__name__},
+                )
+                return {
+                    "handle": new_handle,
+                    "parent": handle,
+                    "road_stats": report.stats(),
+                    "road_backend": type(ctx.road_matcher).__name__,
+                    "road_source": getattr(ctx.road_matcher, "source", "external"),
+                    "n_roads": int(getattr(ctx.road_matcher, "n_roads", 0)),
+                    "note": "使用 ToolContext 中挂载的外部真实路网执行最近道路吸附",
+                }
             tol = params_mod.get_spec("dp_tolerance").clamp(
                 traj.length_m * float(tolerance_ratio) / 100.0) if traj.length_m else 15.0
             tol = max(5.0, min(30.0, tol))

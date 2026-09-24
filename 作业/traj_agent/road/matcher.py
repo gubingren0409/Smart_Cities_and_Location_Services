@@ -26,6 +26,10 @@ class MatchResult:
     # 每个点到最近路段的距离（米）
     distances_m: List[float] = field(default_factory=list)
     matched: List[bool] = field(default_factory=list)
+    road_ids: List[Optional[str]] = field(default_factory=list)
+    highways: List[Optional[str]] = field(default_factory=list)
+    speed_limits_mps: List[Optional[float]] = field(default_factory=list)
+    speed_limit_sources: List[Optional[str]] = field(default_factory=list)
 
     @property
     def n_points(self) -> int:
@@ -37,15 +41,35 @@ class MatchResult:
             return 0.0
         return sum(1 for m in self.matched if m) / len(self.matched)
 
-    def stats(self) -> Dict[str, float]:
+    def stats(self) -> Dict[str, object]:
         if not self.distances_m:
-            return {"n_points": 0, "match_rate": 0.0}
+            return {
+                "n_points": 0, "n_matched": 0, "n_unmatched": 0,
+                "match_rate": 0.0, "unmatched_rate": 0.0,
+            }
+        finite = [d for d in self.distances_m if math.isfinite(d)]
+        n_matched = sum(1 for value in self.matched if value)
+        n_unmatched = self.n_points - n_matched
+        if not finite:
+            return {
+                "n_points": self.n_points,
+                "n_matched": n_matched,
+                "n_unmatched": n_unmatched,
+                "match_rate": round(self.match_rate, 4),
+                "unmatched_rate": round(n_unmatched / self.n_points, 4),
+                "distance_median_m": None,
+                "distance_p95_m": None,
+                "distance_max_m": None,
+            }
         return {
             "n_points": self.n_points,
+            "n_matched": n_matched,
+            "n_unmatched": n_unmatched,
             "match_rate": round(self.match_rate, 4),
-            "distance_median_m": round(geo.median(self.distances_m), 2),
-            "distance_p95_m": round(geo.quantile(self.distances_m, 0.95), 2),
-            "distance_max_m": round(max(self.distances_m), 2),
+            "unmatched_rate": round(n_unmatched / self.n_points, 4),
+            "distance_median_m": round(geo.median(finite), 2),
+            "distance_p95_m": round(geo.quantile(finite, 0.95), 2),
+            "distance_max_m": round(max(finite), 2),
         }
 
 

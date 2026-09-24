@@ -121,8 +121,13 @@ def equirect_relative_error(lon: float, lat: float, p2: Point) -> float:
 
 
 def unproject(xy_points: Sequence[Sequence[float]]) -> List[LonLat]:
-    """墨卡托平面 -> 经纬度。"""
-    return [mercator_to_lonlat(p[0], p[1]) for p in xy_points]
+    """局部等距平面 -> 经纬度。
+
+    ``project``/``local_xy`` 使用上海参考纬度处的 WGS84 局部比例，因此逆变换
+    必须使用同一比例。Web Mercator 的逆变换由 ``mercator_to_lonlat`` 单独提供。
+    """
+    return [(float(p[0]) / _M_PER_DEG_LON,
+             float(p[1]) / _M_PER_DEG_LAT) for p in xy_points]
 
 
 def euclid(a: Sequence[float], b: Sequence[float]) -> float:
