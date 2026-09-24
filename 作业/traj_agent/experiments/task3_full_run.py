@@ -228,6 +228,7 @@ def _terminal_case(
         for key in ("llm_calls", "prompt_tokens", "completion_tokens",
                     "llm_elapsed_ms", "retry_count"):
             base[key] = proposal.get(key, 0)
+        base["llm_latency_ms"] = float(proposal.get("llm_elapsed_ms") or 0.0)
         base["provider_errors"] = list(proposal.get("provider_errors") or [])
         base["llm_json_success"] = bool(proposal.get("json_success"))
         base["llm_proposal"] = proposal.get("proposal")
