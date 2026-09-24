@@ -181,26 +181,67 @@ def download_osm_cache(
     client = session or requests.Session()
     headers = {"User-Agent": "ECNU-smart-city-lab1/1.0 (course experiment)"}
     last_error: Optional[Exception] = None
-    response: Optional[requests.Response] = None
-    for attempt in range(int(max_retries)):
-        try:
-            response = client.get(
-                OSM_MAP_URL,
-                params={"bbox": ",".join(f"{value:.7f}" for value in query_bbox)},
-                headers=headers,
-                timeout=float(timeout_s),
-            )
-            response.raise_for_status()
-            break
-        except (requests.RequestException, OSError) as exc:
-            last_error = exc
-            if attempt + 1 >= int(max_retries):
-                raise RuntimeError(f"OSM 下载失败: {type(exc).__name__}: {exc}") from exc
-            time.sleep(2 ** attempt)
-    if response is None:
-        raise RuntimeError(f"OSM 下载失败: {last_error}")
+    def request_tile(tile: Sequence[float], depth: int = 0) -> List[Dict[str, Any]]:
+        nonlocal last_error
+        response: Optional[requests.Response] = None
+        for attempt in range(int(max_retries)):
+            try:
+                response = client.get(
+                    OSM_MAP_URL,
+                    params={"bbox": ",".join(f"{value:.7f}" for value in tile)},
+                    headers=headers,
+                    timeout=float(timeout_s),
+                )
+                # OSM map API 对节点过多的 bbox 返回 400；这种情况应分块，
+                # 不要用相同 bbox 反复请求。
+                if response.status_code == 400:
+                    break
+                response.raise_for_status()
+                return _clip_features(parse_osm_xml(response.content), tile)
+            except (requests.RequestException, OSError) as exc:
+                last_error = exc
+                if attempt + 1 >= int(max_retries):
+                    raise RuntimeError(
+                        f"OSM 下载失败: {type(exc).__name__}: {exc}") from exc
+                time.sleep(2 ** attempt)
+        if response is not None and response.status_code == 400 and depth < 6:
+            min_lon, min_lat, max_lon, max_lat = map(float, tile)
+            if (max_lon - min_lon) >= (max_lat - min_lat):
+                middle = (min_lon + max_lon) / 2.0
+                children = ((min_lon, min_lat, middle, max_lat),
+                            (middle, min_lat, max_lon, max_lat))
+            else:
+                middle = (min_lat + max_lat) / 2.0
+                children = ((min_lon, min_lat, max_lon, middle),
+                            (min_lon, middle, max_lon, max_lat))
+            rows: List[Dict[str, Any]] = []
+            for child in children:
+                rows.extend(request_tile(child, depth + 1))
+                time.sleep(0.2)
+            return rows
+        message = (
+            f"HTTP {response.status_code}: {response.text[:200]}"
+            if response is not None else str(last_error))
+        raise RuntimeError(f"OSM 下载失败: {message}")
 
-    features = _clip_features(parse_osm_xml(response.content), query_bbox)
+    # 长条轨迹先沿经纬方向切成约 0.035° 的 tile；若某 tile 仍超过
+    # OSM 节点上限，request_tile 会继续二分。
+    min_lon, min_lat, max_lon, max_lat = query_bbox
+    n_lon = max(1, int(math.ceil((max_lon - min_lon) / 0.035)))
+    n_lat = max(1, int(math.ceil((max_lat - min_lat) / 0.035)))
+    query_tiles: List[Tuple[float, float, float, float]] = []
+    for ix in range(n_lon):
+        left = min_lon + (max_lon - min_lon) * ix / n_lon
+        right = min_lon + (max_lon - min_lon) * (ix + 1) / n_lon
+        for iy in range(n_lat):
+            bottom = min_lat + (max_lat - min_lat) * iy / n_lat
+            top = min_lat + (max_lat - min_lat) * (iy + 1) / n_lat
+            query_tiles.append((left, bottom, right, top))
+    features: List[Dict[str, Any]] = []
+    for tile in query_tiles:
+        features.extend(request_tile(tile))
+        if len(query_tiles) > 1:
+            time.sleep(0.2)
     if not features:
         raise RuntimeError(f"OSM 查询返回 0 条可驾驶道路: bbox={query_bbox}")
     digest = write_geojson_gz(cache_path, features)
@@ -219,6 +260,8 @@ def download_osm_cache(
         "fetched_at_utc": datetime.now(timezone.utc).isoformat(),
         "input_bbox_wgs84": list(map(float, bbox_wgs84)),
         "query_bbox_wgs84": list(map(float, query_bbox)),
+        "query_tile_count": len(query_tiles),
+        "query_tiles_wgs84": [list(map(float, tile)) for tile in query_tiles],
         "buffer_m": float(buffer_m),
         "network_filter": "highway present; non-motorized/construction classes excluded",
         "road_feature_count": len(features),
