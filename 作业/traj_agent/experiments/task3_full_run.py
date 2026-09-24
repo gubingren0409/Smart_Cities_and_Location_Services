@@ -534,6 +534,13 @@ def run(
         if mismatched:
             raise RuntimeError(f"resume 配置与冻结 config 不一致: {mismatched}")
         config = frozen
+        current_commit = _git_head(repo)
+        if current_commit != config.get("implementation_commit"):
+            recovery_commits = list(config.get("resume_implementation_commits") or [])
+            if current_commit not in recovery_commits:
+                recovery_commits.append(current_commit)
+                config["resume_implementation_commits"] = recovery_commits
+                _json(config_path, config)
     else:
         _json(config_path, config)
 
