@@ -270,7 +270,7 @@ def _reports(out: Path, summary: Mapping[str, Any]) -> None:
 ## 覆盖与结果
 
 - 评测完成：{summary['n_holdout_completed']} / {summary['n_holdout_expected']}。
-- OSM 道路 feature 数（逐 case 缓存求和，重叠道路可能重复）：{summary['road_feature_count_sum_across_case_caches']}。
+- OSM 道路 feature 数（逐 case 缓存求和，重叠道路可能重复）：{summary['road_feature_count_sum_across_case_caches']}；跨缓存去重 OSM way id {summary['unique_osm_way_id_count_across_caches']} 个，matcher LineString parts {summary['matcher_linestring_part_count_sum']} 个。
 - 道路 feature 中真实 `maxspeed` 覆盖率：{summary['true_maxspeed_feature_rate']:.2%}。
 - 原始轨迹加权 match rate：{raw['match_rate_weighted']:.2%}；逐轨迹 median 距离均值 {raw['distance_median_mean_m']:.2f} m，P95 距离均值 {raw['distance_p95_mean_m']:.2f} m。
 - 无路网处理结果加权 match rate：{processed['match_rate_weighted']:.2%}；逐轨迹 P95 距离均值 {processed['distance_p95_mean_m']:.2f} m。
@@ -329,6 +329,8 @@ def run(data_path: Path, manifest_path: Path, out: Path, repo: Path) -> Dict[str
     _json(out / "config.json", config)
     rows: List[Dict[str, Any]] = []
     metadata_rows: List[Dict[str, Any]] = []
+    unique_osm_way_ids: set[str] = set()
+    matcher_part_count = 0
     raw_path = out / "raw_results.jsonl"
     with raw_path.open("w", encoding="utf-8") as handle:
         for index, vehicle_id in enumerate(holdout, start=1):
@@ -346,10 +348,15 @@ def run(data_path: Path, manifest_path: Path, out: Path, repo: Path) -> Dict[str
             roads: List[List[List[float]]] = []
             for feature in read_geojson(cache)["features"]:
                 geometry = feature.get("geometry") or {}
+                props = feature.get("properties") or {}
+                unique_osm_way_ids.add(str(
+                    props.get("osm_way_id") or feature.get("id") or ""))
                 if geometry.get("type") == "LineString":
                     roads.append(geometry.get("coordinates") or [])
+                    matcher_part_count += 1
                 elif geometry.get("type") == "MultiLineString":
                     roads.extend(geometry.get("coordinates") or [])
+                    matcher_part_count += len(geometry.get("coordinates") or [])
             plot_payload["roads"] = roads
             row_for_file = dict(row)
             handle.write(json.dumps(row_for_file, ensure_ascii=False) + "\n")
@@ -358,6 +365,10 @@ def run(data_path: Path, manifest_path: Path, out: Path, repo: Path) -> Dict[str
             print(f"road {index}/{len(holdout)} vehicle={vehicle_id} roads={matcher.n_roads}", flush=True)
     _json(out / "road_data_manifest.json", {
         "source": "OpenStreetMap", "n_case_caches": len(metadata_rows),
+        "road_feature_count_sum_across_case_caches": sum(
+            int(item["road_feature_count"]) for item in metadata_rows),
+        "unique_osm_way_id_count_across_caches": len(unique_osm_way_ids),
+        "matcher_linestring_part_count_sum": matcher_part_count,
         "cases": metadata_rows,
     })
     _json(out / "road_eval_manifest.json", {
@@ -369,6 +380,8 @@ def run(data_path: Path, manifest_path: Path, out: Path, repo: Path) -> Dict[str
     })
     wall_s = time.perf_counter() - started
     summary = _summary(rows, metadata_rows, wall_s)
+    summary["unique_osm_way_id_count_across_caches"] = len(unique_osm_way_ids)
+    summary["matcher_linestring_part_count_sum"] = matcher_part_count
     _json(out / "summary.json", summary)
     _plot_summary(rows, out / "figures")
     _reports(out, summary)
