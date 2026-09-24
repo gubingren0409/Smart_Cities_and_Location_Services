@@ -354,6 +354,10 @@ class OSMRoadMatcher:
         true_limit = props.get("maxspeed_mps")
         highway = str(props.get("highway") or "unclassified")
         fallback_limit = HIGHWAY_SPEED_LIMIT_MPS.get(highway)
+        if fallback_limit is None and highway.endswith("_link"):
+            fallback_limit = HIGHWAY_SPEED_LIMIT_MPS.get(highway[:-5])
+        if fallback_limit is None and highway in {"living_street", "track"}:
+            fallback_limit = HIGHWAY_SPEED_LIMIT_MPS.get("service")
         limit = float(true_limit) if true_limit is not None else fallback_limit
         limit_source = "osm_maxspeed" if true_limit is not None else (
             "highway_fallback" if fallback_limit is not None else None)

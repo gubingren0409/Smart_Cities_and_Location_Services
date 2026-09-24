@@ -59,6 +59,22 @@ def _weighted(rows: Sequence[Mapping[str, Any]], section: str, field: str) -> fl
     return numerator / denominator if denominator else None
 
 
+def _speed_summary(rows: Sequence[Mapping[str, Any]], section: str) -> Dict[str, Any]:
+    comparable = sum(int(row[section].get("n_speed_comparable") or 0) for row in rows)
+    violations = sum(int(row[section].get("road_speed_violation_count") or 0) for row in rows)
+    true_count = sum(int(row[section].get("true_maxspeed_point_count") or 0) for row in rows)
+    fallback_count = sum(int(row[section].get("fallback_speed_point_count") or 0) for row in rows)
+    return {
+        "n_speed_comparable": comparable,
+        "road_speed_violation_count": violations,
+        "road_speed_violation_rate": violations / comparable if comparable else None,
+        "true_maxspeed_point_count": true_count,
+        "true_maxspeed_point_rate": true_count / comparable if comparable else None,
+        "fallback_speed_point_count": fallback_count,
+        "fallback_speed_point_rate": fallback_count / comparable if comparable else None,
+    }
+
+
 def _result_for(
     raw: Mapping[str, Any], vehicle_id: str, matcher: OSMRoadMatcher,
 ) -> Dict[str, Any]:
@@ -161,6 +177,9 @@ def _plot_summary(rows: Sequence[Mapping[str, Any]], figure_dir: Path) -> None:
         axes = [axes]
     for ax, row in zip(axes, selected):
         payload = row["_plot"]
+        for coords in payload.get("roads", []):
+            ax.plot([point[0] for point in coords], [point[1] for point in coords],
+                    color="#d0d0d0", linewidth=.7, alpha=.8, zorder=0)
         for key, style, color in (
             ("raw", "-", "#7f8c8d"),
             ("baseline", "-", "#0072B2"),
@@ -202,6 +221,7 @@ def _summary(rows: Sequence[Mapping[str, Any]], metadata: Sequence[Mapping[str, 
             "distance_p95_mean_m": _mean(row["raw_road"]["distance_p95_m"] for row in rows),
             "distance_max_m": max(float(row["raw_road"]["distance_max_m"]) for row in rows),
             "unmatched_points": sum(int(row["raw_road"]["n_unmatched"]) for row in rows),
+            **_speed_summary(rows, "raw_road"),
         },
         "processed_no_road": {
             "match_rate_weighted": _weighted(rows, "processed_no_road", "match_rate"),
@@ -209,6 +229,7 @@ def _summary(rows: Sequence[Mapping[str, Any]], metadata: Sequence[Mapping[str, 
             "distance_p95_mean_m": _mean(row["processed_no_road"]["distance_p95_m"] for row in rows),
             "distance_max_m": max(float(row["processed_no_road"]["distance_max_m"]) for row in rows),
             "unmatched_points": sum(int(row["processed_no_road"]["n_unmatched"]) for row in rows),
+            **_speed_summary(rows, "processed_no_road"),
         },
         "road_aware": {
             "match_rate_weighted": _weighted(rows, "road_aware", "match_rate"),
@@ -216,6 +237,7 @@ def _summary(rows: Sequence[Mapping[str, Any]], metadata: Sequence[Mapping[str, 
             "distance_p95_mean_m": _mean(row["road_aware"]["distance_p95_m"] for row in rows),
             "distance_max_m": max(float(row["road_aware"]["distance_max_m"]) for row in rows),
             "unmatched_points": sum(int(row["road_aware"]["n_unmatched"]) for row in rows),
+            **_speed_summary(rows, "road_aware"),
         },
         "snap": {
             "changed_points": sum(int(row["snap"]["n_changed_points"]) for row in rows),
@@ -249,9 +271,11 @@ def _reports(out: Path, summary: Mapping[str, Any]) -> None:
 
 - 评测完成：{summary['n_holdout_completed']} / {summary['n_holdout_expected']}。
 - OSM 道路 feature 数（逐 case 缓存求和，重叠道路可能重复）：{summary['road_feature_count_sum_across_case_caches']}。
+- 道路 feature 中真实 `maxspeed` 覆盖率：{summary['true_maxspeed_feature_rate']:.2%}。
 - 原始轨迹加权 match rate：{raw['match_rate_weighted']:.2%}；逐轨迹 median 距离均值 {raw['distance_median_mean_m']:.2f} m，P95 距离均值 {raw['distance_p95_mean_m']:.2f} m。
 - 无路网处理结果加权 match rate：{processed['match_rate_weighted']:.2%}；逐轨迹 P95 距离均值 {processed['distance_p95_mean_m']:.2f} m。
 - Road-aware 结果加权 match rate：{aware['match_rate_weighted']:.2%}；逐轨迹 P95 距离均值 {aware['distance_p95_mean_m']:.2f} m。
+- 处理后可比较速度点中，真实 `maxspeed` / 道路等级 fallback 占比为 {processed['true_maxspeed_point_rate']:.2%} / {processed['fallback_speed_point_rate']:.2%}，道路限速超限率为 {processed['road_speed_violation_rate']:.2%}。
 - 实际改变 {snap['changed_points']} / {snap['total_points']} 个处理后点；逐轨迹平均吸附位移均值 {snap['mean_displacement_across_cases_m']:.2f} m，最大吸附位移 {snap['max_displacement_m']:.2f} m。
 - 退化轨迹：{snap['degenerate_trajectories']} 条。
 
@@ -319,6 +343,14 @@ def run(data_path: Path, manifest_path: Path, out: Path, repo: Path) -> Dict[str
             matcher = OSMRoadMatcher.from_geojson(cache, match_tolerance_m=30.0)
             row = _result_for(raw, vehicle_id, matcher)
             plot_payload = row.pop("_plot")
+            roads: List[List[List[float]]] = []
+            for feature in read_geojson(cache)["features"]:
+                geometry = feature.get("geometry") or {}
+                if geometry.get("type") == "LineString":
+                    roads.append(geometry.get("coordinates") or [])
+                elif geometry.get("type") == "MultiLineString":
+                    roads.extend(geometry.get("coordinates") or [])
+            plot_payload["roads"] = roads
             row_for_file = dict(row)
             handle.write(json.dumps(row_for_file, ensure_ascii=False) + "\n")
             handle.flush()
