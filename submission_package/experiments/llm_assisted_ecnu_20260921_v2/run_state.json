@@ -1,0 +1,116 @@
+{
+  "memory_diagnostics": {
+    "1": {
+      "stats": {
+        "n_episodic": 12,
+        "n_admitted": 3,
+        "admit_rate": 0.25,
+        "n_procedural": 0,
+        "by_regime": [
+          {
+            "regime": "mixed",
+            "n": 2,
+            "mean_score": 0.7881
+          },
+          {
+            "regime": "moving",
+            "n": 1,
+            "mean_score": 0.6426
+          }
+        ]
+      },
+      "demo_total_by_stratum": {
+        "stationary/ok": 2,
+        "stationary/degraded": 2,
+        "mixed/ok": 2,
+        "mixed/degraded": 2,
+        "moving/ok": 2,
+        "moving/degraded": 2
+      },
+      "demo_admitted_by_stratum": {
+        "stationary/ok": 0,
+        "stationary/degraded": 0,
+        "mixed/ok": 1,
+        "mixed/degraded": 1,
+        "moving/ok": 1,
+        "moving/degraded": 0
+      },
+      "regions": []
+    },
+    "2": {
+      "stats": {
+        "n_episodic": 12,
+        "n_admitted": 3,
+        "admit_rate": 0.25,
+        "n_procedural": 0,
+        "by_regime": [
+          {
+            "regime": "mixed",
+            "n": 2,
+            "mean_score": 0.7881
+          },
+          {
+            "regime": "moving",
+            "n": 1,
+            "mean_score": 0.6426
+          }
+        ]
+      },
+      "demo_total_by_stratum": {
+        "stationary/ok": 2,
+        "stationary/degraded": 2,
+        "mixed/ok": 2,
+        "mixed/degraded": 2,
+        "moving/ok": 2,
+        "moving/degraded": 2
+      },
+      "demo_admitted_by_stratum": {
+        "stationary/ok": 0,
+        "stationary/degraded": 0,
+        "mixed/ok": 1,
+        "mixed/degraded": 1,
+        "moving/ok": 1,
+        "moving/degraded": 0
+      },
+      "regions": []
+    },
+    "3": {
+      "stats": {
+        "n_episodic": 12,
+        "n_admitted": 4,
+        "admit_rate": 0.3333,
+        "n_procedural": 0,
+        "by_regime": [
+          {
+            "regime": "mixed",
+            "n": 2,
+            "mean_score": 0.7881
+          },
+          {
+            "regime": "moving",
+            "n": 2,
+            "mean_score": 0.6191
+          }
+        ]
+      },
+      "demo_total_by_stratum": {
+        "stationary/ok": 2,
+        "stationary/degraded": 2,
+        "mixed/ok": 2,
+        "mixed/degraded": 2,
+        "moving/ok": 2,
+        "moving/degraded": 2
+      },
+      "demo_admitted_by_stratum": {
+        "stationary/ok": 0,
+        "stationary/degraded": 0,
+        "mixed/ok": 1,
+        "mixed/degraded": 1,
+        "moving/ok": 2,
+        "moving/degraded": 0
+      },
+      "regions": []
+    }
+  },
+  "last_updated": "2026-09-21T20:43:32+0800"
+}

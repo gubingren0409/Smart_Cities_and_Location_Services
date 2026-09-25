@@ -1,0 +1,39 @@
+{
+  "source": "OpenStreetMap",
+  "source_url": "https://api.openstreetmap.org/api/0.6/map",
+  "license": "ODbL 1.0",
+  "fetched_at_utc": "2026-09-24T06:26:36.804353+00:00",
+  "input_bbox_wgs84": [
+    121.43899,
+    31.302305,
+    121.451127,
+    31.347662
+  ],
+  "query_bbox_wgs84": [
+    121.43588341534175,
+    31.299560821642743,
+    121.45423556217605,
+    31.350405855779037
+  ],
+  "buffer_m": 300.0,
+  "network_filter": "highway present; non-motorized/construction classes excluded",
+  "road_feature_count": 310,
+  "highway_distribution": {
+    "planned": 1,
+    "primary": 74,
+    "primary_link": 3,
+    "residential": 61,
+    "secondary": 32,
+    "secondary_link": 1,
+    "service": 69,
+    "tertiary": 48,
+    "trunk": 5,
+    "trunk_link": 13,
+    "unclassified": 3
+  },
+  "features_with_true_maxspeed": 0,
+  "true_maxspeed_feature_rate": 0.0,
+  "cache_file": "vehicle_165.geojson.gz",
+  "cache_sha256": "85ad9e7faf191f47a878a084fbc2e3feb558ea5bb557f36bfbfa1c262d7a25e2",
+  "implementation_commit": "8f3cf9e28d323ddfa7be3adbb5b4eff6ff0935da"
+}

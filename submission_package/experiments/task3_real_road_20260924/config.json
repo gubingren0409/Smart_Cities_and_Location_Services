@@ -1,0 +1,28 @@
+{
+  "experiment": "task3_real_road",
+  "created_at_utc": "2026-09-24T08:11:50.899527+00:00",
+  "implementation_commit": "3ebb885825b3279f7ee7d65e2721d8c980269d86",
+  "data_path": "traj_dict.json",
+  "holdout_source": "experiments/llm_assisted_ecnu_20260921_v2/sample_manifest.json",
+  "holdout": [
+    "2",
+    "4",
+    "10",
+    "22",
+    "111",
+    "137",
+    "153",
+    "154",
+    "165",
+    "194",
+    "201",
+    "208"
+  ],
+  "road_source": "OpenStreetMap",
+  "road_api": "https://api.openstreetmap.org/api/0.6/map",
+  "road_buffer_m": 300.0,
+  "match_tolerance_m": 30.0,
+  "distance_crs": "EPSG:32651",
+  "spatial_index": "Shapely STRtree",
+  "objective_definition_modified": false
+}

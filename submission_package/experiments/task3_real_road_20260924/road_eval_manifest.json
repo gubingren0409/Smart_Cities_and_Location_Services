@@ -1,0 +1,33 @@
+{
+  "source_manifest": "experiments/llm_assisted_ecnu_20260921_v2/sample_manifest.json",
+  "expected_vehicle_ids": [
+    "2",
+    "4",
+    "10",
+    "22",
+    "111",
+    "137",
+    "153",
+    "154",
+    "165",
+    "194",
+    "201",
+    "208"
+  ],
+  "completed_vehicle_ids": [
+    "2",
+    "4",
+    "10",
+    "22",
+    "111",
+    "137",
+    "153",
+    "154",
+    "165",
+    "194",
+    "201",
+    "208"
+  ],
+  "missing_vehicle_ids": [],
+  "duplicate_vehicle_ids": 0
+}

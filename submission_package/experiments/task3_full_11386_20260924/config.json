@@ -1,0 +1,45 @@
+{
+  "experiment": "task3_full_11386",
+  "policy_version": "task3-full-v1",
+  "created_at_utc": "2026-09-24T07:10:43.152273+00:00",
+  "implementation_commit": "3c3a947d6207029e0e601581ab368bdaa2e54751",
+  "data_file": "traj_dict.json",
+  "data_sha256": "c59be4c079d2ffd8ae0127c8a361c77ba277252abb2c7202efb9ee4e8e6084d3",
+  "teacher_file": "experiments/objective_optimization_20260922/search_teacher.jsonl",
+  "teacher_count": 200,
+  "similarity_threshold": 0.75,
+  "similarity_threshold_basis": "固定 holdout 中 applicable 样本 top-1 similarity 为 0.7389--0.9173；0.75 在运行全量前冻结，并保留至少一个真实 LLM 低相似路径",
+  "llm_case_cap": 8,
+  "llm_cap_reason": "完成度优先的有界真实调用；超额低相似样本显式 deterministic fallback",
+  "search_budget": 3,
+  "memory_mode": "episodic+procedural",
+  "memory_source": "existing 200 Search Teacher",
+  "provider": {
+    "provider": "openai-compat",
+    "model": "ecnu-plus",
+    "base_url": "https://chat.ecnu.edu.cn/open/api/v1",
+    "available": true,
+    "api_key_set": true,
+    "extra_body": {
+      "thinking": {
+        "type": "disabled"
+      }
+    },
+    "tool_choice": "auto"
+  },
+  "terminal_statuses": [
+    "fallback_success",
+    "not_applicable",
+    "permanent_error",
+    "success"
+  ],
+  "road_backend": "OSMRoadMatcher for cases with existing task3_real_road cache",
+  "objective_definition_modified": false,
+  "limit": null,
+  "resume_implementation_commits": [
+    "b870796ec626191b574cdd5b4f86d053346486ac"
+  ],
+  "post_run_enrichment_commit": "8aa32609233a97192553ee1cd71776b350e93ada",
+  "post_run_enrichment": "attached existing OSM cache metrics to Objective-inapplicable holdout terminal rows; coverage/status/objective unchanged",
+  "publication_sanitization_commit": "3ebb885"
+}

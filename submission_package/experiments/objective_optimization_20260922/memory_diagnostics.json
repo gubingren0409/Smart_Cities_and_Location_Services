@@ -1,0 +1,712 @@
+{
+  "12": {
+    "min_samples": 3,
+    "region_count": 0,
+    "stats": {
+      "n_episodic": 12,
+      "n_admitted": 8,
+      "admit_rate": 0.6667,
+      "n_procedural": 0,
+      "by_regime": [
+        {
+          "regime": "mixed",
+          "n": 4,
+          "mean_score": 0.7245
+        },
+        {
+          "regime": "moving",
+          "n": 4,
+          "mean_score": 0.6679
+        }
+      ],
+      "by_source": {
+        "deterministic-search-reference": 8
+      }
+    },
+    "regions": []
+  },
+  "24": {
+    "min_samples": 3,
+    "region_count": 12,
+    "stats": {
+      "n_episodic": 24,
+      "n_admitted": 16,
+      "admit_rate": 0.6667,
+      "n_procedural": 12,
+      "by_regime": [
+        {
+          "regime": "mixed",
+          "n": 8,
+          "mean_score": 0.6903
+        },
+        {
+          "regime": "moving",
+          "n": 8,
+          "mean_score": 0.6739
+        }
+      ],
+      "by_source": {
+        "deterministic-search-reference": 16
+      }
+    },
+    "regions": [
+      {
+        "regime": "mixed",
+        "timeline_quality": "ok",
+        "param": "dist_threshold",
+        "low": 312.5,
+        "high": 400.0,
+        "median": 400.0,
+        "n_samples": 4,
+        "mean_regret": 0.0,
+        "mean_score": 0.7292,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "mixed",
+        "timeline_quality": "degraded",
+        "param": "dist_threshold",
+        "low": 312.5,
+        "high": 400.0,
+        "median": 400.0,
+        "n_samples": 4,
+        "mean_regret": 0.0,
+        "mean_score": 0.6513,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "ok",
+        "param": "dist_threshold",
+        "low": 50.0,
+        "high": 139.974,
+        "median": 50.0,
+        "n_samples": 4,
+        "mean_regret": 0.0,
+        "mean_score": 0.6716,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "degraded",
+        "param": "dist_threshold",
+        "low": 50.0,
+        "high": 539.4375,
+        "median": 72.125,
+        "n_samples": 4,
+        "mean_regret": 0.0,
+        "mean_score": 0.6762,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "mixed",
+        "timeline_quality": "ok",
+        "param": "dp_tolerance",
+        "low": 2.7906,
+        "high": 5.0,
+        "median": 4.1296,
+        "n_samples": 4,
+        "mean_regret": 0.0,
+        "mean_score": 0.7292,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "mixed",
+        "timeline_quality": "degraded",
+        "param": "dp_tolerance",
+        "low": 5.0,
+        "high": 6.5156,
+        "median": 5.1562,
+        "n_samples": 4,
+        "mean_regret": 0.0,
+        "mean_score": 0.6513,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "ok",
+        "param": "dp_tolerance",
+        "low": 3.9359,
+        "high": 6.1491,
+        "median": 5.0898,
+        "n_samples": 4,
+        "mean_regret": 0.0,
+        "mean_score": 0.6716,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "degraded",
+        "param": "dp_tolerance",
+        "low": 4.1615,
+        "high": 4.6487,
+        "median": 4.2945,
+        "n_samples": 4,
+        "mean_regret": 0.0,
+        "mean_score": 0.6762,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "mixed",
+        "timeline_quality": "ok",
+        "param": "max_speed_mps",
+        "low": 32.25,
+        "high": 38.0,
+        "median": 38.0,
+        "n_samples": 4,
+        "mean_regret": 0.0,
+        "mean_score": 0.7292,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "mixed",
+        "timeline_quality": "degraded",
+        "param": "max_speed_mps",
+        "low": 33.0,
+        "high": 38.0,
+        "median": 38.0,
+        "n_samples": 4,
+        "mean_regret": 0.0,
+        "mean_score": 0.6513,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "ok",
+        "param": "max_speed_mps",
+        "low": 22.1458,
+        "high": 29.8333,
+        "median": 26.5,
+        "n_samples": 4,
+        "mean_regret": 0.0,
+        "mean_score": 0.6716,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "degraded",
+        "param": "max_speed_mps",
+        "low": 24.9375,
+        "high": 34.7656,
+        "median": 30.7188,
+        "n_samples": 4,
+        "mean_regret": 0.0,
+        "mean_score": 0.6762,
+        "source": "deterministic-search-reference"
+      }
+    ]
+  },
+  "48": {
+    "min_samples": 3,
+    "region_count": 12,
+    "stats": {
+      "n_episodic": 48,
+      "n_admitted": 32,
+      "admit_rate": 0.6667,
+      "n_procedural": 12,
+      "by_regime": [
+        {
+          "regime": "mixed",
+          "n": 16,
+          "mean_score": 0.718
+        },
+        {
+          "regime": "moving",
+          "n": 16,
+          "mean_score": 0.6809
+        }
+      ],
+      "by_source": {
+        "deterministic-search-reference": 32
+      }
+    },
+    "regions": [
+      {
+        "regime": "mixed",
+        "timeline_quality": "ok",
+        "param": "dist_threshold",
+        "low": 50.0,
+        "high": 400.0,
+        "median": 400.0,
+        "n_samples": 8,
+        "mean_regret": 0.0,
+        "mean_score": 0.7441,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "mixed",
+        "timeline_quality": "degraded",
+        "param": "dist_threshold",
+        "low": 50.0,
+        "high": 400.0,
+        "median": 400.0,
+        "n_samples": 8,
+        "mean_regret": 0.0,
+        "mean_score": 0.692,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "ok",
+        "param": "dist_threshold",
+        "low": 50.0,
+        "high": 402.474,
+        "median": 225.0,
+        "n_samples": 8,
+        "mean_regret": 0.0,
+        "mean_score": 0.6943,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "degraded",
+        "param": "dist_threshold",
+        "low": 83.1875,
+        "high": 537.7292,
+        "median": 400.0,
+        "n_samples": 8,
+        "mean_regret": 0.0,
+        "mean_score": 0.6674,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "mixed",
+        "timeline_quality": "ok",
+        "param": "dp_tolerance",
+        "low": 4.5648,
+        "high": 5.2546,
+        "median": 5.0,
+        "n_samples": 8,
+        "mean_regret": 0.0,
+        "mean_score": 0.7441,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "mixed",
+        "timeline_quality": "degraded",
+        "param": "dp_tolerance",
+        "low": 5.0,
+        "high": 7.4375,
+        "median": 5.6654,
+        "n_samples": 8,
+        "mean_regret": 0.0,
+        "mean_score": 0.692,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "ok",
+        "param": "dp_tolerance",
+        "low": 4.1615,
+        "high": 6.1491,
+        "median": 5.0,
+        "n_samples": 8,
+        "mean_regret": 0.0,
+        "mean_score": 0.6943,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "degraded",
+        "param": "dp_tolerance",
+        "low": 4.361,
+        "high": 6.2482,
+        "median": 5.1562,
+        "n_samples": 8,
+        "mean_regret": 0.0,
+        "mean_score": 0.6674,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "mixed",
+        "timeline_quality": "ok",
+        "param": "max_speed_mps",
+        "low": 21.125,
+        "high": 38.0,
+        "median": 38.0,
+        "n_samples": 8,
+        "mean_regret": 0.0,
+        "mean_score": 0.7441,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "mixed",
+        "timeline_quality": "degraded",
+        "param": "max_speed_mps",
+        "low": 31.875,
+        "high": 38.0,
+        "median": 38.0,
+        "n_samples": 8,
+        "mean_regret": 0.0,
+        "mean_score": 0.692,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "ok",
+        "param": "max_speed_mps",
+        "low": 22.1458,
+        "high": 38.0,
+        "median": 29.8333,
+        "n_samples": 8,
+        "mean_regret": 0.0,
+        "mean_score": 0.6943,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "degraded",
+        "param": "max_speed_mps",
+        "low": 25.0677,
+        "high": 38.0,
+        "median": 35.3438,
+        "n_samples": 8,
+        "mean_regret": 0.0,
+        "mean_score": 0.6674,
+        "source": "deterministic-search-reference"
+      }
+    ]
+  },
+  "100": {
+    "min_samples": 3,
+    "region_count": 12,
+    "stats": {
+      "n_episodic": 100,
+      "n_admitted": 66,
+      "admit_rate": 0.66,
+      "n_procedural": 12,
+      "by_regime": [
+        {
+          "regime": "mixed",
+          "n": 34,
+          "mean_score": 0.7175
+        },
+        {
+          "regime": "moving",
+          "n": 32,
+          "mean_score": 0.6876
+        }
+      ],
+      "by_source": {
+        "deterministic-search-reference": 66
+      }
+    },
+    "regions": [
+      {
+        "regime": "mixed",
+        "timeline_quality": "ok",
+        "param": "dist_threshold",
+        "low": 50.0,
+        "high": 400.0,
+        "median": 400.0,
+        "n_samples": 17,
+        "mean_regret": 0.0,
+        "mean_score": 0.7319,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "mixed",
+        "timeline_quality": "degraded",
+        "param": "dist_threshold",
+        "low": 50.0,
+        "high": 400.0,
+        "median": 145.875,
+        "n_samples": 17,
+        "mean_regret": 0.0,
+        "mean_score": 0.703,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "ok",
+        "param": "dist_threshold",
+        "low": 50.0,
+        "high": 400.0,
+        "median": 400.0,
+        "n_samples": 16,
+        "mean_regret": 0.0,
+        "mean_score": 0.7012,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "degraded",
+        "param": "dist_threshold",
+        "low": 50.0,
+        "high": 515.1042,
+        "median": 400.0,
+        "n_samples": 16,
+        "mean_regret": 0.0,
+        "mean_score": 0.6739,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "mixed",
+        "timeline_quality": "ok",
+        "param": "dp_tolerance",
+        "low": 1.385,
+        "high": 5.0,
+        "median": 4.1615,
+        "n_samples": 17,
+        "mean_regret": 0.0,
+        "mean_score": 0.7319,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "mixed",
+        "timeline_quality": "degraded",
+        "param": "dp_tolerance",
+        "low": 4.1615,
+        "high": 6.5417,
+        "median": 5.0,
+        "n_samples": 17,
+        "mean_regret": 0.0,
+        "mean_score": 0.703,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "ok",
+        "param": "dp_tolerance",
+        "low": 4.7904,
+        "high": 6.5612,
+        "median": 5.1562,
+        "n_samples": 16,
+        "mean_regret": 0.0,
+        "mean_score": 0.7012,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "degraded",
+        "param": "dp_tolerance",
+        "low": 4.1615,
+        "high": 5.4556,
+        "median": 5.2229,
+        "n_samples": 16,
+        "mean_regret": 0.0,
+        "mean_score": 0.6739,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "mixed",
+        "timeline_quality": "ok",
+        "param": "max_speed_mps",
+        "low": 23.1667,
+        "high": 38.0,
+        "median": 38.0,
+        "n_samples": 17,
+        "mean_regret": 0.0,
+        "mean_score": 0.7319,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "mixed",
+        "timeline_quality": "degraded",
+        "param": "max_speed_mps",
+        "low": 18.0,
+        "high": 38.0,
+        "median": 36.5,
+        "n_samples": 17,
+        "mean_regret": 0.0,
+        "mean_score": 0.703,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "ok",
+        "param": "max_speed_mps",
+        "low": 26.2292,
+        "high": 38.0,
+        "median": 29.8333,
+        "n_samples": 16,
+        "mean_regret": 0.0,
+        "mean_score": 0.7012,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "degraded",
+        "param": "max_speed_mps",
+        "low": 25.4375,
+        "high": 38.0,
+        "median": 35.3438,
+        "n_samples": 16,
+        "mean_regret": 0.0,
+        "mean_score": 0.6739,
+        "source": "deterministic-search-reference"
+      }
+    ]
+  },
+  "200": {
+    "min_samples": 3,
+    "region_count": 12,
+    "stats": {
+      "n_episodic": 200,
+      "n_admitted": 132,
+      "admit_rate": 0.66,
+      "n_procedural": 12,
+      "by_regime": [
+        {
+          "regime": "mixed",
+          "n": 66,
+          "mean_score": 0.7222
+        },
+        {
+          "regime": "moving",
+          "n": 66,
+          "mean_score": 0.7041
+        }
+      ],
+      "by_source": {
+        "deterministic-search-reference": 132
+      }
+    },
+    "regions": [
+      {
+        "regime": "mixed",
+        "timeline_quality": "ok",
+        "param": "dist_threshold",
+        "low": 50.0,
+        "high": 400.0,
+        "median": 50.0,
+        "n_samples": 33,
+        "mean_regret": 0.0,
+        "mean_score": 0.7321,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "mixed",
+        "timeline_quality": "degraded",
+        "param": "dist_threshold",
+        "low": 50.0,
+        "high": 400.0,
+        "median": 400.0,
+        "n_samples": 33,
+        "mean_regret": 0.0,
+        "mean_score": 0.7123,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "ok",
+        "param": "dist_threshold",
+        "low": 50.0,
+        "high": 400.0,
+        "median": 324.349,
+        "n_samples": 33,
+        "mean_regret": 0.0,
+        "mean_score": 0.7115,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "degraded",
+        "param": "dist_threshold",
+        "low": 50.0,
+        "high": 506.25,
+        "median": 400.0,
+        "n_samples": 33,
+        "mean_regret": 0.0,
+        "mean_score": 0.6967,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "mixed",
+        "timeline_quality": "ok",
+        "param": "dp_tolerance",
+        "low": 2.3741,
+        "high": 5.3125,
+        "median": 5.0,
+        "n_samples": 33,
+        "mean_regret": 0.0,
+        "mean_score": 0.7321,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "mixed",
+        "timeline_quality": "degraded",
+        "param": "dp_tolerance",
+        "low": 5.0,
+        "high": 9.24,
+        "median": 5.3125,
+        "n_samples": 33,
+        "mean_regret": 0.0,
+        "mean_score": 0.7123,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "ok",
+        "param": "dp_tolerance",
+        "low": 5.0,
+        "high": 7.8229,
+        "median": 6.0182,
+        "n_samples": 33,
+        "mean_regret": 0.0,
+        "mean_score": 0.7115,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "degraded",
+        "param": "dp_tolerance",
+        "low": 4.4275,
+        "high": 8.7773,
+        "median": 5.885,
+        "n_samples": 33,
+        "mean_regret": 0.0,
+        "mean_score": 0.6967,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "mixed",
+        "timeline_quality": "ok",
+        "param": "max_speed_mps",
+        "low": 18.0,
+        "high": 38.0,
+        "median": 27.25,
+        "n_samples": 33,
+        "mean_regret": 0.0,
+        "mean_score": 0.7321,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "mixed",
+        "timeline_quality": "degraded",
+        "param": "max_speed_mps",
+        "low": 18.0,
+        "high": 38.0,
+        "median": 38.0,
+        "n_samples": 33,
+        "mean_regret": 0.0,
+        "mean_score": 0.7123,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "ok",
+        "param": "max_speed_mps",
+        "low": 23.1667,
+        "high": 38.0,
+        "median": 29.8333,
+        "n_samples": 33,
+        "mean_regret": 0.0,
+        "mean_score": 0.7115,
+        "source": "deterministic-search-reference"
+      },
+      {
+        "regime": "moving",
+        "timeline_quality": "degraded",
+        "param": "max_speed_mps",
+        "low": 18.0,
+        "high": 38.0,
+        "median": 34.1875,
+        "n_samples": 33,
+        "mean_regret": 0.0,
+        "mean_score": 0.6967,
+        "source": "deterministic-search-reference"
+      }
+    ]
+  }
+}

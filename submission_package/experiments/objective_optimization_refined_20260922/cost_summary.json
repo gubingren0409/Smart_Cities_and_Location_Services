@@ -1,0 +1,1545 @@
+{
+  "definition": {
+    "total_online_ms": "LLM API latency + cumulative Objective search wall-clock",
+    "end_to_end_online_ms": "outer proposal wall-clock + cumulative Objective search wall-clock",
+    "teacher_offline_separate": true
+  },
+  "teacher_offline": {
+    "vehicles": 200,
+    "records": 200,
+    "objective_evaluations": 11000,
+    "wall_clock_ms": 639085.17,
+    "llm_calls": 0,
+    "included_in_per_query_online_cost": false
+  },
+  "teacher200_online_cells": {
+    "episodic-region-search": {
+      "3": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "objective_search_ms": {
+          "total": 8441.01,
+          "mean": 351.70875,
+          "median": 299.515
+        },
+        "total_online_ms": {
+          "total": 8441.01,
+          "mean": 351.70875,
+          "median": 299.515
+        },
+        "end_to_end_online_ms": {
+          "total": 8441.01,
+          "mean": 351.70875,
+          "median": 299.515
+        },
+        "llm_calls": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "prompt_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "completion_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "n_evaluations": {
+          "total": 72.0,
+          "mean": 3.0,
+          "median": 3.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      },
+      "5": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "objective_search_ms": {
+          "total": 13837.68,
+          "mean": 576.57,
+          "median": 488.915
+        },
+        "total_online_ms": {
+          "total": 13837.68,
+          "mean": 576.57,
+          "median": 488.915
+        },
+        "end_to_end_online_ms": {
+          "total": 13837.68,
+          "mean": 576.57,
+          "median": 488.915
+        },
+        "llm_calls": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "prompt_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "completion_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "n_evaluations": {
+          "total": 120.0,
+          "mean": 5.0,
+          "median": 5.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      },
+      "10": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "objective_search_ms": {
+          "total": 27595.920000000002,
+          "mean": 1149.8300000000002,
+          "median": 965.235
+        },
+        "total_online_ms": {
+          "total": 27595.920000000002,
+          "mean": 1149.8300000000002,
+          "median": 965.235
+        },
+        "end_to_end_online_ms": {
+          "total": 27595.920000000002,
+          "mean": 1149.8300000000002,
+          "median": 965.235
+        },
+        "llm_calls": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "prompt_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "completion_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "n_evaluations": {
+          "total": 240.0,
+          "mean": 10.0,
+          "median": 10.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      },
+      "20": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "objective_search_ms": {
+          "total": 54832.17,
+          "mean": 2284.67375,
+          "median": 1913.53
+        },
+        "total_online_ms": {
+          "total": 54832.17,
+          "mean": 2284.67375,
+          "median": 1913.53
+        },
+        "end_to_end_online_ms": {
+          "total": 54832.17,
+          "mean": 2284.67375,
+          "median": 1913.53
+        },
+        "llm_calls": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "prompt_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "completion_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "n_evaluations": {
+          "total": 480.0,
+          "mean": 20.0,
+          "median": 20.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      }
+    },
+    "llm-warmstart:episodic+procedural": {
+      "3": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 32955.86539999931,
+          "mean": 1373.1610583333047,
+          "median": 1027.7313500046148
+        },
+        "objective_search_ms": {
+          "total": 12385.39,
+          "mean": 516.0579166666666,
+          "median": 407.78999999999996
+        },
+        "total_online_ms": {
+          "total": 45341.25539999931,
+          "mean": 1889.2189749999714,
+          "median": 1468.7773999949243
+        },
+        "end_to_end_online_ms": {
+          "total": 45347.26,
+          "mean": 1889.4691666666668,
+          "median": 1469.0300000000002
+        },
+        "llm_calls": {
+          "total": 24.0,
+          "mean": 1.0,
+          "median": 1.0
+        },
+        "prompt_tokens": {
+          "total": 24693.0,
+          "mean": 1028.875,
+          "median": 1034.5
+        },
+        "completion_tokens": {
+          "total": 2007.0,
+          "mean": 83.625,
+          "median": 89.0
+        },
+        "n_evaluations": {
+          "total": 72.0,
+          "mean": 3.0,
+          "median": 3.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      },
+      "5": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 32955.86539999931,
+          "mean": 1373.1610583333047,
+          "median": 1027.7313500046148
+        },
+        "objective_search_ms": {
+          "total": 20178.69,
+          "mean": 840.77875,
+          "median": 638.92
+        },
+        "total_online_ms": {
+          "total": 53134.55539999931,
+          "mean": 2213.939808333305,
+          "median": 1806.8123999949241
+        },
+        "end_to_end_online_ms": {
+          "total": 53140.56,
+          "mean": 2214.19,
+          "median": 1807.065
+        },
+        "llm_calls": {
+          "total": 24.0,
+          "mean": 1.0,
+          "median": 1.0
+        },
+        "prompt_tokens": {
+          "total": 24693.0,
+          "mean": 1028.875,
+          "median": 1034.5
+        },
+        "completion_tokens": {
+          "total": 2007.0,
+          "mean": 83.625,
+          "median": 89.0
+        },
+        "n_evaluations": {
+          "total": 120.0,
+          "mean": 5.0,
+          "median": 5.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      },
+      "10": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 32955.86539999931,
+          "mean": 1373.1610583333047,
+          "median": 1027.7313500046148
+        },
+        "objective_search_ms": {
+          "total": 40011.52,
+          "mean": 1667.1466666666665,
+          "median": 1248.925
+        },
+        "total_online_ms": {
+          "total": 72967.38539999932,
+          "mean": 3040.3077249999715,
+          "median": 2530.7980000002426
+        },
+        "end_to_end_online_ms": {
+          "total": 72973.39,
+          "mean": 3040.5579166666666,
+          "median": 2531.035
+        },
+        "llm_calls": {
+          "total": 24.0,
+          "mean": 1.0,
+          "median": 1.0
+        },
+        "prompt_tokens": {
+          "total": 24693.0,
+          "mean": 1028.875,
+          "median": 1034.5
+        },
+        "completion_tokens": {
+          "total": 2007.0,
+          "mean": 83.625,
+          "median": 89.0
+        },
+        "n_evaluations": {
+          "total": 240.0,
+          "mean": 10.0,
+          "median": 10.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      },
+      "20": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 32955.86539999931,
+          "mean": 1373.1610583333047,
+          "median": 1027.7313500046148
+        },
+        "objective_search_ms": {
+          "total": 79432.54,
+          "mean": 3309.6891666666666,
+          "median": 2476.615
+        },
+        "total_online_ms": {
+          "total": 112388.4053999993,
+          "mean": 4682.850224999971,
+          "median": 3906.638349992302
+        },
+        "end_to_end_online_ms": {
+          "total": 112394.41,
+          "mean": 4683.100416666667,
+          "median": 3906.9049999999997
+        },
+        "llm_calls": {
+          "total": 24.0,
+          "mean": 1.0,
+          "median": 1.0
+        },
+        "prompt_tokens": {
+          "total": 24693.0,
+          "mean": 1028.875,
+          "median": 1034.5
+        },
+        "completion_tokens": {
+          "total": 2007.0,
+          "mean": 83.625,
+          "median": 89.0
+        },
+        "n_evaluations": {
+          "total": 480.0,
+          "mean": 20.0,
+          "median": 20.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      }
+    },
+    "llm-warmstart:episodic-only": {
+      "3": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 24898.830600024667,
+          "mean": 1037.4512750010279,
+          "median": 939.2411000080756
+        },
+        "objective_search_ms": {
+          "total": 11627.17,
+          "mean": 484.46541666666667,
+          "median": 420.875
+        },
+        "total_online_ms": {
+          "total": 36526.000600024665,
+          "mean": 1521.9166916676943,
+          "median": 1471.871350004205
+        },
+        "end_to_end_online_ms": {
+          "total": 36531.85,
+          "mean": 1522.1604166666666,
+          "median": 1472.0900000000001
+        },
+        "llm_calls": {
+          "total": 24.0,
+          "mean": 1.0,
+          "median": 1.0
+        },
+        "prompt_tokens": {
+          "total": 19521.0,
+          "mean": 813.375,
+          "median": 815.5
+        },
+        "completion_tokens": {
+          "total": 1896.0,
+          "mean": 79.0,
+          "median": 82.0
+        },
+        "n_evaluations": {
+          "total": 72.0,
+          "mean": 3.0,
+          "median": 3.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      },
+      "5": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 24898.830600024667,
+          "mean": 1037.4512750010279,
+          "median": 939.2411000080756
+        },
+        "objective_search_ms": {
+          "total": 18965.7,
+          "mean": 790.2375000000001,
+          "median": 681.42
+        },
+        "total_online_ms": {
+          "total": 43864.530600024664,
+          "mean": 1827.6887750010276,
+          "median": 1820.7974999994294
+        },
+        "end_to_end_online_ms": {
+          "total": 43870.38,
+          "mean": 1827.9325,
+          "median": 1821.06
+        },
+        "llm_calls": {
+          "total": 24.0,
+          "mean": 1.0,
+          "median": 1.0
+        },
+        "prompt_tokens": {
+          "total": 19521.0,
+          "mean": 813.375,
+          "median": 815.5
+        },
+        "completion_tokens": {
+          "total": 1896.0,
+          "mean": 79.0,
+          "median": 82.0
+        },
+        "n_evaluations": {
+          "total": 120.0,
+          "mean": 5.0,
+          "median": 5.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      },
+      "10": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 24898.830600024667,
+          "mean": 1037.4512750010279,
+          "median": 939.2411000080756
+        },
+        "objective_search_ms": {
+          "total": 38246.5,
+          "mean": 1593.6041666666667,
+          "median": 1319.68
+        },
+        "total_online_ms": {
+          "total": 63145.33060002467,
+          "mean": 2631.0554416676946,
+          "median": 2514.602699997029
+        },
+        "end_to_end_online_ms": {
+          "total": 63151.18,
+          "mean": 2631.2991666666667,
+          "median": 2514.8450000000003
+        },
+        "llm_calls": {
+          "total": 24.0,
+          "mean": 1.0,
+          "median": 1.0
+        },
+        "prompt_tokens": {
+          "total": 19521.0,
+          "mean": 813.375,
+          "median": 815.5
+        },
+        "completion_tokens": {
+          "total": 1896.0,
+          "mean": 79.0,
+          "median": 82.0
+        },
+        "n_evaluations": {
+          "total": 240.0,
+          "mean": 10.0,
+          "median": 10.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      },
+      "20": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 24898.830600024667,
+          "mean": 1037.4512750010279,
+          "median": 939.2411000080756
+        },
+        "objective_search_ms": {
+          "total": 77763.54,
+          "mean": 3240.1474999999996,
+          "median": 2616.98
+        },
+        "total_online_ms": {
+          "total": 102662.37060002466,
+          "mean": 4277.598775001027,
+          "median": 3884.527550001552
+        },
+        "end_to_end_online_ms": {
+          "total": 102668.22,
+          "mean": 4277.8425,
+          "median": 3884.79
+        },
+        "llm_calls": {
+          "total": 24.0,
+          "mean": 1.0,
+          "median": 1.0
+        },
+        "prompt_tokens": {
+          "total": 19521.0,
+          "mean": 813.375,
+          "median": 815.5
+        },
+        "completion_tokens": {
+          "total": 1896.0,
+          "mean": 79.0,
+          "median": 82.0
+        },
+        "n_evaluations": {
+          "total": 480.0,
+          "mean": 20.0,
+          "median": 20.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      }
+    },
+    "llm-warmstart:none": {
+      "3": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 21442.072299978463,
+          "mean": 893.4196791657693,
+          "median": 865.0064000030397
+        },
+        "objective_search_ms": {
+          "total": 10499.54,
+          "mean": 437.48083333333335,
+          "median": 332.685
+        },
+        "total_online_ms": {
+          "total": 31941.612299978464,
+          "mean": 1330.9005124991027,
+          "median": 1315.5158499960394
+        },
+        "end_to_end_online_ms": {
+          "total": 31946.98,
+          "mean": 1331.1241666666667,
+          "median": 1315.74
+        },
+        "llm_calls": {
+          "total": 24.0,
+          "mean": 1.0,
+          "median": 1.0
+        },
+        "prompt_tokens": {
+          "total": 12567.0,
+          "mean": 523.625,
+          "median": 525.0
+        },
+        "completion_tokens": {
+          "total": 1814.0,
+          "mean": 75.58333333333333,
+          "median": 71.0
+        },
+        "n_evaluations": {
+          "total": 72.0,
+          "mean": 3.0,
+          "median": 3.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      },
+      "5": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 21442.072299978463,
+          "mean": 893.4196791657693,
+          "median": 865.0064000030397
+        },
+        "objective_search_ms": {
+          "total": 17546.93,
+          "mean": 731.1220833333333,
+          "median": 608.535
+        },
+        "total_online_ms": {
+          "total": 38989.00229997846,
+          "mean": 1624.5417624991026,
+          "median": 1575.588300007214
+        },
+        "end_to_end_online_ms": {
+          "total": 38994.37,
+          "mean": 1624.7654166666669,
+          "median": 1575.79
+        },
+        "llm_calls": {
+          "total": 24.0,
+          "mean": 1.0,
+          "median": 1.0
+        },
+        "prompt_tokens": {
+          "total": 12567.0,
+          "mean": 523.625,
+          "median": 525.0
+        },
+        "completion_tokens": {
+          "total": 1814.0,
+          "mean": 75.58333333333333,
+          "median": 71.0
+        },
+        "n_evaluations": {
+          "total": 120.0,
+          "mean": 5.0,
+          "median": 5.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      },
+      "10": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 21442.072299978463,
+          "mean": 893.4196791657693,
+          "median": 865.0064000030397
+        },
+        "objective_search_ms": {
+          "total": 35109.9,
+          "mean": 1462.9125000000001,
+          "median": 1201.675
+        },
+        "total_online_ms": {
+          "total": 56551.972299978464,
+          "mean": 2356.3321791657695,
+          "median": 2070.6410499992544
+        },
+        "end_to_end_online_ms": {
+          "total": 56557.34,
+          "mean": 2356.5558333333333,
+          "median": 2070.84
+        },
+        "llm_calls": {
+          "total": 24.0,
+          "mean": 1.0,
+          "median": 1.0
+        },
+        "prompt_tokens": {
+          "total": 12567.0,
+          "mean": 523.625,
+          "median": 525.0
+        },
+        "completion_tokens": {
+          "total": 1814.0,
+          "mean": 75.58333333333333,
+          "median": 71.0
+        },
+        "n_evaluations": {
+          "total": 240.0,
+          "mean": 10.0,
+          "median": 10.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      },
+      "20": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 21442.072299978463,
+          "mean": 893.4196791657693,
+          "median": 865.0064000030397
+        },
+        "objective_search_ms": {
+          "total": 69874.05,
+          "mean": 2911.4187500000003,
+          "median": 2503.1099999999997
+        },
+        "total_online_ms": {
+          "total": 91316.12229997847,
+          "mean": 3804.8384291657694,
+          "median": 3243.919849994548
+        },
+        "end_to_end_online_ms": {
+          "total": 91321.49,
+          "mean": 3805.0620833333337,
+          "median": 3244.1499999999996
+        },
+        "llm_calls": {
+          "total": 24.0,
+          "mean": 1.0,
+          "median": 1.0
+        },
+        "prompt_tokens": {
+          "total": 12567.0,
+          "mean": 523.625,
+          "median": 525.0
+        },
+        "completion_tokens": {
+          "total": 1814.0,
+          "mean": 75.58333333333333,
+          "median": 71.0
+        },
+        "n_evaluations": {
+          "total": 480.0,
+          "mean": 20.0,
+          "median": 20.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      }
+    },
+    "llm-warmstart:procedural-only": {
+      "3": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 23541.862799975206,
+          "mean": 980.9109499989669,
+          "median": 885.2397500013467
+        },
+        "objective_search_ms": {
+          "total": 12726.539999999999,
+          "mean": 530.2724999999999,
+          "median": 419.79999999999995
+        },
+        "total_online_ms": {
+          "total": 36268.40279997521,
+          "mean": 1511.183449998967,
+          "median": 1469.6926000025287
+        },
+        "end_to_end_online_ms": {
+          "total": 36274.05,
+          "mean": 1511.41875,
+          "median": 1469.92
+        },
+        "llm_calls": {
+          "total": 24.0,
+          "mean": 1.0,
+          "median": 1.0
+        },
+        "prompt_tokens": {
+          "total": 17739.0,
+          "mean": 739.125,
+          "median": 744.0
+        },
+        "completion_tokens": {
+          "total": 1768.0,
+          "mean": 73.66666666666667,
+          "median": 74.0
+        },
+        "n_evaluations": {
+          "total": 72.0,
+          "mean": 3.0,
+          "median": 3.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      },
+      "5": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 23541.862799975206,
+          "mean": 980.9109499989669,
+          "median": 885.2397500013467
+        },
+        "objective_search_ms": {
+          "total": 20732.85,
+          "mean": 863.86875,
+          "median": 687.86
+        },
+        "total_online_ms": {
+          "total": 44274.712799975205,
+          "mean": 1844.7796999989669,
+          "median": 1746.3645999956714
+        },
+        "end_to_end_online_ms": {
+          "total": 44280.36,
+          "mean": 1845.015,
+          "median": 1746.62
+        },
+        "llm_calls": {
+          "total": 24.0,
+          "mean": 1.0,
+          "median": 1.0
+        },
+        "prompt_tokens": {
+          "total": 17739.0,
+          "mean": 739.125,
+          "median": 744.0
+        },
+        "completion_tokens": {
+          "total": 1768.0,
+          "mean": 73.66666666666667,
+          "median": 74.0
+        },
+        "n_evaluations": {
+          "total": 120.0,
+          "mean": 5.0,
+          "median": 5.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      },
+      "10": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 23541.862799975206,
+          "mean": 980.9109499989669,
+          "median": 885.2397500013467
+        },
+        "objective_search_ms": {
+          "total": 40128.48,
+          "mean": 1672.0200000000002,
+          "median": 1371.0249999999999
+        },
+        "total_online_ms": {
+          "total": 63670.34279997521,
+          "mean": 2652.930949998967,
+          "median": 2386.2265499988916
+        },
+        "end_to_end_online_ms": {
+          "total": 63675.99,
+          "mean": 2653.1662499999998,
+          "median": 2386.43
+        },
+        "llm_calls": {
+          "total": 24.0,
+          "mean": 1.0,
+          "median": 1.0
+        },
+        "prompt_tokens": {
+          "total": 17739.0,
+          "mean": 739.125,
+          "median": 744.0
+        },
+        "completion_tokens": {
+          "total": 1768.0,
+          "mean": 73.66666666666667,
+          "median": 74.0
+        },
+        "n_evaluations": {
+          "total": 240.0,
+          "mean": 10.0,
+          "median": 10.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      },
+      "20": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 23541.862799975206,
+          "mean": 980.9109499989669,
+          "median": 885.2397500013467
+        },
+        "objective_search_ms": {
+          "total": 78931.31,
+          "mean": 3288.804583333333,
+          "median": 2621.165
+        },
+        "total_online_ms": {
+          "total": 102473.1727999752,
+          "mean": 4269.7155333323,
+          "median": 3593.3495999956713
+        },
+        "end_to_end_online_ms": {
+          "total": 102478.82,
+          "mean": 4269.950833333333,
+          "median": 3593.605
+        },
+        "llm_calls": {
+          "total": 24.0,
+          "mean": 1.0,
+          "median": 1.0
+        },
+        "prompt_tokens": {
+          "total": 17739.0,
+          "mean": 739.125,
+          "median": 744.0
+        },
+        "completion_tokens": {
+          "total": 1768.0,
+          "mean": 73.66666666666667,
+          "median": 74.0
+        },
+        "n_evaluations": {
+          "total": 480.0,
+          "mean": 20.0,
+          "median": 20.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      }
+    },
+    "procedural-region-search": {
+      "3": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "objective_search_ms": {
+          "total": 8407.74,
+          "mean": 350.3225,
+          "median": 293.925
+        },
+        "total_online_ms": {
+          "total": 8407.74,
+          "mean": 350.3225,
+          "median": 293.925
+        },
+        "end_to_end_online_ms": {
+          "total": 8407.74,
+          "mean": 350.3225,
+          "median": 293.925
+        },
+        "llm_calls": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "prompt_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "completion_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "n_evaluations": {
+          "total": 72.0,
+          "mean": 3.0,
+          "median": 3.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      },
+      "5": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "objective_search_ms": {
+          "total": 13695.84,
+          "mean": 570.66,
+          "median": 486.25
+        },
+        "total_online_ms": {
+          "total": 13695.84,
+          "mean": 570.66,
+          "median": 486.25
+        },
+        "end_to_end_online_ms": {
+          "total": 13695.84,
+          "mean": 570.66,
+          "median": 486.25
+        },
+        "llm_calls": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "prompt_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "completion_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "n_evaluations": {
+          "total": 120.0,
+          "mean": 5.0,
+          "median": 5.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      },
+      "10": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "objective_search_ms": {
+          "total": 27245.46,
+          "mean": 1135.2275,
+          "median": 959.4449999999999
+        },
+        "total_online_ms": {
+          "total": 27245.46,
+          "mean": 1135.2275,
+          "median": 959.4449999999999
+        },
+        "end_to_end_online_ms": {
+          "total": 27245.46,
+          "mean": 1135.2275,
+          "median": 959.4449999999999
+        },
+        "llm_calls": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "prompt_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "completion_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "n_evaluations": {
+          "total": 240.0,
+          "mean": 10.0,
+          "median": 10.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      },
+      "20": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "objective_search_ms": {
+          "total": 54318.51,
+          "mean": 2263.2712500000002,
+          "median": 1924.54
+        },
+        "total_online_ms": {
+          "total": 54318.51,
+          "mean": 2263.2712500000002,
+          "median": 1924.54
+        },
+        "end_to_end_online_ms": {
+          "total": 54318.51,
+          "mean": 2263.2712500000002,
+          "median": 1924.54
+        },
+        "llm_calls": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "prompt_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "completion_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "n_evaluations": {
+          "total": 480.0,
+          "mean": 20.0,
+          "median": 20.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      }
+    },
+    "pure-search": {
+      "3": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "objective_search_ms": {
+          "total": 7109.81,
+          "mean": 296.24208333333337,
+          "median": 207.02499999999998
+        },
+        "total_online_ms": {
+          "total": 7109.81,
+          "mean": 296.24208333333337,
+          "median": 207.02499999999998
+        },
+        "end_to_end_online_ms": {
+          "total": 7109.81,
+          "mean": 296.24208333333337,
+          "median": 207.02499999999998
+        },
+        "llm_calls": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "prompt_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "completion_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "n_evaluations": {
+          "total": 72.0,
+          "mean": 3.0,
+          "median": 3.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      },
+      "5": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "objective_search_ms": {
+          "total": 13903.46,
+          "mean": 579.3108333333333,
+          "median": 416.45500000000004
+        },
+        "total_online_ms": {
+          "total": 13903.46,
+          "mean": 579.3108333333333,
+          "median": 416.45500000000004
+        },
+        "end_to_end_online_ms": {
+          "total": 13903.46,
+          "mean": 579.3108333333333,
+          "median": 416.45500000000004
+        },
+        "llm_calls": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "prompt_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "completion_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "n_evaluations": {
+          "total": 120.0,
+          "mean": 5.0,
+          "median": 5.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      },
+      "10": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "objective_search_ms": {
+          "total": 30466.36,
+          "mean": 1269.4316666666666,
+          "median": 917.2249999999999
+        },
+        "total_online_ms": {
+          "total": 30466.36,
+          "mean": 1269.4316666666666,
+          "median": 917.2249999999999
+        },
+        "end_to_end_online_ms": {
+          "total": 30466.36,
+          "mean": 1269.4316666666666,
+          "median": 917.2249999999999
+        },
+        "llm_calls": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "prompt_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "completion_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "n_evaluations": {
+          "total": 240.0,
+          "mean": 10.0,
+          "median": 10.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      },
+      "20": {
+        "n": 24,
+        "llm_latency_ms": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "objective_search_ms": {
+          "total": 62577.22,
+          "mean": 2607.3841666666667,
+          "median": 2173.975
+        },
+        "total_online_ms": {
+          "total": 62577.22,
+          "mean": 2607.3841666666667,
+          "median": 2173.975
+        },
+        "end_to_end_online_ms": {
+          "total": 62577.22,
+          "mean": 2607.3841666666667,
+          "median": 2173.975
+        },
+        "llm_calls": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "prompt_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "completion_tokens": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "n_evaluations": {
+          "total": 480.0,
+          "mean": 20.0,
+          "median": 20.0
+        },
+        "retries": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        },
+        "provider_errors": {
+          "total": 0.0,
+          "mean": 0.0,
+          "median": 0.0
+        }
+      }
+    }
+  },
+  "amortization_pure_vs_episodic_warm": {
+    "3": {
+      "pure_mean_online_ms": 296.24208333333337,
+      "episodic_warm_mean_online_ms": 1521.9166916676943,
+      "saving_per_query_ms": -1225.674608334361,
+      "break_even_queries": null,
+      "status": "no break-even"
+    },
+    "5": {
+      "pure_mean_online_ms": 579.3108333333333,
+      "episodic_warm_mean_online_ms": 1827.6887750010276,
+      "saving_per_query_ms": -1248.3779416676944,
+      "break_even_queries": null,
+      "status": "no break-even"
+    },
+    "10": {
+      "pure_mean_online_ms": 1269.4316666666666,
+      "episodic_warm_mean_online_ms": 2631.0554416676946,
+      "saving_per_query_ms": -1361.623775001028,
+      "break_even_queries": null,
+      "status": "no break-even"
+    },
+    "20": {
+      "pure_mean_online_ms": 2607.3841666666667,
+      "episodic_warm_mean_online_ms": 4277.598775001027,
+      "saving_per_query_ms": -1670.2146083343605,
+      "break_even_queries": null,
+      "status": "no break-even"
+    }
+  }
+}

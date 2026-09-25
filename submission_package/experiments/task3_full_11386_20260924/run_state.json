@@ -1,0 +1,15 @@
+{
+  "total": 11386,
+  "completed": 11386,
+  "pending": 0,
+  "success": 5326,
+  "not_applicable": 5464,
+  "fallback": 596,
+  "errors": 0,
+  "last_vehicle_id": "11385",
+  "elapsed_s": 2643.345093011856,
+  "estimated_remaining_s": 0.0,
+  "llm_disabled_reason": "",
+  "rss_mb": 574.37109375,
+  "updated_at_utc": "2026-09-24T07:59:01.165871+00:00"
+}
