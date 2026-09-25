@@ -279,7 +279,7 @@ def style_docx() -> None:
     props = doc.core_properties
     props.title = "实验一：轨迹数据预处理"
     props.subject = "《智慧城市与位置服务》课程实验报告"
-    props.author = "【姓名待填】"
+    props.author = "谷秉仁"
     props.keywords = "轨迹分段, 轨迹去噪, Douglas-Peucker, OSM, LLM"
     props.comments = "由最终 Markdown 报告构建"
 
@@ -331,7 +331,7 @@ def normalize_pdf_metadata() -> None:
         {
             "/Title": "实验一：轨迹数据预处理",
             "/Subject": "《智慧城市与位置服务》课程实验报告",
-            "/Author": "【姓名待填】",
+            "/Author": "谷秉仁",
             "/Keywords": "轨迹分段, 轨迹去噪, Douglas-Peucker, OSM, LLM",
         }
     )
